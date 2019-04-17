@@ -1,1 +1,1 @@
-# blockr-p2p-lib
+# blockr-p2p `TypeScript`
