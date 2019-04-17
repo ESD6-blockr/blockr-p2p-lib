@@ -1,0 +1,11 @@
+{
+  "name": "@blockr/blockr-p2p-lib",
+  "version": "1.0.0",
+  "description": "Blockr P2P node library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Blockr (Hugo van de Vliert, Ronald van den Broek)",
+  "license": "MIT"
+}
