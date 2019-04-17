@@ -7,5 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Blockr (Hugo van de Vliert, Ronald van den Broek)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "tslint": "^5.16.0",
+    "tsutils": "^3.10.0",
+    "typescript": "^3.4.3"
+  }
 }
