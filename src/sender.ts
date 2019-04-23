@@ -1,4 +1,3 @@
-import { Broadcast } from "./broadcast";
 import { Message } from "./message";
 
 export class Sender {
@@ -6,7 +5,7 @@ export class Sender {
 
     }
 
-    public sendBroadcast(broadcast: Broadcast) {
+    public sendBroadcast(broadcast: Message) {
 
     }
 }
