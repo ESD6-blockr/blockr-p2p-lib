@@ -1,3 +1,4 @@
+import { Message } from "./message";
 import { IpRegistry } from "./ipRegistry";
 import { Receiver } from "./receiver";
 import { Sender } from "./sender";
@@ -9,7 +10,11 @@ export class Peer {
 
     constructor() {
         this.sender = new Sender();
-        this.receiver = new Receiver();
+        this.receiver = new Receiver(this.onMessage);
         this.ipRegistry = new IpRegistry();
+    }
+
+    onMessage(message: Message) {
+        console.log(message);
     }
 }
