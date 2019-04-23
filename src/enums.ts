@@ -1,6 +1,7 @@
 export enum MessageType {
     PING = "ping",
-    GET_ROUTING_TABLE = "get_routing",
+    PING_ACKNOWLEDGE = "ping_ack",
+    GET_ROUTING_TABLE = "get_routes",
     JOIN = "join",
     LEAVE = "leave"
 }

@@ -13,7 +13,7 @@
   "author": "Blockr (Hugo van de Vliert, Ronald van den Broek)",
   "license": "MIT",
   "dependencies": {
-    "socket.io": "^2.2.0",
+    "socket.io-client": "^2.2.0",
     "tslint": "^5.16.0",
     "tsutils": "^3.10.0",
     "typescript": "^3.4.3"

@@ -1,22 +1,37 @@
-import { io } from 'socket.io-client'
+import { connect } from "socket.io-client";
 
 import { Message } from "./message";
-import { MessageType } from "./enums";
 
 export class Sender {
-    private readonly sender;
+    private peers;
 
-    constructor() {
-        console.log(io);
+    //temp
+    private tempPeer = "http://localhost:8082";
 
-        this.sender = io('http://localhost');
+    constructor(peers: []) {
+        this.peers = peers;
+
+        //temp
+        this.peers.put(this.tempPeer);
     }
 
-    public sendMessage(message: Message) {
+    public sendMessage(message: Message, destination?: string) {
+        if (destination === undefined) {
+            //temp
+            destination = this.tempPeer;
+        }
 
+        this.emitMessage(destination, message);
     }
 
     public sendBroadcast(broadcast: Message) {
+        this.peers.forEach((peer) => {
+            this.emitMessage(peer, broadcast);
+        })
+    }
 
+    private emitMessage(destination: string, message: Message) {
+        const socket = connect(destination);
+        socket.emit(message.type, JSON.stringify(message));
     }
 }
