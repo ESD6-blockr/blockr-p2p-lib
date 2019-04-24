@@ -6,13 +6,13 @@ export class Sender {
     private peers;
 
     //temp
-    private tempPeer = "http://localhost:8082";
+    private tempPeer = `http://localhost:${process.env.PORT_HOST}`;
 
     constructor(peers: []) {
         this.peers = peers;
 
         //temp
-        this.peers.put(this.tempPeer);
+        this.peers.push(this.tempPeer);
     }
 
     public sendMessage(message: Message, destination?: string) {
@@ -21,17 +21,18 @@ export class Sender {
             destination = this.tempPeer;
         }
 
-        this.emitMessage(destination, message);
+        this.emitMessage(message, destination);
     }
 
     public sendBroadcast(broadcast: Message) {
         this.peers.forEach((peer) => {
-            this.emitMessage(peer, broadcast);
+            this.emitMessage(broadcast, peer);
         })
     }
 
-    private emitMessage(destination: string, message: Message) {
-        const socket = connect(destination);
-        socket.emit(message.type, JSON.stringify(message));
+    private emitMessage(message: Message, destination: string) {
+        const socket = connect(`http://localhost:${destination}`);
+        socket.emit('message', JSON.stringify(message));
+        console.log(`Message sent to: http://localhost:${destination}`)
     }
 }
