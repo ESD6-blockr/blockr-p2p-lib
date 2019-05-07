@@ -6,13 +6,10 @@ export class Receiver {
     private readonly server;
     private receivedMessages;
 
-    constructor(messageListener: IMessageListener) {
+    constructor(messageListener: IMessageListener, port: string) {
         this.messageListener = messageListener;
-        //temp port
-        this.server = listen('8081');
+        this.server = listen(port);
         this.receivedMessages = [];
-
-        console.log(`Started listening to http://localhost:8081`);
 
         this.handleMessage();
     }

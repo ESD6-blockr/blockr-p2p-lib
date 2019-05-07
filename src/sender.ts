@@ -4,23 +4,15 @@ import { Message } from "./message";
 
 export class Sender {
     private peers;
+    private readonly protocol = 'http://';
+    private readonly port;
 
-    //temp
-    private tempPeer = `193.173.113.122:8081`;
-
-    constructor(peers: []) {
+    constructor(peers: string[], port: string) {
         this.peers = peers;
-
-        //temp
-        this.peers.push(this.tempPeer);
+        this.port = port;
     }
 
-    public sendMessage(message: Message, destination?: string) {
-        if (destination === undefined) {
-            //temp
-            destination = this.tempPeer;
-        }
-
+    public sendMessage(message: Message, destination: string) {
         this.emitMessage(message, destination);
     }
 
@@ -31,8 +23,10 @@ export class Sender {
     }
 
     private emitMessage(message: Message, destination: string) {
-        const socket = connect(destination);
+        const socket = connect(this.protocol + destination + this.port);
         socket.emit('message', JSON.stringify(message));
+
+        // Temp logging
         console.log(`Message sent to: ${destination}`)
     }
 }

@@ -11,21 +11,19 @@ export class Peer implements IMessageListener {
     private ipRegistry: IpRegistry;
     private receiveHandlers;
 
-    constructor() {
-        console.log("Peer started");
-
+    constructor(initialPeers: string[], port: string) {
         this.ipRegistry = new IpRegistry();
         this.receiveHandlers = new Map();
         this.createReceiverHandlers();
 
-        this.sender = new Sender([]);
-        this.receiver = new Receiver(this);
+        this.sender = new Sender(initialPeers, port);
+        this.receiver = new Receiver(this, port);
 
         //temp message test
         const message = new Message();
         message.type = MessageType.JOIN;
         message.text = "test";
-        this.sender.sendMessage(message, undefined);
+        this.sender.sendMessage(message, initialPeers[1]);
     }
 
     public addReceiveHandlerImpl(messageType: MessageType, implementation: (message: Message) => void) {
