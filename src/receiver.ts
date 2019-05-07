@@ -9,10 +9,10 @@ export class Receiver {
     constructor(messageListener: IMessageListener) {
         this.messageListener = messageListener;
         //temp port
-        this.server = listen(process.env.PORT_CLIENT);
+        this.server = listen('8081');
         this.receivedMessages = [];
 
-        console.log(`Started listening to http://localhost:${process.env.PORT_CLIENT}`);
+        console.log(`Started listening to http://localhost:8081`);
 
         this.handleMessage();
     }

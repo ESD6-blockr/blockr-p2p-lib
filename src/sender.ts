@@ -6,7 +6,7 @@ export class Sender {
     private peers;
 
     //temp
-    private tempPeer = `http://localhost:${process.env.PORT_HOST}`;
+    private tempPeer = `193.173.113.122:8081`;
 
     constructor(peers: []) {
         this.peers = peers;
@@ -31,8 +31,8 @@ export class Sender {
     }
 
     private emitMessage(message: Message, destination: string) {
-        const socket = connect(`http://localhost:${destination}`);
+        const socket = connect(destination);
         socket.emit('message', JSON.stringify(message));
-        console.log(`Message sent to: http://localhost:${destination}`)
+        console.log(`Message sent to: ${destination}`)
     }
 }

@@ -25,7 +25,7 @@ export class Peer implements IMessageListener {
         const message = new Message();
         message.type = MessageType.JOIN;
         message.text = "test";
-        this.sender.sendMessage(message, process.env.PORT_HOST);
+        this.sender.sendMessage(message, undefined);
     }
 
     public addReceiveHandlerImpl(messageType: MessageType, implementation: (message: Message) => void) {
