@@ -1,7 +1,7 @@
 import { MessageType } from "./enums";
 import { IMessageListener } from "./iMessageListener";
 import { IpRegistry } from "./ipRegistry";
-import { Message } from "./message";
+import { Message } from "./models/message";
 import { Receiver } from "./receiver";
 import { Sender } from "./sender";
 
