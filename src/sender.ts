@@ -27,6 +27,6 @@ export class Sender {
         socket.emit('message', JSON.stringify(message));
 
         // Temp logging
-        console.log(`Message sent to: ${destination}`)
+        console.log(`Message sent to: ${this.protocol + destination}:${this.port}`)
     }
 }
