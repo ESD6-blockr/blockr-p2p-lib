@@ -1,6 +1,9 @@
 import { listen } from "socket.io";
 import { IMessageListener } from "./iMessageListener";
 
+/**
+ * Handles the receiving of messages.
+ */
 export class Receiver {
     private readonly messageListener: IMessageListener;
     private readonly server;
@@ -14,6 +17,9 @@ export class Receiver {
         this.handleMessage();
     }
 
+    /**
+     * Handles the incoming messages.
+     */
     private handleMessage() {
         // event fired every time a new client connects:
         this.server.on('connection', (socket) => {

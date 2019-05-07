@@ -5,6 +5,9 @@ import { Message } from "./message";
 import { Receiver } from "./receiver";
 import { Sender } from "./sender";
 
+/**
+ *
+ */
 export class Peer implements IMessageListener {
     private sender: Sender;
     private receiver: Receiver;
@@ -19,17 +22,24 @@ export class Peer implements IMessageListener {
         this.sender = new Sender(initialPeers, port);
         this.receiver = new Receiver(this, port);
 
-        //temp message test
-        const message = new Message();
-        message.type = MessageType.JOIN;
-        message.text = "test";
-        this.sender.sendMessage(message, initialPeers[0]);
+        this.checkInitialPeers(initialPeers);
     }
 
-    public addReceiveHandlerImpl(messageType: MessageType, implementation: (message: Message) => void) {
+    /**
+     * Register custom receiver handlers.
+     *
+     * @param messageType - The messageType that the receiver handles
+     * @param implementation - The implementation of the receiver handler
+     */
+    public registerReceiveHandlerImpl(messageType: MessageType, implementation: (message: Message) => void) {
         this.receiveHandlers.set(messageType, implementation);
     }
 
+    /**
+     * Check of messageType of the given message has a known implementation, and executes the implementation.
+     *
+     * @param message - The incoming message
+     */
     onMessage(message: Message) {
         console.log("Message received:");
         console.log(message);
@@ -40,9 +50,12 @@ export class Peer implements IMessageListener {
         }
     }
 
+    /**
+     * Create the default handlers that act on a received message, depending on the messageType.
+     */
     private createReceiverHandlers() {
         // Handle ping messages
-        this.addReceiveHandlerImpl(MessageType.PING, (message) => {
+        this.registerReceiveHandlerImpl(MessageType.PING, (message) => {
             const response = new Message();
             response.type = MessageType.PING_ACKNOWLEDGE;
             response.senderId = "temp";
@@ -50,13 +63,25 @@ export class Peer implements IMessageListener {
             this.sender.sendMessage(response, message.senderId);
         });
 
-         // Handle join messages
-        this.addReceiveHandlerImpl(MessageType.JOIN, (message) => {
+        // Handle join messages
+        this.registerReceiveHandlerImpl(MessageType.JOIN, (message) => {
             const response = new Message();
             response.type = MessageType.ROUTING_TABLE;
             response.text = "tempNewId";
 
             this.sender.sendMessage(response, message.senderId);
+        });
+    }
+
+    /**
+     *
+     */
+    private checkInitialPeers(peers: string[]) {
+        peers.forEach((peer) => {
+            // Check if peer is online and try to join
+            const message = new Message();
+            message.type = MessageType.JOIN;
+            this.sender.sendMessage(message, peer);
         });
     }
 }
