@@ -1,3 +1,4 @@
+import {logger} from "@blockr/blockr-logger";
 import chalk from "chalk";
 import * as figlet from "figlet";
 import * as readline from "readline";
@@ -20,23 +21,22 @@ commandLine.on("line", (line: any) => {
         if (splitInput[1] && splitInput[2]) {
             peer.sendMessage(splitInput[1], splitInput[2], splitInput[3]);
         } else {
-            console.log("Invalid send request. Destination or message type cannot be null");
+            logger.info("Invalid send request. Destination or message type cannot be null");
         }
     } else if (lineInput.startsWith("help")) {
-        console.log(helpText);
+        logger.info(helpText);
     } else {
-        console.log("Unrecognized command. Use help for information about the available commands");
+        logger.info("Unrecognized command. Use help for information about the available commands");
     }
     commandLine.prompt();
 }).on("close", () => {
     process.exit(0);
 });
 
-console.log(
-    chalk.yellow(
-        figlet.textSync("p2p-cli", {horizontalLayout: "full"}),
+logger.info(chalk.yellow(
+    figlet.textSync("p2p-cli", {horizontalLayout: "full"}),
     ),
 );
-console.log(helpText);
+logger.info(helpText);
 
 
