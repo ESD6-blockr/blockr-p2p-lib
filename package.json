@@ -13,6 +13,7 @@
   "author": "Blockr (Hugo van de Vliert, Ronald van den Broek)",
   "license": "MIT",
   "dependencies": {
+    "@blockr/blockr-logger": "^1.0.0-2",
     "@types/node": "^11.13.7",
     "socket.io": "^2.2.0",
     "socket.io-client": "^2.2.0",

@@ -1,3 +1,5 @@
+import { logger } from "@blockr/blockr-logger";
+
 import { MessageType } from "./enums";
 import { IMessageListener } from "./iMessageListener";
 import { IpRegistry } from "./ipRegistry";
@@ -41,8 +43,7 @@ export class Peer implements IMessageListener {
      * @param message - The incoming message
      */
     onMessage(message: Message) {
-        console.log("Message received:");
-        console.log(message);
+        logger.info(`Message received: ${message}`);
 
         const implementation = this.receiveHandlers.get(message.type);
         if (implementation !== undefined && typeof implementation === 'function') {

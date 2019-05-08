@@ -1,3 +1,4 @@
+import { logger } from "@blockr/blockr-logger";
 import { connect } from "socket.io-client";
 
 import { Message } from "./models/message";
@@ -47,6 +48,6 @@ export class Sender {
         socket.emit('message', JSON.stringify(message));
 
         // Temp logging
-        console.log(`Message sent to: ${this.protocol + destination}:${this.port}`)
+        logger.info(`Message sent to: ${this.protocol + destination}:${this.port}`);
     }
 }
