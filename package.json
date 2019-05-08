@@ -15,7 +15,7 @@
   "author": "Blockr (Hugo van de Vliert, Ronald van den Broek, Juul Damen)",
   "license": "MIT",
   "dependencies": {
-    "@blockr/blockr-logger": "^1.0.0-2",
+    "@blockr/blockr-logger": "^1.1.0-3",
     "@types/figlet": "^1.2.0",
     "chalk": "^2.4.2",
     "figlet": "^1.2.1",
