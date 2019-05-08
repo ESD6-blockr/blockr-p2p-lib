@@ -40,6 +40,19 @@ export class Peer implements IMessageListener {
     }
 
     /**
+     *
+     * @param destination - The destination ip
+     * @param messageType - The message type
+     */
+    public sendMessage(destination: string, messageType: string): boolean {
+        if (destination && messageType) {
+            this.sender.sendMessage(new Message(messageType, null, "temp", null, null), destination);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Check of messageType of the given message has a known implementation, and executes the implementation.
      *
      * @param message - The incoming message

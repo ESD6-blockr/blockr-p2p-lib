@@ -1,19 +1,22 @@
 import chalk from "chalk";
 import * as figlet from "figlet";
 import * as readline from "readline";
+import {Peer} from "./peer";
 
 const commandLine = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
 });
 
-// TODO: Start listener via peer
+const peer = new Peer([], "8081");
+
 commandLine.on("line", (line: any) => {
     const lineInput = line.trim();
     if (lineInput.startsWith("send")) {
-        // TODO: Implement send message when blockr-p2p-lib has a working version.
         const splitInput = lineInput.split(" ");
-        console.log("Arguments: " + splitInput[1] + " | " + splitInput[2]);
+        if (!peer.sendMessage(splitInput[1], splitInput[2])) {
+            console.log("Invalid send request. Destination or message type cannot be null");
+        }
     } else if (lineInput.startsWith("help")) {
         console.log("You can send a message using the following command and arguments:" +
             " send <destination> <messageType>");
@@ -22,7 +25,6 @@ commandLine.on("line", (line: any) => {
     }
     commandLine.prompt();
 }).on("close", () => {
-    console.log("Have a great day!");
     process.exit(0);
 });
 
