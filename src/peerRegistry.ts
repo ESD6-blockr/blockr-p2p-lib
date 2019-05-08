@@ -5,7 +5,7 @@ export class PeerRegistry {
         this.peers = peers;
     }
 
-    public addPeer(ip: string, guid: string){
+    public addPeer(ip: string, guid: string) {
         this.peers.set(ip, guid);
     }
 }

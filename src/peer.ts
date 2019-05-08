@@ -1,12 +1,12 @@
-import {logger} from "@blockr/blockr-logger";
+import { logger } from "@blockr/blockr-logger";
+import { Guid } from "guid-typescript";
 
-import {MessageType} from "./enums";
-import {IMessageListener} from "./iMessageListener";
-import {PeerRegistry} from "./peerRegistry";
-import {Message} from "./models/message";
-import {Receiver} from "./receiver";
-import {Sender} from "./sender";
-import {Guid} from "guid-typescript";
+import { MessageType } from "./enums";
+import { IMessageListener } from "./iMessageListener";
+import { Message } from "./models/message";
+import { PeerRegistry } from "./peerRegistry";
+import { Receiver } from "./receiver";
+import { Sender } from "./sender";
 
 /**
  *
@@ -62,7 +62,7 @@ export class Peer implements IMessageListener {
      * @param senderIp - The IP of the sender
      */
     public onMessage(message: Message, senderIp: string): void {
-        logger.info(`Message received from ${senderIp}: ${message}`);
+        logger.info(`Message received from ${senderIp}: ${message.type}`);
 
         const implementation = this.receiveHandlers.get(message.type);
         if (implementation !== undefined && typeof implementation === "function") {
@@ -82,7 +82,7 @@ export class Peer implements IMessageListener {
 
         // Handle join messages
         this.registerReceiveHandlerImpl(MessageType.JOIN, (message: Message, senderIp: string) => {
-            //Check if node already has an id, if so do not proceed with join request.
+            // Check if node already has an id, if so do not proceed with join request
             if (message.originalSenderId === undefined) {
                 const newPeerId: string = Guid.create().toString();
 
@@ -102,13 +102,13 @@ export class Peer implements IMessageListener {
         // Handle join acknowledge messages
         this.registerReceiveHandlerImpl(MessageType.JOIN_ACKNOWLEDGE, (message: Message, senderIp: string) => {
             if (message.body !== undefined
-                && this.GUID == undefined
+                && this.GUID === undefined
                 && senderIp !== undefined
                 && message.originalSenderId !== undefined) {
                 const body = JSON.parse(message.body);
                 this.GUID = body.guid;
                 this.peerRegistry = JSON.parse(body.peerRegistry);
-                this.peerRegistry.addPeer(senderIp, message.originalSenderId)
+                this.peerRegistry.addPeer(senderIp, message.originalSenderId);
             }
         });
     }
