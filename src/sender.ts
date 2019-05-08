@@ -22,7 +22,7 @@ export class Sender {
      * @param message - The message
      * @param destination - The destination ip
      */
-    public sendMessage(message: Message, destination: string) {
+    public sendMessage(message: Message, destination: string): void {
         this.emitMessage(message, destination);
     }
 
@@ -31,7 +31,7 @@ export class Sender {
      *
      * @param broadcast - The broadcast message
      */
-    public sendBroadcast(broadcast: Message) {
+    public sendBroadcast(broadcast: Message): void {
         this.peers.forEach((peer: string) => {
             this.emitMessage(broadcast, peer);
         });
@@ -43,7 +43,7 @@ export class Sender {
      * @param message - The message
      * @param destination - The destination ip
      */
-    private emitMessage(message: Message, destination: string) {
+    private emitMessage(message: Message, destination: string): void {
         const socket = connect(this.protocol + destination + ":" + this.port);
         socket.emit("message", JSON.stringify(message));
 

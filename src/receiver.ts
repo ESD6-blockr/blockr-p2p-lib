@@ -1,5 +1,7 @@
+import { sha1 } from "object-hash";
 import { listen } from "socket.io";
 import { IMessageListener } from "./iMessageListener";
+import { Message } from "./models/message";
 
 /**
  * Handles the receiving of messages.
@@ -7,7 +9,7 @@ import { IMessageListener } from "./iMessageListener";
 export class Receiver {
     private readonly messageListener: IMessageListener;
     private readonly server: any;
-    private receivedMessages: [];
+    private receivedMessages: string[];
 
     constructor(messageListener: IMessageListener, port: string) {
         this.messageListener = messageListener;
@@ -20,21 +22,28 @@ export class Receiver {
     /**
      * Handles the incoming messages.
      */
-    private handleMessage() {
+    private handleMessage(): void {
         // event fired every time a new client connects:
         this.server.on("connection", (socket: any) => {
-            socket.on("message", (message: any) => {
+            socket.on("message", (message: Message) => {
                 if (this.server.ourSockets === undefined) {
                     this.server.ourSockets = [];
                 }
                 this.server.ourSockets.push(socket);
 
-                if (this.receivedMessages.filter((m) => {
-                    return message.id === m.id;
-                }).length === 0) {
+                const messageHash: string = this.generateHash(message);
+                if (!this.receivedMessages.includes(messageHash)) {
+                    this.receivedMessages.push(messageHash);
                     this.messageListener.onMessage(message);
                 }
             });
         });
+    }
+
+    /**
+     * Generate sha1 hash of the given object.
+     */
+    private generateHash(object: object): string {
+        return sha1(object);
     }
 }
