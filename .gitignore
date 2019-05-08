@@ -108,6 +108,7 @@ typings/
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/**/Project_Default.xml
 
 # Generated files
 .idea/**/contentModel.xml
