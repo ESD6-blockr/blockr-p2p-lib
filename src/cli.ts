@@ -15,14 +15,14 @@ const commandLine = readline.createInterface({
     output: process.stdout,
 });
 
-const peer = new Peer([], "8081", false);
+const peer = new Peer(["145.93.125.2"], "8081", false);
 
 commandLine.on("line", (line: string) => {
     const lineInput = line.trim();
     if (lineInput.startsWith("send")) {
         const splitInput = lineInput.split(" ");
         if (splitInput[destinationIndex] && splitInput[messageTypeIndex]) {
-            peer.sendMessage(splitInput[destinationIndex], splitInput[messageTypeIndex], splitInput[messageBodyIndex]);
+            peer.sendMessage(splitInput[messageTypeIndex], splitInput[destinationIndex], splitInput[messageBodyIndex]);
         } else {
             logger.info("Invalid send request. Destination or message type cannot be null");
         }
