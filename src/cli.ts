@@ -4,22 +4,25 @@ import * as figlet from "figlet";
 import * as readline from "readline";
 import {Peer} from "./peer";
 
+const helpText = "Send a message using the following command and arguments: " +
+    "send <destination> <messageType> <messageBody>";
+const destinationIndex = 1;
+const messageTypeIndex = 2;
+const messageBodyIndex = 3;
+
 const commandLine = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
 });
 
-const helpText = "Send a message using the following command and arguments: " +
-    "send <destination> <messageType> <messageBody>";
-
 const peer = new Peer([], "8081");
 
-commandLine.on("line", (line: any) => {
+commandLine.on("line", (line: string) => {
     const lineInput = line.trim();
     if (lineInput.startsWith("send")) {
         const splitInput = lineInput.split(" ");
-        if (splitInput[1] && splitInput[2]) {
-            peer.sendMessage(splitInput[1], splitInput[2], splitInput[3]);
+        if (splitInput[destinationIndex] && splitInput[messageTypeIndex]) {
+            peer.sendMessage(splitInput[destinationIndex], splitInput[messageTypeIndex], splitInput[messageBodyIndex]);
         } else {
             logger.info("Invalid send request. Destination or message type cannot be null");
         }
