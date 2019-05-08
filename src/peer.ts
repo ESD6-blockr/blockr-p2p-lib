@@ -1,29 +1,36 @@
-import { logger } from "@blockr/blockr-logger";
+import {logger} from "@blockr/blockr-logger";
 
-import { MessageType } from "./enums";
-import { IMessageListener } from "./iMessageListener";
-import { PeerRegistry } from "./peerRegistry";
-import { Message } from "./models/message";
-import { Receiver } from "./receiver";
-import { Sender } from "./sender";
+import {MessageType} from "./enums";
+import {IMessageListener} from "./iMessageListener";
+import {PeerRegistry} from "./peerRegistry";
+import {Message} from "./models/message";
+import {Receiver} from "./receiver";
+import {Sender} from "./sender";
+import {Guid} from "guid-typescript";
 
 /**
  *
  */
 export class Peer implements IMessageListener {
-    private ipRegistry: PeerRegistry;
+    private GUID: Guid;
+    private peerRegistry: PeerRegistry;
     private receiveHandlers: Map<string, (message: Message, senderIp: string) => void>;
     private sender: Sender;
     private receiver: Receiver;
 
-    constructor(initialPeers: string[], port: string) {
-        this.ipRegistry = new PeerRegistry([]);
+    constructor(initialPeers: string[], port: string, firstPeer: boolean) {
+        this.peerRegistry = new PeerRegistry(new Map());
         this.receiveHandlers = new Map();
         this.createReceiverHandlers();
 
         this.sender = new Sender(initialPeers, port);
         this.receiver = new Receiver(this, port);
 
+        if (firstPeer) {
+            this.GUID = Guid.create();
+            return;
+        }
+        this.GUID = Guid.createEmpty();
         this.checkInitialPeers(initialPeers);
     }
 
@@ -45,7 +52,7 @@ export class Peer implements IMessageListener {
      * @param [body] - The message body
      */
     public sendMessage(messageType: string, destination: string, body?: string): void {
-        this.sender.sendMessage(new Message(messageType, "senderId", body), destination);
+        this.sender.sendMessage(new Message(messageType, this.GUID, body), destination);
     }
 
     /**
@@ -75,8 +82,29 @@ export class Peer implements IMessageListener {
 
         // Handle join messages
         this.registerReceiveHandlerImpl(MessageType.JOIN, (message: Message, senderIp: string) => {
-            const response = new Message(MessageType.ROUTING_TABLE, message.originalSenderId, "RoutingTable");
-            this.sender.sendMessage(response, senderIp);
+            //Check if node already has an id, if so do not proceed with join request.
+            if (message.originalSenderId === undefined) {
+                const newPeerId: Guid = Guid.create();
+
+                const response = new Message(
+                    MessageType.JOIN_ACKNOWLEDGE,
+                    message.originalSenderId,
+                    JSON.stringify({guid: newPeerId, routingTable: this.peerRegistry}));
+                this.sender.sendMessage(response, senderIp);
+
+                const broadcast = new Message(MessageType.NEW_PEER, this.GUID, newPeerId.toString());
+                this.sender.sendBroadcast(broadcast);
+
+                this.peerRegistry.addPeer(senderIp, newPeerId);
+            }
+        });
+        // Handle join messages
+        // @ts-ignore
+        this.registerReceiveHandlerImpl(MessageType.JOIN_ACKNOWLEDGE, (message: Message, senderIp: string) => {
+            if (message.body != null) {
+                const body = JSON.parse(message.body);
+                console.log(body.guid);
+            }
         });
     }
 
@@ -86,7 +114,7 @@ export class Peer implements IMessageListener {
     private checkInitialPeers(peers: string[]): void {
         peers.forEach((peer) => {
             // Check if peer is online and try to join
-            const message = new Message(MessageType.JOIN, "tempId");
+            const message = new Message(MessageType.JOIN);
             this.sender.sendMessage(message, peer);
         });
     }
