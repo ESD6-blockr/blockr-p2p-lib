@@ -11,14 +11,12 @@ import { Sender } from "./sender";
  *
  */
 export class Peer implements IMessageListener {
-    private readonly localIp: string;
     private ipRegistry: IpRegistry;
-    private receiveHandlers: Map<string, (message: Message) => void>;
+    private receiveHandlers: Map<string, (message: Message, senderIp: string) => void>;
     private sender: Sender;
     private receiver: Receiver;
 
-    constructor(localIp: string, initialPeers: string[], port: string) {
-        this.localIp = localIp;
+    constructor(initialPeers: string[], port: string) {
         this.ipRegistry = new IpRegistry([]);
         this.receiveHandlers = new Map();
         this.createReceiverHandlers();
@@ -35,7 +33,7 @@ export class Peer implements IMessageListener {
      * @param messageType - The messageType that the receiver handles
      * @param implementation - The implementation of the receiver handler
      */
-    public registerReceiveHandlerImpl(messageType: string, implementation: (message: Message) => void): void {
+    public registerReceiveHandlerImpl(messageType: string, implementation: (message: Message, senderIp: string) => void): void {
         this.receiveHandlers.set(messageType, implementation);
     }
 
@@ -47,21 +45,22 @@ export class Peer implements IMessageListener {
      * @param [body] - The message body
      */
     public sendMessage(messageType: string, destination: string, body?: string): void {
-        this.sender.sendMessage(new Message(messageType, this.localIp, this.localIp, body), destination);
+        this.sender.sendMessage(new Message(messageType, "senderId", body), destination);
     }
 
     /**
      * Check of messageType of the given message has a known implementation, and executes the implementation.
      *
      * @param message - The incoming message
+     * @param senderIp - The IP of the sender
      */
-    public onMessage(message: Message): void {
+    public onMessage(message: Message, senderIp: string): void {
+        logger.info(`Message received from ${senderIp}: ${message}`);
+
         const implementation = this.receiveHandlers.get(message.type);
         if (implementation !== undefined && typeof implementation === "function") {
-            implementation(message);
+            implementation(message, senderIp);
         }
-
-        logger.info(`Message received: ${message}`);
     }
 
     /**
@@ -69,15 +68,15 @@ export class Peer implements IMessageListener {
      */
     private createReceiverHandlers(): void {
         // Handle ping messages
-        this.registerReceiveHandlerImpl(MessageType.PING, (message) => {
-            const response = new Message(MessageType.PING_ACKNOWLEDGE, "tempId", message.originalSenderId);
-            this.sender.sendMessage(response, message.senderId);
+        this.registerReceiveHandlerImpl(MessageType.PING, (message: Message, senderIp: string) => {
+            const response = new Message(MessageType.PING_ACKNOWLEDGE, message.originalSenderId);
+            this.sender.sendMessage(response, senderIp);
         });
 
         // Handle join messages
-        this.registerReceiveHandlerImpl(MessageType.JOIN, (message) => {
-            const response = new Message(MessageType.ROUTING_TABLE, "tempId", message.originalSenderId, "RoutingTable");
-            this.sender.sendMessage(response, message.senderId);
+        this.registerReceiveHandlerImpl(MessageType.JOIN, (message: Message, senderIp: string) => {
+            const response = new Message(MessageType.ROUTING_TABLE, message.originalSenderId, "RoutingTable");
+            this.sender.sendMessage(response, senderIp);
         });
     }
 
@@ -87,7 +86,7 @@ export class Peer implements IMessageListener {
     private checkInitialPeers(peers: string[]): void {
         peers.forEach((peer) => {
             // Check if peer is online and try to join
-            const message = new Message(MessageType.JOIN, this.localIp, this.localIp);
+            const message = new Message(MessageType.JOIN, "tempId");
             this.sender.sendMessage(message, peer);
         });
     }
