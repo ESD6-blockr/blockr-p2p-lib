@@ -15,7 +15,7 @@ const commandLine = readline.createInterface({
     output: process.stdout,
 });
 
-const peer = new Peer([], "8081");
+const peer = new Peer([], "8081", false);
 
 commandLine.on("line", (line: string) => {
     const lineInput = line.trim();

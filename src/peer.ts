@@ -12,7 +12,7 @@ import {Guid} from "guid-typescript";
  *
  */
 export class Peer implements IMessageListener {
-    private GUID: Guid;
+    private GUID: string;
     private peerRegistry: PeerRegistry;
     private receiveHandlers: Map<string, (message: Message, senderIp: string) => void>;
     private sender: Sender;
@@ -27,10 +27,10 @@ export class Peer implements IMessageListener {
         this.receiver = new Receiver(this, port);
 
         if (firstPeer) {
-            this.GUID = Guid.create();
+            this.GUID = Guid.create().toString();
             return;
         }
-        this.GUID = Guid.createEmpty();
+        this.GUID = Guid.createEmpty().toString();
         this.checkInitialPeers(initialPeers);
     }
 
@@ -84,7 +84,7 @@ export class Peer implements IMessageListener {
         this.registerReceiveHandlerImpl(MessageType.JOIN, (message: Message, senderIp: string) => {
             //Check if node already has an id, if so do not proceed with join request.
             if (message.originalSenderId === undefined) {
-                const newPeerId: Guid = Guid.create();
+                const newPeerId: string = Guid.create().toString();
 
                 const response = new Message(
                     MessageType.JOIN_ACKNOWLEDGE,
@@ -92,18 +92,23 @@ export class Peer implements IMessageListener {
                     JSON.stringify({guid: newPeerId, routingTable: this.peerRegistry}));
                 this.sender.sendMessage(response, senderIp);
 
-                const broadcast = new Message(MessageType.NEW_PEER, this.GUID, newPeerId.toString());
+                const broadcast = new Message(MessageType.NEW_PEER, this.GUID, newPeerId);
                 this.sender.sendBroadcast(broadcast);
 
                 this.peerRegistry.addPeer(senderIp, newPeerId);
             }
         });
-        // Handle join messages
-        // @ts-ignore
+
+        // Handle join acknowledge messages
         this.registerReceiveHandlerImpl(MessageType.JOIN_ACKNOWLEDGE, (message: Message, senderIp: string) => {
-            if (message.body != null) {
+            if (message.body !== undefined
+                && this.GUID == undefined
+                && senderIp !== undefined
+                && message.originalSenderId !== undefined) {
                 const body = JSON.parse(message.body);
-                console.log(body.guid);
+                this.GUID = body.guid;
+                this.peerRegistry = JSON.parse(body.peerRegistry);
+                this.peerRegistry.addPeer(senderIp, message.originalSenderId)
             }
         });
     }

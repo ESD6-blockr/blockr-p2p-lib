@@ -1,13 +1,11 @@
-import {Guid} from "guid-typescript";
-
 export class PeerRegistry {
-    private peers: Map<string, Guid>;
+    private peers: Map<string, string>;
 
-    constructor(peers: Map<string, Guid>) {
+    constructor(peers: Map<string, string>) {
         this.peers = peers;
     }
 
-    public addPeer(ip: string, GUID: Guid){
-        this.peers.set(ip, GUID);
+    public addPeer(ip: string, guid: string){
+        this.peers.set(ip, guid);
     }
 }
