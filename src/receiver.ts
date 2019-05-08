@@ -31,7 +31,7 @@ export class Receiver {
                 }
                 this.server.ourSockets.push(socket);
 
-                const messageHash: string = this.generateHash(message);
+                const messageHash = this.generateHash(message);
                 if (!this.receivedMessages.includes(messageHash)) {
                     this.receivedMessages.push(messageHash);
                     this.messageListener.onMessage(message);

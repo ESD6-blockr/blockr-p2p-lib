@@ -11,12 +11,14 @@ import { Sender } from "./sender";
  *
  */
 export class Peer implements IMessageListener {
+    private readonly localIp: string;
+    private ipRegistry: IpRegistry;
+    private receiveHandlers: Map<string, (message: Message) => void>;
     private sender: Sender;
     private receiver: Receiver;
-    private ipRegistry: IpRegistry;
-    private receiveHandlers: Map<MessageType, (message: Message) => void>;
 
-    constructor(initialPeers: string[], port: string) {
+    constructor(localIp: string, initialPeers: string[], port: string) {
+        this.localIp = localIp;
         this.ipRegistry = new IpRegistry([]);
         this.receiveHandlers = new Map();
         this.createReceiverHandlers();
@@ -33,7 +35,7 @@ export class Peer implements IMessageListener {
      * @param messageType - The messageType that the receiver handles
      * @param implementation - The implementation of the receiver handler
      */
-    public registerReceiveHandlerImpl(messageType: MessageType, implementation: (message: Message) => void): void {
+    public registerReceiveHandlerImpl(messageType: string, implementation: (message: Message) => void): void {
         this.receiveHandlers.set(messageType, implementation);
     }
 
@@ -43,12 +45,12 @@ export class Peer implements IMessageListener {
      * @param message - The incoming message
      */
     public onMessage(message: Message): void {
-        logger.info(`Message received: ${message}`);
-
         const implementation = this.receiveHandlers.get(message.type);
         if (implementation !== undefined && typeof implementation === "function") {
             implementation(message);
         }
+
+        logger.info(`Message received: ${message}`);
     }
 
     /**
@@ -57,13 +59,13 @@ export class Peer implements IMessageListener {
     private createReceiverHandlers(): void {
         // Handle ping messages
         this.registerReceiveHandlerImpl(MessageType.PING, (message) => {
-            const response = new Message(MessageType.PING_ACKNOWLEDGE, "tempId", new Date(), "tempId");
+            const response = new Message(MessageType.PING_ACKNOWLEDGE, "tempId", new Date(), message.originalSenderId);
             this.sender.sendMessage(response, message.senderId);
         });
 
         // Handle join messages
         this.registerReceiveHandlerImpl(MessageType.JOIN, (message) => {
-            const response = new Message(MessageType.ROUTING_TABLE, "tempId", new Date(), "tempId", "RoutingTable");
+            const response = new Message(MessageType.ROUTING_TABLE, "tempId", new Date(), message.originalSenderId, "RoutingTable");
             this.sender.sendMessage(response, message.senderId);
         });
     }
@@ -74,7 +76,7 @@ export class Peer implements IMessageListener {
     private checkInitialPeers(peers: string[]): void {
         peers.forEach((peer) => {
             // Check if peer is online and try to join
-            const message = new Message(MessageType.JOIN, "tempId", new Date(), "tempId");
+            const message = new Message(MessageType.JOIN, this.localIp, new Date(), this.localIp);
             this.sender.sendMessage(message, peer);
         });
     }
