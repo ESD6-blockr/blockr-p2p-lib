@@ -2,7 +2,7 @@
 
 @Library('blockr-jenkins-lib') _
 
-String repo 'blockr-p2p-lib'
+String repo = 'blockr-p2p-lib'
 
 Map settings = [
     sonar_key: 'blockr-p2p-lib',
