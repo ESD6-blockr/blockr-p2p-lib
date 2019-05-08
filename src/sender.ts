@@ -47,6 +47,6 @@ export class Sender {
         const socket = connect(this.protocol + destination + ":" + this.port);
         socket.emit("message", JSON.stringify(message));
 
-        logger.info(`Message sent to: ${this.protocol + destination}:${this.port}`);
+        logger.info(`Message sent to: ${destination}: ${message.type}`);
     }
 }
