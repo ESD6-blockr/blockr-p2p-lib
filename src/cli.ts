@@ -1,6 +1,7 @@
-const chalk = require("chalk");
-const figlet = require("figlet");
-const readline = require("readline");
+import chalk from "chalk";
+import * as figlet from "figlet";
+import * as readline from "readline";
+
 const commandLine = readline.createInterface({
     input: process.stdin,
     output: process.stdout,

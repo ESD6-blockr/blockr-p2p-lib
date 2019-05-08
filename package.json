@@ -8,21 +8,27 @@
     "build-watch": "tsc -w -p tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "tslint --project tsconfig.json",
-    "dev": "npm run build && npm run lint"
+    "dev": "npm run build && npm run lint",
+    "dev-cli": "npm run build && npm run lint && node dist/cli.js",
+    "cli": "node dist/cli.js"
   },
-  "author": "Blockr (Hugo van de Vliert, Ronald van den Broek)",
+  "author": "Blockr (Hugo van de Vliert, Ronald van den Broek, Juul Damen)",
   "license": "MIT",
   "dependencies": {
     "@blockr/blockr-logger": "^1.0.0-2",
-    "@types/node": "^11.13.7",
+    "@types/figlet": "^1.2.0",
+    "chalk": "^2.4.2",
+    "figlet": "^1.2.1",
+    "path": "^0.12.7",
     "socket.io": "^2.2.0",
-    "socket.io-client": "^2.2.0",
+    "socket.io-client": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^11.13.7",
+    "@types/socket.io": "^2.1.2",
+    "@types/socket.io-client": "^1.4.32",
     "tslint": "^5.16.0",
     "tsutils": "^3.10.0",
     "typescript": "^3.4.3"
-  },
-  "devDependencies": {
-    "@types/socket.io": "^2.1.2",
-    "@types/socket.io-client": "^1.4.32"
   }
 }
