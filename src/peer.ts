@@ -14,7 +14,7 @@ export class Peer implements IMessageListener {
     private sender: Sender;
     private receiver: Receiver;
     private ipRegistry: IpRegistry;
-    private receiveHandlers;
+    private receiveHandlers: Map<MessageType, (message: Message) => void>;
 
     constructor(initialPeers: string[], port: string) {
         this.ipRegistry = new IpRegistry();
@@ -42,11 +42,11 @@ export class Peer implements IMessageListener {
      *
      * @param message - The incoming message
      */
-    onMessage(message: Message) {
+    protected onMessage(message: Message) {
         logger.info(`Message received: ${message}`);
 
         const implementation = this.receiveHandlers.get(message.type);
-        if (implementation !== undefined && typeof implementation === 'function') {
+        if (implementation !== undefined && typeof implementation === "function") {
             implementation(message);
         }
     }

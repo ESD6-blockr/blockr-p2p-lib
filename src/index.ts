@@ -1,3 +1,3 @@
 import { Peer } from "./peer";
 
-const peer: Peer = new Peer(['172.20.10.3'], '8081');
+const peer: Peer = new Peer(["145.93.125.2"], "8081");

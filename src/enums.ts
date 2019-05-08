@@ -3,5 +3,5 @@ export enum MessageType {
     PING_ACKNOWLEDGE = "ping_ack",
     ROUTING_TABLE = "routes",
     JOIN = "join",
-    LEAVE = "leave"
+    LEAVE = "leave",
 }

@@ -1,5 +1,5 @@
 import { Message } from "./models/message";
 
 export interface IMessageListener {
-    onMessage(message: Message);
+    onMessage(message: Message): void;
 }

@@ -6,8 +6,8 @@ import { IMessageListener } from "./iMessageListener";
  */
 export class Receiver {
     private readonly messageListener: IMessageListener;
-    private readonly server;
-    private receivedMessages;
+    private readonly server: any;
+    private receivedMessages: [];
 
     constructor(messageListener: IMessageListener, port: string) {
         this.messageListener = messageListener;
@@ -22,8 +22,8 @@ export class Receiver {
      */
     private handleMessage() {
         // event fired every time a new client connects:
-        this.server.on('connection', (socket) => {
-            socket.on('message', (message) => {
+        this.server.on("connection", (socket: any) => {
+            socket.on("message", (message: any) => {
                 if (this.server.ourSockets === undefined) {
                     this.server.ourSockets = [];
                 }

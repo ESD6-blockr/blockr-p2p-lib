@@ -7,9 +7,9 @@ import { Message } from "./models/message";
  * Handles the sending of messages.
  */
 export class Sender {
-    private peers;
-    private readonly protocol = 'http://';
-    private readonly port;
+    private peers: string[];
+    private readonly protocol = "http://";
+    private readonly port: string;
 
     constructor(peers: string[], port: string) {
         this.peers = peers;
@@ -32,9 +32,9 @@ export class Sender {
      * @param broadcast - The broadcast message
      */
     public sendBroadcast(broadcast: Message) {
-        this.peers.forEach((peer) => {
+        this.peers.forEach((peer: string) => {
             this.emitMessage(broadcast, peer);
-        })
+        });
     }
 
     /**
@@ -44,8 +44,8 @@ export class Sender {
      * @param destination - The destination ip
      */
     private emitMessage(message: Message, destination: string) {
-        const socket = connect(this.protocol + destination + ':' + this.port);
-        socket.emit('message', JSON.stringify(message));
+        const socket = connect(this.protocol + destination + ":" + this.port);
+        socket.emit("message", JSON.stringify(message));
 
         // Temp logging
         logger.info(`Message sent to: ${this.protocol + destination}:${this.port}`);
