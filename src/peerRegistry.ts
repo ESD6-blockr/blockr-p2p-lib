@@ -1,4 +1,4 @@
-export class IpRegistry {
+export class PeerRegistry {
     private ips: string[];
 
     constructor(ips: string[]) {

@@ -2,7 +2,7 @@ import { logger } from "@blockr/blockr-logger";
 
 import { MessageType } from "./enums";
 import { IMessageListener } from "./iMessageListener";
-import { IpRegistry } from "./ipRegistry";
+import { PeerRegistry } from "./peerRegistry";
 import { Message } from "./models/message";
 import { Receiver } from "./receiver";
 import { Sender } from "./sender";
@@ -11,13 +11,13 @@ import { Sender } from "./sender";
  *
  */
 export class Peer implements IMessageListener {
-    private ipRegistry: IpRegistry;
+    private ipRegistry: PeerRegistry;
     private receiveHandlers: Map<string, (message: Message, senderIp: string) => void>;
     private sender: Sender;
     private receiver: Receiver;
 
     constructor(initialPeers: string[], port: string) {
-        this.ipRegistry = new IpRegistry([]);
+        this.ipRegistry = new PeerRegistry([]);
         this.receiveHandlers = new Map();
         this.createReceiverHandlers();
 
