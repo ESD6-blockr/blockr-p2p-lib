@@ -1,19 +1,17 @@
-import { MessageType } from "../enums";
-
 /**
  * Message model.
  */
 export class Message {
-    public type: MessageType;
-    public senderId: string;
+    public type: string;
     public date: Date;
+    public senderId: string;
     public originalSenderId: string;
     public body?: string;
 
-    constructor(type: MessageType, senderId: string, date: Date, originalSenderId: string, body?: string) {
+    constructor(type: string, senderId: string, originalSenderId: string, body?: string) {
         this.type = type;
+        this.date = new Date();
         this.senderId = senderId;
-        this.date = date;
         this.originalSenderId = originalSenderId;
         this.body = body;
     }

@@ -40,16 +40,14 @@ export class Peer implements IMessageListener {
     }
 
     /**
+     * Send a message to the given destination.
      *
-     * @param destination - The destination ip
      * @param messageType - The message type
+     * @param destination - The destination ip
+     * @param [body] - The message body
      */
-    public sendMessage(destination: string, messageType: string): boolean {
-        if (destination && messageType) {
-            this.sender.sendMessage(new Message(messageType, null, "temp", null, null), destination);
-            return true;
-        }
-        return false;
+    public sendMessage(messageType: string, destination: string, body?: string): void {
+        this.sender.sendMessage(new Message(messageType, this.localIp, this.localIp, body), destination);
     }
 
     /**
@@ -72,13 +70,13 @@ export class Peer implements IMessageListener {
     private createReceiverHandlers(): void {
         // Handle ping messages
         this.registerReceiveHandlerImpl(MessageType.PING, (message) => {
-            const response = new Message(MessageType.PING_ACKNOWLEDGE, "tempId", new Date(), message.originalSenderId);
+            const response = new Message(MessageType.PING_ACKNOWLEDGE, "tempId", message.originalSenderId);
             this.sender.sendMessage(response, message.senderId);
         });
 
         // Handle join messages
         this.registerReceiveHandlerImpl(MessageType.JOIN, (message) => {
-            const response = new Message(MessageType.ROUTING_TABLE, "tempId", new Date(), message.originalSenderId, "RoutingTable");
+            const response = new Message(MessageType.ROUTING_TABLE, "tempId", message.originalSenderId, "RoutingTable");
             this.sender.sendMessage(response, message.senderId);
         });
     }
@@ -89,7 +87,7 @@ export class Peer implements IMessageListener {
     private checkInitialPeers(peers: string[]): void {
         peers.forEach((peer) => {
             // Check if peer is online and try to join
-            const message = new Message(MessageType.JOIN, this.localIp, new Date(), this.localIp);
+            const message = new Message(MessageType.JOIN, this.localIp, this.localIp);
             this.sender.sendMessage(message, peer);
         });
     }
