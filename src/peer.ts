@@ -2,16 +2,17 @@ import { logger } from "@blockr/blockr-logger";
 import { Guid } from "guid-typescript";
 
 import { MessageType } from "./enums";
-import { IMessageListener } from "./iMessageListener";
+import { IMessageListener } from "./interfaces/iMessageListener";
 import { Message } from "./models/message";
 import { PeerRegistry } from "./peerRegistry";
 import { Receiver } from "./receiver";
 import { Sender } from "./sender";
+import {IPeer} from "./interfaces/iPeer";
 
 /**
  *
  */
-export class Peer implements IMessageListener {
+export class Peer implements IMessageListener, IPeer {
     private GUID: string;
     private peerRegistry: PeerRegistry;
     private receiveHandlers: Map<string, (message: Message, senderIp: string) => void>;

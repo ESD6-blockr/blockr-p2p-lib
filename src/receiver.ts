@@ -1,6 +1,6 @@
 import { sha1 } from "object-hash";
 import { listen } from "socket.io";
-import { IMessageListener } from "./iMessageListener";
+import { IMessageListener } from "./interfaces/iMessageListener";
 
 /**
  * Handles the receiving of messages.
