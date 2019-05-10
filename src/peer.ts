@@ -57,6 +57,20 @@ export class Peer implements IMessageListener, IPeer {
     }
 
     /**
+     * Send a broadcast to the network.
+     *
+     * @param messageType - The message type
+     * @param [body] - The message body
+     */
+    public sendBroadcast(messageType: string, body?: string): void {
+        this.peerRegistry.peers.forEach((peer) => {
+            // Check if peer is online and try to join
+            const message = new Message(messageType, this.GUID, body);
+            this.sender.sendMessage(message, peer);
+        });
+    }
+
+    /**
      * Check of messageType of the given message has a known implementation, and executes the implementation.
      *
      * @param message - The incoming message

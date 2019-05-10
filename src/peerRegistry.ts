@@ -1,5 +1,5 @@
 export class PeerRegistry {
-    private peers: Map<string, string>;
+    public peers: Map<string, string>;
 
     constructor(peers: Map<string, string>) {
         this.peers = peers;
