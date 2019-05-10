@@ -3,11 +3,11 @@ import { Guid } from "guid-typescript";
 
 import { MessageType } from "./enums";
 import { IMessageListener } from "./interfaces/iMessageListener";
+import { IPeer } from "./interfaces/iPeer";
 import { Message } from "./models/message";
 import { PeerRegistry } from "./peerRegistry";
 import { Receiver } from "./receiver";
 import { Sender } from "./sender";
-import {IPeer} from "./interfaces/iPeer";
 
 /**
  *
