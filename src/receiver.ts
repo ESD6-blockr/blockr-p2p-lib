@@ -34,8 +34,8 @@ export class Receiver {
                 const messageHash = this.generateHash(message);
                 if (!this.receivedMessages.includes(messageHash)) {
                     this.receivedMessages.push(messageHash);
-                    const clientIp = socket.request.connection.remoteAddress.split(":").pop();
-                    this.messageListener.onMessage(message, clientIp);
+                    const sender = socket.request.connection.remoteAddress.split(":").pop();
+                    this.messageListener.onMessage(message, sender);
                 }
             });
         });

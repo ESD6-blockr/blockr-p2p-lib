@@ -8,8 +8,11 @@ export interface IPeer {
      *
      * @param messageType - The messageType that the receiver handles
      * @param implementation - The implementation of the receiver handler
+     *                         The implementation should be a void that receives the following arguments:
+     *                              message - The message
+     *                              sender - The IP of the message sender
      */
-    registerReceiveHandlerImpl(messageType: string, implementation: (message: Message, senderIp: string) => void): void;
+    registerReceiveHandlerImpl(messageType: string, implementation: (message: Message, sender: string) => void): void;
 
     /**
      * Send a message to the given destination.

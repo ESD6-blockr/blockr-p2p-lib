@@ -64,7 +64,6 @@ export class Peer implements IMessageListener, IPeer {
      */
     public sendBroadcast(messageType: string, body?: string): void {
         this.peerRegistry.peers.forEach((peer) => {
-            // Check if peer is online and try to join
             const message = new Message(messageType, this.GUID, body);
             this.sender.sendMessage(message, peer);
         });
