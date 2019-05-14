@@ -1,5 +1,8 @@
 import { Message } from "../models/message";
 
+/**
+ * Peer interface.
+ */
 export interface IPeer {
     // constructor(initialPeers: string[], port: string, firstPeer: boolean)
 

@@ -1,5 +1,8 @@
 import { Message } from "../models/message";
 
+/**
+ * Message listener interface.
+ */
 export interface IMessageListener {
     /**
      * Receive a message
