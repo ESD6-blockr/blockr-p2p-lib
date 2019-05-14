@@ -14,6 +14,11 @@ export class Message {
         this.body = body;
     }
 
+    /**
+     * Check if this message is older than the given date.
+     *
+     * @param date - The date
+     */
     public isOlderThan(date: Date): boolean {
         return this.date < date;
     }

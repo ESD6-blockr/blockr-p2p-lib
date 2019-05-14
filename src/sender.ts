@@ -41,6 +41,12 @@ export class Sender {
         });
     }
 
+    /**
+     * Send an acknowledge message to the given destination, based on the given message.
+     *
+     * @param originalMessage - The message
+     * @param destination - The destination
+     */
     public sendAcknowledgeMessage(originalMessage: Message, destination: string): void {
         const response = new Message(
             MessageType.ACKNOWLEDGE,

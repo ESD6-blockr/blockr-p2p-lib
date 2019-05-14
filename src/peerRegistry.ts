@@ -5,6 +5,12 @@ export class PeerRegistry {
         this.peers = peers;
     }
 
+    /**
+     * Add a peer to the registry.
+     *
+     * @param ip - The IP
+     * @param guid - The GUID
+     */
     public addPeer(ip: string, guid: string) {
         this.peers.set(ip, guid);
     }

@@ -143,7 +143,7 @@ export class Peer implements IMessageListener, IPeer {
     }
 
     /**
-     *
+     * Try to join the network. Send a join request to every given peer.
      */
     private checkInitialPeers(peers: string[]): void {
         peers.forEach((peer) => {

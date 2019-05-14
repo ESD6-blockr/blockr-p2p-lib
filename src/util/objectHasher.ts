@@ -5,7 +5,7 @@ import { sha1 } from "object-hash";
  */
 export class ObjectHasher {
     /**
-     * Generate sha1 hash of the this message.
+     * Generate sha1 hash of the given object.
      */
     public static generateSha1(object: object): string {
         return sha1(object);
