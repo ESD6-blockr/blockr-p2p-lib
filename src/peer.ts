@@ -8,7 +8,7 @@ import { Message } from "./models/message";
 import { PeerRegistry } from "./peerRegistry";
 import { Receiver } from "./receiver";
 import { Sender } from "./sender";
-import { DateManipulator } from "./util/DateManipulator";
+import { DateManipulator } from "./util/dateManipulator";
 
 /**
  * Handles the peer network.
@@ -58,13 +58,13 @@ export class Peer implements IMessageListener, IPeer {
      * Send a message to the given destination.
      *
      * @param messageType - The message type
-     * @param destination - The destination ip
+     * @param destination - The destination GUID
      * @param [body] - The message body
      */
     public sendMessage(messageType: string, destination: string, body?: string): void {
         const destinationIp = this.peerRegistry.peers.get(destination);
         if (destinationIp === undefined) {
-            throw new Error("Unknown GUID.")
+            throw new Error(`Unknown destination. Could not find an IP for: ${destination}`);
         }
 
         this.sender.sendMessage(new Message(messageType, this.GUID, body), destinationIp);
@@ -79,7 +79,6 @@ export class Peer implements IMessageListener, IPeer {
     public sendBroadcast(messageType: string, body?: string): void {
         this.peerRegistry.peers.forEach((peer) => {
             const message = new Message(messageType, this.GUID, body);
-            console.log(peer);
             this.sender.sendMessage(message, peer);
         });
     }
@@ -115,10 +114,17 @@ export class Peer implements IMessageListener, IPeer {
      * Create the default handlers that act on a received message, depending on the messageType.
      */
     private createReceiverHandlers(): void {
+        // Handle acknowledge messages
+        this.registerReceiveHandlerImpl(MessageType.ACKNOWLEDGE, (message: Message, senderIp: string) => {
+            if (senderIp !== undefined && message.body !== undefined) {
+                this.sender.removeSentMessage(message.body);
+            }
+        });
+
         // Handle join messages
         this.registerReceiveHandlerImpl(MessageType.JOIN, (message: Message, senderIp: string) => {
             // Check if node already has an id, if so do not proceed with join request
-            if (message.originalSenderGuid === undefined) {
+            if (message.originalSenderGuid === Guid.EMPTY) {
                 const newPeerId: string = Guid.create().toString();
 
                 // Add the new peer to our registry
@@ -127,8 +133,8 @@ export class Peer implements IMessageListener, IPeer {
                 // Send response
                 this.sendMessage(
                     MessageType.JOIN_RESPONSE,
-                    senderIp,
-                    JSON.stringify({guid: newPeerId, routingTable: this.peerRegistry})
+                    newPeerId,
+                    JSON.stringify({guid: newPeerId, routingTable: this.peerRegistry}),
                 );
 
                 // Let other peers know about the newly joined peer
@@ -166,13 +172,6 @@ export class Peer implements IMessageListener, IPeer {
             if (message !== undefined && senderIp !== undefined) {
                 // Remove the new peer from our registry
                 this.peerRegistry.removePeer(message.originalSenderGuid);
-            }
-        });
-
-        // Handle acknowledge messages
-        this.registerReceiveHandlerImpl(MessageType.ACKNOWLEDGE, (message: Message, senderIp: string) => {
-            if (senderIp !== undefined && message.body !== undefined) {
-                this.sender.removeSentMessage(message.body);
             }
         });
     }
