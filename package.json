@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "tslint --project tsconfig.json",
     "dev": "npm run build && npm run lint",
-    "dev-cli": "npm run build && npm run lint && node dist/cli.js",
+    "dev-cli": "npm run build && node dist/cli.js",
     "cli": "node dist/cli.js"
   },
   "author": "Blockr (Hugo van de Vliert, Ronald van den Broek, Juul Damen)",
