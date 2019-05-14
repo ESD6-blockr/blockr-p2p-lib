@@ -30,15 +30,9 @@ export class RoutingTable {
     /**
      * Merge two existing peer registries.
      *
-     * @param peerRegistry - The RoutingTable
+     * @param routingTable - The RoutingTable
      */
-    public mergeRegistries(peerRegistry: RoutingTable): void {
-        console.log(this.peers);
-        console.log(peerRegistry.peers);
-
-        // this.peers = new Map([...this.peers, ...peerRegistry.peers]);
-        this.peers = new Map([...Array.from(this.peers.entries()), ...Array.from(peerRegistry.peers.entries())]);
-
-        console.log(this.peers);
+    public mergeRoutingTables(routingTable: Map<string, string>): void {
+        this.peers = new Map([...this.peers, ...routingTable]);
     }
 }

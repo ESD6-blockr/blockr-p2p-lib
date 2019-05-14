@@ -136,7 +136,7 @@ export class Peer implements IMessageListener, IPeer {
                 this.sendMessage(
                     MessageType.JOIN_RESPONSE,
                     newPeerId,
-                    JSON.stringify({guid: newPeerId, routingTable: this.routingTable}),
+                    JSON.stringify({guid: newPeerId, routingTable: Array.from(this.routingTable.peers)}),
                 );
 
                 // Let other peers know about the newly joined peer
@@ -156,7 +156,7 @@ export class Peer implements IMessageListener, IPeer {
                 const body = JSON.parse(message.body);
                 this.GUID = body.guid;
                 this.routingTable.addPeer(message.originalSenderGuid, senderIp);
-                this.routingTable.mergeRegistries(body.routingTable);
+                this.routingTable.mergeRoutingTables(new Map(body.routingTable));
             }
         });
 
