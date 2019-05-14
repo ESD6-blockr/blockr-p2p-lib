@@ -91,11 +91,11 @@ export class Sender {
      */
     private emitMessage(message: Message, destination: string): void {
         const socket = connect(`${this.protocol}${destination}:${this.port}`);
+        message.createGuid();
         socket.emit("message", JSON.stringify(message));
 
-        const messageHash = ObjectHasher.generateSha1(message);
-        this.sentMessages.set(messageHash, message);
-        this.sentMessageSenders.set(messageHash, destination);
+        this.sentMessages.set(message.guid, message);
+        this.sentMessageSenders.set(message.guid, destination);
 
         logger.info(`Message sent to: ${destination}: ${message.type}`);
     }
