@@ -15,7 +15,7 @@ const commandLine = readline.createInterface({
     output: process.stdout,
 });
 
-const peer = new Peer(["145.93.125.2"], "8081", false);
+const peer = new Peer(["145.93.124.211"], "8081", false);
 
 commandLine.on("line", (line: string) => {
     const lineInput = line.trim();

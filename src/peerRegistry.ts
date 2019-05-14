@@ -11,19 +11,19 @@ export class PeerRegistry {
     /**
      * Add a peer to the registry.
      *
-     * @param ip - The IP
      * @param guid - The GUID
+     * @param ip - The IP
      */
-    public addPeer(ip: string, guid: string): void {
-        this.peers.set(ip, guid);
+    public addPeer(guid: string, ip: string): void {
+        this.peers.set(guid, ip);
     }
 
     /**
-     * Remove peer by its ip.
+     * Remove peer by its guid.
      *
-     * @param ip - The IP
+     * @param guid - The GUID
      */
-    public removePeer(ip: string): void {
-        this.peers.delete(ip);
+    public removePeer(guid: string): void {
+        this.peers.delete(guid);
     }
 }

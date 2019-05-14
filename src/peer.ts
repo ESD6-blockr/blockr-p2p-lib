@@ -11,7 +11,7 @@ import { Sender } from "./sender";
 import { DateManipulator } from "./util/DateManipulator";
 
 /**
- *
+ * Handles the peer network.
  */
 export class Peer implements IMessageListener, IPeer {
     private GUID: string;
@@ -62,7 +62,12 @@ export class Peer implements IMessageListener, IPeer {
      * @param [body] - The message body
      */
     public sendMessage(messageType: string, destination: string, body?: string): void {
-        this.sender.sendMessage(new Message(messageType, this.GUID, body), destination);
+        const destinationIp = this.peerRegistry.peers.get(destination);
+        if (destinationIp === undefined) {
+            throw new Error("Unknown GUID.")
+        }
+
+        this.sender.sendMessage(new Message(messageType, this.GUID, body), destinationIp);
     }
 
     /**
@@ -74,6 +79,7 @@ export class Peer implements IMessageListener, IPeer {
     public sendBroadcast(messageType: string, body?: string): void {
         this.peerRegistry.peers.forEach((peer) => {
             const message = new Message(messageType, this.GUID, body);
+            console.log(peer);
             this.sender.sendMessage(message, peer);
         });
     }
@@ -99,33 +105,37 @@ export class Peer implements IMessageListener, IPeer {
     }
 
     /**
+     * Leave the network.
+     */
+    public leave(): void {
+        this.sendBroadcast(MessageType.LEAVE);
+    }
+
+    /**
      * Create the default handlers that act on a received message, depending on the messageType.
      */
     private createReceiverHandlers(): void {
-        // Handle ping messages
-        this.registerReceiveHandlerImpl(MessageType.PING, (message: Message, senderIp: string) => {
-            const response = new Message(MessageType.PING_RESPONSE, message.originalSenderId);
-            this.sender.sendMessage(response, senderIp);
-        });
-
         // Handle join messages
         this.registerReceiveHandlerImpl(MessageType.JOIN, (message: Message, senderIp: string) => {
             // Check if node already has an id, if so do not proceed with join request
-            if (message.originalSenderId === undefined) {
+            if (message.originalSenderGuid === undefined) {
                 const newPeerId: string = Guid.create().toString();
 
-                const response = new Message(
-                    MessageType.JOIN_RESPONSE,
-                    message.originalSenderId,
-                    JSON.stringify({guid: newPeerId, routingTable: this.peerRegistry}),
-                );
-                this.sender.sendMessage(response, senderIp);
-
                 // Add the new peer to our registry
-                this.peerRegistry.addPeer(senderIp, newPeerId);
+                this.peerRegistry.addPeer(newPeerId, senderIp);
+
+                // Send response
+                this.sendMessage(
+                    MessageType.JOIN_RESPONSE,
+                    senderIp,
+                    JSON.stringify({guid: newPeerId, routingTable: this.peerRegistry})
+                );
 
                 // Let other peers know about the newly joined peer
-                this.sendBroadcast(MessageType.NEW_PEER, newPeerId);
+                this.sendBroadcast(
+                    MessageType.NEW_PEER,
+                    JSON.stringify({guid: newPeerId, sender: senderIp}),
+                );
             }
         });
 
@@ -134,11 +144,28 @@ export class Peer implements IMessageListener, IPeer {
             if (message.body !== undefined
                 && this.GUID === undefined
                 && senderIp !== undefined
-                && message.originalSenderId !== undefined) {
+                && message.originalSenderGuid !== undefined) {
                 const body = JSON.parse(message.body);
                 this.GUID = body.guid;
                 this.peerRegistry = JSON.parse(body.peerRegistry);
-                this.peerRegistry.addPeer(senderIp, message.originalSenderId);
+                this.peerRegistry.addPeer(message.originalSenderGuid, senderIp);
+            }
+        });
+
+        // Handle new peer messages
+        this.registerReceiveHandlerImpl(MessageType.NEW_PEER, (message: Message, senderIp: string) => {
+            if (senderIp !== undefined && message.body !== undefined) {
+                // Add the new peer to our registry
+                const body = JSON.parse(message.body);
+                this.peerRegistry.addPeer(body.guid, body.sender);
+            }
+        });
+
+        // Handle leave messages
+        this.registerReceiveHandlerImpl(MessageType.LEAVE, (message: Message, senderIp: string) => {
+            if (message !== undefined && senderIp !== undefined) {
+                // Remove the new peer from our registry
+                this.peerRegistry.removePeer(message.originalSenderGuid);
             }
         });
 
@@ -156,7 +183,7 @@ export class Peer implements IMessageListener, IPeer {
     private checkInitialPeers(peers: string[]): void {
         peers.forEach((peer) => {
             // Check if peer is online and try to join
-            const message = new Message(MessageType.JOIN);
+            const message = new Message(MessageType.JOIN, this.GUID);
             this.sender.sendMessage(message, peer);
         });
     }

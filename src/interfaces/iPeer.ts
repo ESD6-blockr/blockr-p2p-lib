@@ -4,8 +4,6 @@ import { Message } from "../models/message";
  * Peer interface.
  */
 export interface IPeer {
-    // constructor(initialPeers: string[], port: string, firstPeer: boolean)
-
     /**
      * Register custom receiver handlers.
      *
@@ -33,4 +31,9 @@ export interface IPeer {
      * @param [body] - The message body
      */
     sendBroadcast(messageType: string, body?: string): void;
+
+    /**
+     * Leave the network.
+     */
+    leave(): void;
 }

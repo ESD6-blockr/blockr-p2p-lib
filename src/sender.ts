@@ -39,7 +39,7 @@ export class Sender {
     public sendAcknowledgeMessage(originalMessage: Message, destination: string): void {
         const response = new Message(
             MessageType.ACKNOWLEDGE,
-            originalMessage.originalSenderId,
+            originalMessage.originalSenderGuid,
             ObjectHasher.generateSha1(originalMessage),
         );
 
@@ -49,28 +49,28 @@ export class Sender {
     }
 
     /**
-     * Get ips from the senders of the sent messages after the given date.
+     * Get guids from the senders of the sent messages after the given date.
      * Deletes messages that are sent before the given date from the history.
      *
      * @param date - The date
      *
-     * @return An array of the ips of the senders
+     * @return An array of the GUIDs of the senders
      */
     public getSentMessagesSendersSince(date: Date): string[] {
-        const ips: string[] = [];
+        const guids: string[] = [];
 
         this.sentMessages.forEach((value: Message, key: string) => {
             const sentMessageSender = this.sentMessageSenders.get(key);
 
             if (value.isOlderThan(date) && sentMessageSender !== undefined) {
-                ips.push(sentMessageSender);
+                guids.push(sentMessageSender);
 
                 this.sentMessages.delete(key);
                 this.sentMessageSenders.delete(key);
             }
         });
 
-        return ips;
+        return guids;
     }
 
     /**
