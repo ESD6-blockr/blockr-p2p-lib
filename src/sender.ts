@@ -11,8 +11,8 @@ import { ObjectHasher } from "./util/objectHasher";
 export class Sender {
     private readonly protocol = "http://";
     private readonly port: string;
-    private sentMessages: Map<string, Message>;
-    private sentMessageSenders: Map<string, string>;
+    private readonly sentMessages: Map<string, Message>;
+    private readonly sentMessageSenders: Map<string, string>;
 
     constructor(port: string) {
         this.port = port;
@@ -44,7 +44,7 @@ export class Sender {
         );
 
         // Send the response
-        const socket = connect(this.protocol + destination + ":" + this.port);
+        const socket = connect(`${this.protocol}${destination}:${this.port}`);
         socket.emit("message", JSON.stringify(response));
     }
 
@@ -90,7 +90,7 @@ export class Sender {
      * @param destination - The destination ip
      */
     private emitMessage(message: Message, destination: string): void {
-        const socket = connect(this.protocol + destination + ":" + this.port);
+        const socket = connect(`${this.protocol}${destination}:${this.port}`);
         socket.emit("message", JSON.stringify(message));
 
         const messageHash = ObjectHasher.generateSha1(message);

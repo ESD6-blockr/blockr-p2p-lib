@@ -5,8 +5,8 @@ import { MessageType } from "./enums";
 import { IMessageListener } from "./interfaces/iMessageListener";
 import { IPeer } from "./interfaces/iPeer";
 import { Message } from "./models/message";
-import { PeerRegistry } from "./peerRegistry";
 import { Receiver } from "./receiver";
+import { RoutingTable } from "./routingTable";
 import { Sender } from "./sender";
 import { DateManipulator } from "./util/dateManipulator";
 
@@ -14,14 +14,14 @@ import { DateManipulator } from "./util/dateManipulator";
  * Handles the peer network.
  */
 export class Peer implements IMessageListener, IPeer {
+    private readonly routingTable: RoutingTable;
+    private readonly receiveHandlers: Map<string, (message: Message, senderIp: string) => void>;
+    private readonly sender: Sender;
+    private readonly receiver: Receiver;
     private GUID: string;
-    private peerRegistry: PeerRegistry;
-    private receiveHandlers: Map<string, (message: Message, senderIp: string) => void>;
-    private sender: Sender;
-    private receiver: Receiver;
 
     constructor(initialPeers: string[], port: string, firstPeer: boolean) {
-        this.peerRegistry = new PeerRegistry(new Map());
+        this.routingTable = new RoutingTable();
         this.receiveHandlers = new Map();
         this.createReceiverHandlers();
 
@@ -39,9 +39,11 @@ export class Peer implements IMessageListener, IPeer {
         setInterval(() => {
             const minDate = DateManipulator.minusMinutes(new Date(), 0.5);
             this.sender.getSentMessagesSendersSince(minDate).forEach((value: string) => {
-                this.peerRegistry.removePeer(value);
+                this.routingTable.removePeer(value);
+
+                logger.info(`Peer removed from routing table: ${value}`);
             });
-        });
+        }, 0.5);
     }
 
     /**
@@ -62,7 +64,7 @@ export class Peer implements IMessageListener, IPeer {
      * @param [body] - The message body
      */
     public sendMessage(messageType: string, destination: string, body?: string): void {
-        const destinationIp = this.peerRegistry.peers.get(destination);
+        const destinationIp = this.routingTable.peers.get(destination);
         if (destinationIp === undefined) {
             throw new Error(`Unknown destination. Could not find an IP for: ${destination}`);
         }
@@ -77,7 +79,7 @@ export class Peer implements IMessageListener, IPeer {
      * @param [body] - The message body
      */
     public sendBroadcast(messageType: string, body?: string): void {
-        this.peerRegistry.peers.forEach((peer) => {
+        this.routingTable.peers.forEach((peer) => {
             const message = new Message(messageType, this.GUID, body);
             this.sender.sendMessage(message, peer);
         });
@@ -128,13 +130,13 @@ export class Peer implements IMessageListener, IPeer {
                 const newPeerId: string = Guid.create().toString();
 
                 // Add the new peer to our registry
-                this.peerRegistry.addPeer(newPeerId, senderIp);
+                this.routingTable.addPeer(newPeerId, senderIp);
 
                 // Send response
                 this.sendMessage(
                     MessageType.JOIN_RESPONSE,
                     newPeerId,
-                    JSON.stringify({guid: newPeerId, routingTable: this.peerRegistry}),
+                    JSON.stringify({guid: newPeerId, routingTable: this.routingTable}),
                 );
 
                 // Let other peers know about the newly joined peer
@@ -148,13 +150,13 @@ export class Peer implements IMessageListener, IPeer {
         // Handle join response messages
         this.registerReceiveHandlerImpl(MessageType.JOIN_RESPONSE, (message: Message, senderIp: string) => {
             if (message.body !== undefined
-                && this.GUID === undefined
+                && this.GUID === Guid.EMPTY
                 && senderIp !== undefined
                 && message.originalSenderGuid !== undefined) {
                 const body = JSON.parse(message.body);
                 this.GUID = body.guid;
-                this.peerRegistry = JSON.parse(body.peerRegistry);
-                this.peerRegistry.addPeer(message.originalSenderGuid, senderIp);
+                this.routingTable.addPeer(message.originalSenderGuid, senderIp);
+                this.routingTable.mergeRegistries(body.routingTable);
             }
         });
 
@@ -163,7 +165,7 @@ export class Peer implements IMessageListener, IPeer {
             if (senderIp !== undefined && message.body !== undefined) {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
-                this.peerRegistry.addPeer(body.guid, body.sender);
+                this.routingTable.addPeer(body.guid, body.sender);
             }
         });
 
@@ -171,7 +173,7 @@ export class Peer implements IMessageListener, IPeer {
         this.registerReceiveHandlerImpl(MessageType.LEAVE, (message: Message, senderIp: string) => {
             if (message !== undefined && senderIp !== undefined) {
                 // Remove the new peer from our registry
-                this.peerRegistry.removePeer(message.originalSenderGuid);
+                this.routingTable.removePeer(message.originalSenderGuid);
             }
         });
     }

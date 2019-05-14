@@ -8,7 +8,7 @@ import { ObjectHasher } from "./util/objectHasher";
 export class Receiver {
     private readonly messageListener: IMessageListener;
     private readonly server: any;
-    private receivedMessages: string[];
+    private readonly receivedMessages: string[];
 
     constructor(messageListener: IMessageListener, port: string) {
         this.messageListener = messageListener;
