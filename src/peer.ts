@@ -28,13 +28,6 @@ export class Peer implements IMessageListener, IPeer {
         this.sender = new Sender(port);
         this.receiver = new Receiver(this, port);
 
-        if (firstPeer) {
-            this.GUID = Guid.create().toString();
-            return;
-        }
-        this.GUID = Guid.createEmpty().toString();
-        this.checkInitialPeers(initialPeers);
-
         // Create timer that removes peers that did not reply
         setInterval(() => {
             const minDate = DateManipulator.minusMinutes(new Date(), 0.5);
@@ -43,7 +36,16 @@ export class Peer implements IMessageListener, IPeer {
 
                 logger.info(`Peer removed from routing table: ${value}`);
             });
-        }, 0.5);
+        }, 3000);
+
+        if (firstPeer) {
+            this.GUID = Guid.create().toString();
+            return;
+        }
+        this.GUID = Guid.createEmpty().toString();
+        this.checkInitialPeers(initialPeers);
+
+
     }
 
     /**

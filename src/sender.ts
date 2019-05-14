@@ -40,7 +40,7 @@ export class Sender {
         const response = new Message(
             MessageType.ACKNOWLEDGE,
             originalMessage.originalSenderGuid,
-            ObjectHasher.generateSha1(originalMessage),
+            originalMessage.guid,
         );
 
         // Send the response
