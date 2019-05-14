@@ -13,4 +13,8 @@ export class Message {
         this.originalSenderId = originalSenderId;
         this.body = body;
     }
+
+    public isOlderThan(date: Date): boolean {
+        return this.date < date;
+    }
 }

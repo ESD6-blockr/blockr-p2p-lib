@@ -1,8 +1,9 @@
 export enum MessageType {
     PING = "ping",
-    PING_ACKNOWLEDGE = "ping_ack",
+    PING_RESPONSE = "ping_res",
     JOIN = "join",
-    JOIN_ACKNOWLEDGE = "join_ack",
+    JOIN_RESPONSE = "join_res",
+    ACKNOWLEDGE = "ack",
     NEW_PEER = "new_peer",
     LEAVE = "leave",
 }

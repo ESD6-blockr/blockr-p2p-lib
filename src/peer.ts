@@ -81,6 +81,11 @@ export class Peer implements IMessageListener, IPeer {
         const implementation = this.receiveHandlers.get(message.type);
         if (implementation !== undefined && typeof implementation === "function") {
             implementation(message, senderIp);
+
+            // Acknowledge this message
+            if (message.type !== MessageType.ACKNOWLEDGE) {
+                this.sender.sendAcknowledgeMessage(message, senderIp);
+            }
         }
     }
 
@@ -90,7 +95,7 @@ export class Peer implements IMessageListener, IPeer {
     private createReceiverHandlers(): void {
         // Handle ping messages
         this.registerReceiveHandlerImpl(MessageType.PING, (message: Message, senderIp: string) => {
-            const response = new Message(MessageType.PING_ACKNOWLEDGE, message.originalSenderId);
+            const response = new Message(MessageType.PING_RESPONSE, message.originalSenderId);
             this.sender.sendMessage(response, senderIp);
         });
 
@@ -101,20 +106,23 @@ export class Peer implements IMessageListener, IPeer {
                 const newPeerId: string = Guid.create().toString();
 
                 const response = new Message(
-                    MessageType.JOIN_ACKNOWLEDGE,
+                    MessageType.JOIN_RESPONSE,
                     message.originalSenderId,
-                    JSON.stringify({guid: newPeerId, routingTable: this.peerRegistry}));
+                    JSON.stringify({guid: newPeerId, routingTable: this.peerRegistry}),
+                );
                 this.sender.sendMessage(response, senderIp);
 
+                // Add the new peer to our registry
+                this.peerRegistry.addPeer(senderIp, newPeerId);
+
+                // Let other peers know about the newly joined peer
                 const broadcast = new Message(MessageType.NEW_PEER, this.GUID, newPeerId);
                 this.sender.sendBroadcast(broadcast);
-
-                this.peerRegistry.addPeer(senderIp, newPeerId);
             }
         });
 
         // Handle join acknowledge messages
-        this.registerReceiveHandlerImpl(MessageType.JOIN_ACKNOWLEDGE, (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerImpl(MessageType.JOIN_RESPONSE, (message: Message, senderIp: string) => {
             if (message.body !== undefined
                 && this.GUID === undefined
                 && senderIp !== undefined
@@ -123,6 +131,13 @@ export class Peer implements IMessageListener, IPeer {
                 this.GUID = body.guid;
                 this.peerRegistry = JSON.parse(body.peerRegistry);
                 this.peerRegistry.addPeer(senderIp, message.originalSenderId);
+            }
+        });
+
+        // Handle acknowledge messages
+        this.registerReceiveHandlerImpl(MessageType.ACKNOWLEDGE, (message: Message, senderIp: string) => {
+            if (senderIp !== undefined && message.body !== undefined) {
+                this.sender.removeSentMessage(message.body);
             }
         });
     }

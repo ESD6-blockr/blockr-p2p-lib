@@ -1,6 +1,6 @@
-import { sha1 } from "object-hash";
 import { listen } from "socket.io";
 import { IMessageListener } from "./interfaces/iMessageListener";
+import { ObjectHasher } from "./util/objectHasher";
 
 /**
  * Handles the receiving of messages.
@@ -31,7 +31,7 @@ export class Receiver {
                 this.server.ourSockets.push(socket);
 
                 const message = JSON.parse(body);
-                const messageHash = this.generateHash(message);
+                const messageHash = ObjectHasher.generateSha1(message);
                 if (!this.receivedMessages.includes(messageHash)) {
                     this.receivedMessages.push(messageHash);
                     const sender = socket.request.connection.remoteAddress.split(":").pop();
@@ -39,12 +39,5 @@ export class Receiver {
                 }
             });
         });
-    }
-
-    /**
-     * Generate sha1 hash of the this message.
-     */
-    private generateHash(object: object): string {
-        return sha1(object);
     }
 }
