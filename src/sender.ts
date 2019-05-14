@@ -9,15 +9,15 @@ import { ObjectHasher } from "./util/objectHasher";
  * Handles the sending of messages.
  */
 export class Sender {
-    private peers: string[];
     private readonly protocol = "http://";
     private readonly port: string;
     private sentMessages: Map<string, Message>;
+    private sentMessageSenders: Map<string, string>;
 
-    constructor(peers: string[], port: string) {
-        this.peers = peers;
+    constructor(port: string) {
         this.port = port;
         this.sentMessages = new Map<string, Message>();
+        this.sentMessageSenders = new Map<string, string>();
     }
 
     /**
@@ -28,17 +28,6 @@ export class Sender {
      */
     public sendMessage(message: Message, destination: string): void {
         this.emitMessage(message, destination);
-    }
-
-    /**
-     * Distributes the given broadcast message to the peer network.
-     *
-     * @param broadcast - The broadcast message
-     */
-    public sendBroadcast(broadcast: Message): void {
-        this.peers.forEach((peer: string) => {
-            this.emitMessage(broadcast, peer);
-        });
     }
 
     /**
@@ -60,22 +49,28 @@ export class Sender {
     }
 
     /**
-     * Get messages sent after the given date.
+     * Get ips from the senders of the sent messages after the given date.
      * Deletes messages that are sent before the given date from the history.
      *
      * @param date - The date
+     *
+     * @return An array of the ips of the senders
      */
-    public getSentMessagesSince(date: Date): Message[] {
-        const oldMessages: Message[] = [];
+    public getSentMessagesSendersSince(date: Date): string[] {
+        const ips: string[] = [];
 
         this.sentMessages.forEach((value: Message, key: string) => {
-            if (value.isOlderThan(date)) {
+            const sentMessageSender = this.sentMessageSenders.get(key);
+
+            if (value.isOlderThan(date) && sentMessageSender !== undefined) {
+                ips.push(sentMessageSender);
+
                 this.sentMessages.delete(key);
-                oldMessages.push(value);
+                this.sentMessageSenders.delete(key);
             }
         });
 
-        return oldMessages;
+        return ips;
     }
 
     /**
@@ -85,6 +80,7 @@ export class Sender {
      */
     public removeSentMessage(messageHash: string): void {
         this.sentMessages.delete(messageHash);
+        this.sentMessageSenders.delete(messageHash);
     }
 
     /**
@@ -97,7 +93,9 @@ export class Sender {
         const socket = connect(this.protocol + destination + ":" + this.port);
         socket.emit("message", JSON.stringify(message));
 
-        this.sentMessages.set(ObjectHasher.generateSha1(message), message);
+        const messageHash = ObjectHasher.generateSha1(message);
+        this.sentMessages.set(messageHash, message);
+        this.sentMessageSenders.set(messageHash, destination);
 
         logger.info(`Message sent to: ${destination}: ${message.type}`);
     }

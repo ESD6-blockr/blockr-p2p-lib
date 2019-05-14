@@ -8,6 +8,7 @@ import { Message } from "./models/message";
 import { PeerRegistry } from "./peerRegistry";
 import { Receiver } from "./receiver";
 import { Sender } from "./sender";
+import { DateManipulator } from "./util/DateManipulator";
 
 /**
  *
@@ -24,7 +25,7 @@ export class Peer implements IMessageListener, IPeer {
         this.receiveHandlers = new Map();
         this.createReceiverHandlers();
 
-        this.sender = new Sender(initialPeers, port);
+        this.sender = new Sender(port);
         this.receiver = new Receiver(this, port);
 
         if (firstPeer) {
@@ -33,6 +34,14 @@ export class Peer implements IMessageListener, IPeer {
         }
         this.GUID = Guid.createEmpty().toString();
         this.checkInitialPeers(initialPeers);
+
+        // Create timer that removes peers that did not reply
+        setInterval(() => {
+            const minDate = DateManipulator.minusMinutes(new Date(), 0.5);
+            this.sender.getSentMessagesSendersSince(minDate).forEach((value: string) => {
+                this.peerRegistry.removePeer(value);
+            });
+        });
     }
 
     /**
@@ -116,12 +125,11 @@ export class Peer implements IMessageListener, IPeer {
                 this.peerRegistry.addPeer(senderIp, newPeerId);
 
                 // Let other peers know about the newly joined peer
-                const broadcast = new Message(MessageType.NEW_PEER, this.GUID, newPeerId);
-                this.sender.sendBroadcast(broadcast);
+                this.sendBroadcast(MessageType.NEW_PEER, newPeerId);
             }
         });
 
-        // Handle join acknowledge messages
+        // Handle join response messages
         this.registerReceiveHandlerImpl(MessageType.JOIN_RESPONSE, (message: Message, senderIp: string) => {
             if (message.body !== undefined
                 && this.GUID === undefined
