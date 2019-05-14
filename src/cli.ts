@@ -1,9 +1,10 @@
-import {logger} from "@blockr/blockr-logger";
+import { logger } from "@blockr/blockr-logger";
 import chalk from "chalk";
 import * as figlet from "figlet";
 import * as readline from "readline";
-import {Peer} from "./peer";
+import { Peer } from "./peer";
 
+/* tslint:disable */
 const helpText = "Send a message using the following command and arguments: " +
     "send <destination> <messageType> <messageBody>";
 const destinationIndex = 1;
@@ -14,6 +15,9 @@ const commandLine = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
 });
+
+console.log(chalk.yellow(figlet.textSync("p2p-cli", {horizontalLayout: "full"})));
+console.log(helpText);
 
 const peer = new Peer(["145.93.124.211"], "8081", false);
 
@@ -35,11 +39,3 @@ commandLine.on("line", (line: string) => {
 }).on("close", () => {
     process.exit(0);
 });
-
-logger.info(chalk.yellow(
-    figlet.textSync("p2p-cli", {horizontalLayout: "full"}),
-    ),
-);
-logger.info(helpText);
-
-
