@@ -6,11 +6,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "build-watch": "tsc -w -p tsconfig.json",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "",
     "lint": "tslint --project tsconfig.json",
-    "dev": "npm run build && npm run lint",
-    "dev-cli": "npm run build && node dist/cli.js",
-    "cli": "node dist/cli.js"
+    "dev": "npm run build && npm run lint"
   },
   "author": "Blockr (Hugo van de Vliert, Ronald van den Broek, Juul Damen)",
   "license": "MIT",
