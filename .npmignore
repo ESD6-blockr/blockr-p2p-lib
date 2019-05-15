@@ -1,0 +1,5 @@
+.scannerwork/
+src/
+Jenkinsfile
+tsconfig.json
+tslint.json
