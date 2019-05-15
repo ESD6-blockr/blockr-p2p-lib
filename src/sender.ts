@@ -3,7 +3,6 @@ import { connect } from "socket.io-client";
 import { MessageType } from "./enums";
 
 import { Message } from "./models/message";
-import { ObjectHasher } from "./util/objectHasher";
 
 /**
  * Handles the sending of messages.
@@ -21,22 +20,23 @@ export class Sender {
     }
 
     /**
-     * Send the given message to the given destination.
+     * Send the given message to the given destinationIp.
      *
      * @param message - The message
-     * @param destination - The destination ip
+     * @param destinationIp - The destinationIp ip
+     * @param destinationGuid
      */
-    public sendMessage(message: Message, destination: string): void {
-        this.emitMessage(message, destination);
+    public sendMessage(message: Message, destinationIp: string, destinationGuid?: string): void {
+        this.emitMessage(message, destinationIp, destinationGuid);
     }
 
     /**
-     * Send an acknowledge message to the given destination, based on the given message.
+     * Send an acknowledge message to the given destinationIp, based on the given message.
      *
      * @param originalMessage - The message
-     * @param destination - The destination
+     * @param destinationIp - The destinationIp
      */
-    public sendAcknowledgeMessage(originalMessage: Message, destination: string): void {
+    public sendAcknowledgeMessage(originalMessage: Message, destinationIp: string): void {
         const response = new Message(
             MessageType.ACKNOWLEDGE,
             originalMessage.originalSenderGuid,
@@ -44,7 +44,7 @@ export class Sender {
         );
 
         // Send the response
-        const socket = connect(`${this.protocol}${destination}:${this.port}`);
+        const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
         socket.emit("message", JSON.stringify(response));
     }
 
@@ -59,6 +59,7 @@ export class Sender {
     public getSentMessagesSendersSince(date: Date): string[] {
         const guids: string[] = [];
 
+        console.log(this.sentMessages);
         this.sentMessages.forEach((value: Message, key: string) => {
             const sentMessageSender = this.sentMessageSenders.get(key);
 
@@ -76,27 +77,31 @@ export class Sender {
     /**
      * Remove the given message from the sent messages history.
      *
-     * @param messageHash - The message hash of the message to remove
+     * @param messageGuid - The message hash of the message to remove
      */
-    public removeSentMessage(messageHash: string): void {
-        this.sentMessages.delete(messageHash);
-        this.sentMessageSenders.delete(messageHash);
+    public removeSentMessage(messageGuid: string): void {
+        console.log("Removing: " + messageGuid);
+        this.sentMessages.delete(messageGuid);
+        this.sentMessageSenders.delete(messageGuid);
     }
 
     /**
-     * Emits the given message to the given destination and adds the message to the history.
+     * Emits the given message to the given destinationIp and adds the message to the history.
      *
      * @param message - The message
-     * @param destination - The destination ip
+     * @param destinationIp - The destinationIp ip
+     * @param destinationGuid
      */
-    private emitMessage(message: Message, destination: string): void {
-        const socket = connect(`${this.protocol}${destination}:${this.port}`);
+    private emitMessage(message: Message, destinationIp: string, destinationGuid?: string): void {
+        const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
         message.createGuid();
         socket.emit("message", JSON.stringify(message));
 
-        this.sentMessages.set(message.guid, message);
-        this.sentMessageSenders.set(message.guid, destination);
+        if (destinationGuid !== undefined){
+            this.sentMessages.set(message.guid, message);
+            this.sentMessageSenders.set(message.guid, destinationGuid);
+        }
 
-        logger.info(`Message sent to: ${destination}: ${message.type}`);
+        logger.info(`Message sent to: ${destinationIp}: ${message.type}`);
     }
 }

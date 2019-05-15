@@ -31,9 +31,8 @@ export class Receiver {
                 this.server.ourSockets.push(socket);
 
                 const message = JSON.parse(body);
-                const messageHash = ObjectHasher.generateSha1(message);
-                if (!this.receivedMessages.includes(messageHash)) {
-                    this.receivedMessages.push(messageHash);
+                if (!this.receivedMessages.includes(message.guid)) {
+                    this.receivedMessages.push(message.guid);
                     const sender = socket.request.connection.remoteAddress.split(":").pop();
                     this.messageListener.onMessage(message, sender);
                 }

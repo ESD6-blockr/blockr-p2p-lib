@@ -30,13 +30,15 @@ export class Peer implements IMessageListener, IPeer {
 
         // Create timer that removes peers that did not reply
         setInterval(() => {
-            const minDate = DateManipulator.minusMinutes(new Date(), 0.5);
+            console.log("Routing table");
+            console.log(this.routingTable);
+
+            const minDate = DateManipulator.minusMinutes(new Date(), 0.1);
             this.sender.getSentMessagesSendersSince(minDate).forEach((value: string) => {
                 this.routingTable.removePeer(value);
-
                 logger.info(`Peer removed from routing table: ${value}`);
             });
-        }, 3000);
+        }, 6000);
 
         if (firstPeer) {
             this.GUID = Guid.create().toString();
@@ -44,8 +46,6 @@ export class Peer implements IMessageListener, IPeer {
         }
         this.GUID = Guid.createEmpty().toString();
         this.checkInitialPeers(initialPeers);
-
-
     }
 
     /**
@@ -62,7 +62,7 @@ export class Peer implements IMessageListener, IPeer {
      * Send a message to the given destination.
      *
      * @param messageType - The message type
-     * @param destination - The destination GUID
+     * @param destination
      * @param [body] - The message body
      */
     public sendMessage(messageType: string, destination: string, body?: string): void {
@@ -71,7 +71,7 @@ export class Peer implements IMessageListener, IPeer {
             throw new Error(`Unknown destination. Could not find an IP for: ${destination}`);
         }
 
-        this.sender.sendMessage(new Message(messageType, this.GUID, body), destinationIp);
+        this.sender.sendMessage(new Message(messageType, this.GUID, body), destinationIp, destination);
     }
 
     /**
@@ -81,9 +81,9 @@ export class Peer implements IMessageListener, IPeer {
      * @param [body] - The message body
      */
     public sendBroadcast(messageType: string, body?: string): void {
-        this.routingTable.peers.forEach((peer) => {
+        this.routingTable.peers.forEach((value: string, key: string) => {
             const message = new Message(messageType, this.GUID, body);
-            this.sender.sendMessage(message, peer);
+            this.sender.sendMessage(message, value, key);
         });
     }
 
@@ -187,7 +187,7 @@ export class Peer implements IMessageListener, IPeer {
         peers.forEach((peer) => {
             // Check if peer is online and try to join
             const message = new Message(MessageType.JOIN, this.GUID);
-            this.sender.sendMessage(message, peer);
+            this.sender.sendMessage(message, peer, undefined);
         });
     }
 }
