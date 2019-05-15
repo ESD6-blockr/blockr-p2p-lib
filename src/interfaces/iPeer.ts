@@ -13,7 +13,7 @@ export interface IPeer {
      *                              message - The message
      *                              sender - The IP of the message sender
      */
-    registerReceiveHandlerImpl(messageType: string, implementation: (message: Message, sender: string) => void): void;
+    registerReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, sender: string) => void): void;
 
     /**
      * Send a message to the given destination.

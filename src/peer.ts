@@ -56,7 +56,7 @@ export class Peer implements IMessageListener, IPeer {
      * @param messageType - The messageType that the receiver handles
      * @param implementation - The implementation of the receiver handler
      */
-    public registerReceiveHandlerImpl(messageType: string, implementation: (message: Message, senderIp: string) => void): void {
+    public registerReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, sender: string) => void): void {
         this.receiveHandlers.set(messageType, implementation);
     }
 
@@ -121,14 +121,14 @@ export class Peer implements IMessageListener, IPeer {
      */
     private createReceiverHandlers(): void {
         // Handle acknowledge messages
-        this.registerReceiveHandlerImpl(MessageType.ACKNOWLEDGE, async (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerForMessageType(MessageType.ACKNOWLEDGE, async (message: Message, senderIp: string) => {
             if (senderIp && message.body) {
                 this.sender.removeSentMessage(message.body);
             }
         });
 
         // Handle join messages
-        this.registerReceiveHandlerImpl(MessageType.JOIN, async (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message, senderIp: string) => {
             // Check if node already has an id, if so do not proceed with join request
             if (message.originalSenderGuid === Guid.EMPTY) {
                 const newPeerId: string = Guid.create().toString();
@@ -152,7 +152,7 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle join response messages
-        this.registerReceiveHandlerImpl(MessageType.JOIN_RESPONSE, async (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerForMessageType(MessageType.JOIN_RESPONSE, async (message: Message, senderIp: string) => {
             if (message.body && this.GUID === Guid.EMPTY && senderIp && message.originalSenderGuid) {
                 const body = JSON.parse(message.body);
                 this.GUID = body.guid;
@@ -162,7 +162,7 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle new peer messages
-        this.registerReceiveHandlerImpl(MessageType.NEW_PEER, async (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerForMessageType(MessageType.NEW_PEER, async (message: Message, senderIp: string) => {
             if (senderIp && message.body) {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
@@ -171,7 +171,7 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle leave messages
-        this.registerReceiveHandlerImpl(MessageType.LEAVE, async (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerForMessageType(MessageType.LEAVE, async (message: Message, senderIp: string) => {
             if (message && senderIp) {
                 // Remove the new peer from our registry
                 this.routingTable.removePeer(message.originalSenderGuid);
