@@ -1,4 +1,4 @@
-import { listen, Socket } from "socket.io";
+import {listen, Server, Socket} from "socket.io";
 import { IMessageListener } from "./interfaces/iMessageListener";
 
 /**
@@ -6,7 +6,7 @@ import { IMessageListener } from "./interfaces/iMessageListener";
  */
 export class Receiver {
     private readonly messageListener: IMessageListener;
-    private readonly server: any;
+    private readonly server: Server;
     private readonly receivedMessages: string[];
 
     constructor(messageListener: IMessageListener, port: string) {
@@ -24,11 +24,6 @@ export class Receiver {
         // event fired every time a new client connects:
         this.server.on("connection", (socket: Socket) => {
             socket.on("message", (body: string) => {
-                if (!this.server.ourSockets) {
-                    this.server.ourSockets = [];
-                }
-                this.server.ourSockets.push(socket);
-
                 const message = JSON.parse(body);
                 if (!this.receivedMessages.includes(message.guid)) {
                     this.receivedMessages.push(message.guid);
