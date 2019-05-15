@@ -25,21 +25,14 @@ export class Peer implements IMessageListener, IPeer {
     private GUID: string;
 
     constructor(port: string, initialPeers?: string[]) {
-        this.routingTable = new RoutingTable();
         this.receiveHandlers = new Map();
         this.createReceiverHandlers();
 
+        this.routingTable = new RoutingTable();
         this.sender = new Sender(port);
         this.receiver = new Receiver(this, port);
 
-        // Create timer that removes peers that did not reply
-        setInterval(() => {
-            const minDate = DateManipulator.minusMinutes(new Date(), MESSAGE_EXPIRATION_TIMER);
-            this.sender.getSentMessagesSendersSince(minDate).forEach((value: string) => {
-                this.routingTable.removePeer(value);
-                logger.info(`Peer removed from routing table: ${value}`);
-            });
-        }, MESSAGE_HISTORY_CLEANUP_TIMER);
+        this.createRoutingTableCleanupTimer();
 
         // If initialPeers is undefined, this instance is the first peer
         if (!initialPeers) {
@@ -188,5 +181,20 @@ export class Peer implements IMessageListener, IPeer {
             const message = new Message(MessageType.JOIN, this.GUID);
             this.sender.sendMessage(message, peer);
         });
+    }
+
+    /**
+     * Create timer that removes peers that did not reply to a sent message.
+     *
+     * Used to remove offline peers
+     */
+    private createRoutingTableCleanupTimer() {
+        setInterval(() => {
+            const minDate = DateManipulator.minusMinutes(new Date(), MESSAGE_EXPIRATION_TIMER);
+            this.sender.getSentMessagesSendersSince(minDate).forEach((value: string) => {
+                this.routingTable.removePeer(value);
+                logger.info(`Peer removed from routing table: ${value}`);
+            });
+        }, MESSAGE_HISTORY_CLEANUP_TIMER);
     }
 }
