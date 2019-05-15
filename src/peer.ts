@@ -10,6 +10,9 @@ import { RoutingTable } from "./routingTable";
 import { Sender } from "./sender";
 import { DateManipulator } from "./util/dateManipulator";
 
+const MESSAGE_EXPIRATION_TIMER: number = 1;
+const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
+
 /**
  * Handles the peer network.
  */
@@ -30,12 +33,12 @@ export class Peer implements IMessageListener, IPeer {
 
         // Create timer that removes peers that did not reply
         setInterval(() => {
-            const minDate = DateManipulator.minusMinutes(new Date(), 0.1);
+            const minDate = DateManipulator.minusMinutes(new Date(), MESSAGE_EXPIRATION_TIMER);
             this.sender.getSentMessagesSendersSince(minDate).forEach((value: string) => {
                 this.routingTable.removePeer(value);
                 logger.info(`Peer removed from routing table: ${value}`);
             });
-        }, 6000);
+        }, MESSAGE_HISTORY_CLEANUP_TIMER);
 
         if (firstPeer) {
             this.GUID = Guid.create().toString();
@@ -184,7 +187,7 @@ export class Peer implements IMessageListener, IPeer {
         peers.forEach((peer) => {
             // Check if peer is online and try to join
             const message = new Message(MessageType.JOIN, this.GUID);
-            this.sender.sendMessage(message, peer, undefined);
+            this.sender.sendMessage(message, peer);
         });
     }
 }
