@@ -62,16 +62,17 @@ export class Sender {
     public getSentMessagesSendersSince(date: Date): string[] {
         const guids: string[] = [];
 
-        this.sentMessages.forEach((value: Message, key: string) => {
-            const sentMessageSender = this.sentMessageSenders.get(key);
+        for (const guid of this.sentMessages.keys()) {
+            const sentMessageSender = this.sentMessageSenders.get(guid);
+            const message = this.sentMessages.get(guid);
 
-            if (value.isOlderThan(date) && sentMessageSender) {
+            if (message && message.isOlderThan(date) && sentMessageSender) {
                 guids.push(sentMessageSender);
 
-                this.sentMessages.delete(key);
-                this.sentMessageSenders.delete(key);
+                this.sentMessages.delete(guid);
+                this.sentMessageSenders.delete(guid);
             }
-        });
+        }
 
         return guids;
     }

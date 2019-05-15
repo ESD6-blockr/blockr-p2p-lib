@@ -76,10 +76,15 @@ export class Peer implements IMessageListener, IPeer {
      * @param [body] - The message body
      */
     public sendBroadcast(messageType: string, body?: string): void {
-        this.routingTable.peers.forEach((value: string, key: string) => {
+
+        for (const guid of this.routingTable.peers.keys()) {
             const message = new Message(messageType, this.GUID, body);
-            this.sender.sendMessage(message, value, key);
-        });
+            const ip = this.routingTable.peers.get(guid);
+
+            if (ip) {
+                this.sender.sendMessage(message, ip, guid);
+            }
+        }
     }
 
     /**
@@ -176,11 +181,11 @@ export class Peer implements IMessageListener, IPeer {
      * Try to join the network. Send a join request to every given peer.
      */
     private checkInitialPeers(peers: string[]): void {
-        peers.forEach((peer) => {
+        for (const peer of peers) {
             // Check if peer is online and try to join
             const message = new Message(MessageType.JOIN, this.GUID);
             this.sender.sendMessage(message, peer);
-        });
+        }
     }
 
     /**
@@ -191,10 +196,10 @@ export class Peer implements IMessageListener, IPeer {
     private createRoutingTableCleanupTimer() {
         setInterval(() => {
             const minDate = DateManipulator.minusMinutes(new Date(), MESSAGE_EXPIRATION_TIMER);
-            this.sender.getSentMessagesSendersSince(minDate).forEach((value: string) => {
+            for (const value of this.sender.getSentMessagesSendersSince(minDate)) {
                 this.routingTable.removePeer(value);
                 logger.info(`Peer removed from routing table: ${value}`);
-            });
+            }
         }, MESSAGE_HISTORY_CLEANUP_TIMER);
     }
 }
