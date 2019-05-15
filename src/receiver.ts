@@ -1,4 +1,4 @@
-import { listen } from "socket.io";
+import { listen, Socket } from "socket.io";
 import { IMessageListener } from "./interfaces/iMessageListener";
 
 /**
@@ -22,7 +22,7 @@ export class Receiver {
      */
     private handleMessage(): void {
         // event fired every time a new client connects:
-        this.server.on("connection", (socket: any) => {
+        this.server.on("connection", (socket: Socket) => {
             socket.on("message", (body: string) => {
                 if (!this.server.ourSockets) {
                     this.server.ourSockets = [];
