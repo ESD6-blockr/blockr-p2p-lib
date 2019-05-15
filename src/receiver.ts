@@ -24,7 +24,7 @@ export class Receiver {
         // event fired every time a new client connects:
         this.server.on("connection", (socket: any) => {
             socket.on("message", (body: string) => {
-                if (this.server.ourSockets === undefined) {
+                if (!this.server.ourSockets) {
                     this.server.ourSockets = [];
                 }
                 this.server.ourSockets.push(socket);

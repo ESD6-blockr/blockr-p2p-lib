@@ -65,7 +65,7 @@ export class Sender {
         this.sentMessages.forEach((value: Message, key: string) => {
             const sentMessageSender = this.sentMessageSenders.get(key);
 
-            if (value.isOlderThan(date) && sentMessageSender !== undefined) {
+            if (value.isOlderThan(date) && sentMessageSender) {
                 guids.push(sentMessageSender);
 
                 this.sentMessages.delete(key);
@@ -99,7 +99,7 @@ export class Sender {
         const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
         socket.emit("message", JSON.stringify(message));
 
-        if (destinationGuid !== undefined) {
+        if (destinationGuid) {
             this.sentMessages.set(message.guid, message);
             this.sentMessageSenders.set(message.guid, destinationGuid);
         }

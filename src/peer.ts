@@ -41,7 +41,7 @@ export class Peer implements IMessageListener, IPeer {
         }, MESSAGE_HISTORY_CLEANUP_TIMER);
 
         // If initialPeers is undefined, this instance is the first peer
-        if (initialPeers === undefined) {
+        if (!initialPeers) {
             this.GUID = Guid.create().toString();
             return;
         }
@@ -68,7 +68,7 @@ export class Peer implements IMessageListener, IPeer {
      */
     public sendMessage(messageType: string, destination: string, body?: string): void {
         const destinationIp = this.routingTable.peers.get(destination);
-        if (destinationIp === undefined) {
+        if (!destinationIp) {
             throw new Error(`Unknown destination. Could not find an IP for: ${destination}`);
         }
 
@@ -98,7 +98,7 @@ export class Peer implements IMessageListener, IPeer {
         logger.info(`Message received from ${senderIp}: ${message.type}`);
 
         const implementation = this.receiveHandlers.get(message.type);
-        if (implementation !== undefined && typeof implementation === "function") {
+        if (implementation && typeof implementation === "function") {
 
             // Acknowledge this message
             implementation(message, senderIp);
@@ -121,7 +121,7 @@ export class Peer implements IMessageListener, IPeer {
     private createReceiverHandlers(): void {
         // Handle acknowledge messages
         this.registerReceiveHandlerImpl(MessageType.ACKNOWLEDGE, async (message: Message, senderIp: string) => {
-            if (senderIp !== undefined && message.body !== undefined) {
+            if (senderIp && message.body) {
                 this.sender.removeSentMessage(message.body);
             }
         });
@@ -152,10 +152,7 @@ export class Peer implements IMessageListener, IPeer {
 
         // Handle join response messages
         this.registerReceiveHandlerImpl(MessageType.JOIN_RESPONSE, async (message: Message, senderIp: string) => {
-            if (message.body !== undefined
-                && this.GUID === Guid.EMPTY
-                && senderIp !== undefined
-                && message.originalSenderGuid !== undefined) {
+            if (message.body && this.GUID === Guid.EMPTY && senderIp && message.originalSenderGuid) {
                 const body = JSON.parse(message.body);
                 this.GUID = body.guid;
                 this.routingTable.addPeer(message.originalSenderGuid, senderIp);
@@ -165,7 +162,7 @@ export class Peer implements IMessageListener, IPeer {
 
         // Handle new peer messages
         this.registerReceiveHandlerImpl(MessageType.NEW_PEER, async (message: Message, senderIp: string) => {
-            if (senderIp !== undefined && message.body !== undefined) {
+            if (senderIp && message.body) {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
                 this.routingTable.addPeer(body.guid, body.sender);
@@ -174,7 +171,7 @@ export class Peer implements IMessageListener, IPeer {
 
         // Handle leave messages
         this.registerReceiveHandlerImpl(MessageType.LEAVE, async (message: Message, senderIp: string) => {
-            if (message !== undefined && senderIp !== undefined) {
+            if (message && senderIp) {
                 // Remove the new peer from our registry
                 this.routingTable.removePeer(message.originalSenderGuid);
             }
