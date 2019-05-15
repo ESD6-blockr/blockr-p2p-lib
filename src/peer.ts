@@ -31,7 +31,7 @@ export class Peer implements IMessageListener, IPeer {
         // Create timer that removes peers that did not reply
         setInterval(() => {
             console.log("Routing table");
-            console.log(this.routingTable);
+            //console.log(this.routingTable);
 
             const minDate = DateManipulator.minusMinutes(new Date(), 0.1);
             this.sender.getSentMessagesSendersSince(minDate).forEach((value: string) => {
@@ -98,9 +98,9 @@ export class Peer implements IMessageListener, IPeer {
 
         const implementation = this.receiveHandlers.get(message.type);
         if (implementation !== undefined && typeof implementation === "function") {
-            implementation(message, senderIp);
 
             // Acknowledge this message
+            implementation(message, senderIp);
             if (message.type !== MessageType.ACKNOWLEDGE) {
                 this.sender.sendAcknowledgeMessage(message, senderIp);
             }
@@ -119,14 +119,15 @@ export class Peer implements IMessageListener, IPeer {
      */
     private createReceiverHandlers(): void {
         // Handle acknowledge messages
-        this.registerReceiveHandlerImpl(MessageType.ACKNOWLEDGE, (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerImpl(MessageType.ACKNOWLEDGE, async (message: Message, senderIp: string) => {
+            console.log("TEST ACK " + message.body);
             if (senderIp !== undefined && message.body !== undefined) {
                 this.sender.removeSentMessage(message.body);
             }
         });
 
         // Handle join messages
-        this.registerReceiveHandlerImpl(MessageType.JOIN, (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerImpl(MessageType.JOIN, async (message: Message, senderIp: string) => {
             // Check if node already has an id, if so do not proceed with join request
             if (message.originalSenderGuid === Guid.EMPTY) {
                 const newPeerId: string = Guid.create().toString();
@@ -150,7 +151,7 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle join response messages
-        this.registerReceiveHandlerImpl(MessageType.JOIN_RESPONSE, (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerImpl(MessageType.JOIN_RESPONSE, async (message: Message, senderIp: string) => {
             if (message.body !== undefined
                 && this.GUID === Guid.EMPTY
                 && senderIp !== undefined
@@ -163,7 +164,7 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle new peer messages
-        this.registerReceiveHandlerImpl(MessageType.NEW_PEER, (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerImpl(MessageType.NEW_PEER, async (message: Message, senderIp: string) => {
             if (senderIp !== undefined && message.body !== undefined) {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
@@ -172,7 +173,7 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle leave messages
-        this.registerReceiveHandlerImpl(MessageType.LEAVE, (message: Message, senderIp: string) => {
+        this.registerReceiveHandlerImpl(MessageType.LEAVE, async (message: Message, senderIp: string) => {
             if (message !== undefined && senderIp !== undefined) {
                 // Remove the new peer from our registry
                 this.routingTable.removePeer(message.originalSenderGuid);
