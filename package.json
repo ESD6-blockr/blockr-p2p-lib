@@ -2,10 +2,36 @@
   "name": "@blockr/blockr-p2p-lib",
   "version": "1.0.0",
   "description": "Blockr P2P node library",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -p tsconfig.json",
+    "build-watch": "tsc -w -p tsconfig.json",
+    "test": "exit 0;",
+    "lint": "tslint --project tsconfig.json",
+    "dev": "npm run build && npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ESD6-blockr/blockr-p2p-lib.git"
   },
   "author": "Blockr (Hugo van de Vliert, Ronald van den Broek)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@blockr/blockr-logger": "^1.1.0-3",
+    "guid-typescript": "^1.0.9",
+    "socket.io": "^2.2.0",
+    "socket.io-client": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^11.13.7",
+    "@types/socket.io": "^2.1.2",
+    "@types/socket.io-client": "^1.4.32",
+    "tslint": "^5.16.0",
+    "tsutils": "^3.10.0",
+    "typescript": "^3.4.3"
+  },
+  "_moduleAliases": {
+    "app": "dist"
+  }
 }
