@@ -1,6 +1,5 @@
 import { listen } from "socket.io";
 import { IMessageListener } from "./interfaces/iMessageListener";
-import { ObjectHasher } from "./util/objectHasher";
 
 /**
  * Handles the receiving of messages.
@@ -25,7 +24,6 @@ export class Receiver {
         // event fired every time a new client connects:
         this.server.on("connection", (socket: any) => {
             socket.on("message", (body: string) => {
-                console.log(body);
                 if (this.server.ourSockets === undefined) {
                     this.server.ourSockets = [];
                 }

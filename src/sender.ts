@@ -45,9 +45,10 @@ export class Sender {
         response.createGuid();
 
         // Send the response
-        logger.info(`Message sent to: ${destinationIp}: ${response.type}`);
         const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
         socket.emit("message", JSON.stringify(response));
+
+        logger.info(`Message sent to: ${destinationIp}: ${response.type}`);
     }
 
     /**
@@ -61,7 +62,6 @@ export class Sender {
     public getSentMessagesSendersSince(date: Date): string[] {
         const guids: string[] = [];
 
-        //console.log(this.sentMessages);
         this.sentMessages.forEach((value: Message, key: string) => {
             const sentMessageSender = this.sentMessageSenders.get(key);
 
@@ -82,11 +82,8 @@ export class Sender {
      * @param messageGuid - The message hash of the message to remove
      */
     public removeSentMessage(messageGuid: string): void {
-        console.log(this.sentMessages);
-        console.log("Removing: " + messageGuid);
         this.sentMessages.delete(messageGuid);
         this.sentMessageSenders.delete(messageGuid);
-        //console.log(this.sentMessages);
     }
 
     /**
@@ -97,11 +94,12 @@ export class Sender {
      * @param destinationGuid
      */
     private emitMessage(message: Message, destinationIp: string, destinationGuid?: string): void {
-        const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
         message.createGuid();
+
+        const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
         socket.emit("message", JSON.stringify(message));
 
-        if (destinationGuid !== undefined){
+        if (destinationGuid !== undefined) {
             this.sentMessages.set(message.guid, message);
             this.sentMessageSenders.set(message.guid, destinationGuid);
         }

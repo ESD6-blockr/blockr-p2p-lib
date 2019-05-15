@@ -30,9 +30,6 @@ export class Peer implements IMessageListener, IPeer {
 
         // Create timer that removes peers that did not reply
         setInterval(() => {
-            console.log("Routing table");
-            //console.log(this.routingTable);
-
             const minDate = DateManipulator.minusMinutes(new Date(), 0.1);
             this.sender.getSentMessagesSendersSince(minDate).forEach((value: string) => {
                 this.routingTable.removePeer(value);
@@ -120,7 +117,6 @@ export class Peer implements IMessageListener, IPeer {
     private createReceiverHandlers(): void {
         // Handle acknowledge messages
         this.registerReceiveHandlerImpl(MessageType.ACKNOWLEDGE, async (message: Message, senderIp: string) => {
-            console.log("TEST ACK " + message.body);
             if (senderIp !== undefined && message.body !== undefined) {
                 this.sender.removeSentMessage(message.body);
             }
