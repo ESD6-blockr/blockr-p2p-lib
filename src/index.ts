@@ -1,2 +1,2 @@
 export { IPeer } from "./interfaces/iPeer";
-export { Peer } from "./Peer";
+export { Peer } from "./peer";
