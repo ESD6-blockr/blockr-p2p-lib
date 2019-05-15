@@ -23,7 +23,7 @@ export class Peer implements IMessageListener, IPeer {
     private readonly receiver: Receiver;
     private GUID: string;
 
-    constructor(initialPeers: string[], port: string, firstPeer: boolean) {
+    constructor(port: string, initialPeers?: string[]) {
         this.routingTable = new RoutingTable();
         this.receiveHandlers = new Map();
         this.createReceiverHandlers();
@@ -40,7 +40,8 @@ export class Peer implements IMessageListener, IPeer {
             });
         }, MESSAGE_HISTORY_CLEANUP_TIMER);
 
-        if (firstPeer) {
+        // If initialPeers is undefined, this instance is the first peer
+        if (initialPeers === undefined) {
             this.GUID = Guid.create().toString();
             return;
         }
