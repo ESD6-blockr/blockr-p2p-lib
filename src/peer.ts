@@ -2,6 +2,7 @@ import { logger } from "@blockr/blockr-logger";
 import { Guid } from "guid-typescript";
 
 import { MessageType } from "./enums";
+import { UnknownDestinationError } from "./exceptions/unknownDestinationError";
 import { IMessageListener } from "./interfaces/iMessageListener";
 import { IPeer } from "./interfaces/iPeer";
 import { Message } from "./models/message";
@@ -69,7 +70,7 @@ export class Peer implements IMessageListener, IPeer {
     public sendMessage(messageType: string, destination: string, body?: string): void {
         const destinationIp = this.routingTable.peers.get(destination);
         if (!destinationIp) {
-            throw new Error(`Unknown destination. Could not find an IP for: ${destination}`);
+            throw new UnknownDestinationError(`Unknown destination. Could not find an IP for: ${destination}`);
         }
 
         this.sender.sendMessage(new Message(messageType, this.GUID, body), destinationIp, destination);
