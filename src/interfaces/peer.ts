@@ -12,8 +12,10 @@ export interface IPeer {
      *                         The implementation should be a void that receives the following arguments:
      *                              message - The message
      *                              sender - The IP of the message sender
+     * @param [response] - Methode for sending the response message
      */
-    registerReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, sender: string) => void): void;
+    registerReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, sender: string,
+                                                                               response: (body: string) => void) => void): void;
 
     /**
      * Send a message to the given destination.
@@ -21,16 +23,18 @@ export interface IPeer {
      * @param messageType - The message type
      * @param destination - The destination ip
      * @param [body] - The message body
+     * @param [responseImplementation] - The implementation for the response message
      */
-    sendMessage(messageType: string, destination: string, body?: string): void;
+    sendMessage(messageType: string, destination: string, body?: string, responseImplementation?: (response: Message) => void): void;
 
     /**
      * Send a broadcast to the network.
      *
      * @param messageType - The message type
      * @param [body] - The message body
+     * @param [responseImplementation] - The implementation for the response message
      */
-    sendBroadcast(messageType: string, body?: string): void;
+    sendBroadcast(messageType: string, body?: string, responseImplementation?: (response: Message) => void): void;
 
     /**
      * Leave the network.
