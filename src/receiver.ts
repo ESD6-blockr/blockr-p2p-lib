@@ -1,4 +1,4 @@
-import {listen, Server, Socket} from "socket.io";
+import { listen, Server, Socket } from "socket.io";
 import { IMessageListener } from "./interfaces/messageListener";
 
 /**
@@ -27,8 +27,8 @@ export class Receiver {
                 const message = JSON.parse(body);
                 if (!this.receivedMessages.includes(message.guid)) {
                     this.receivedMessages.push(message.guid);
-                    const sender = socket.request.connection.remoteAddress.split(":").pop();
-                    this.messageListener.onMessage(message, sender);
+                    const senderIp = socket.request.connection.remoteAddress.split(":").pop();
+                    this.messageListener.onMessage(message, message.originalSenderGuid, senderIp);
                 }
             });
         });

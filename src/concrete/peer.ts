@@ -20,7 +20,8 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
  */
 export class Peer implements IMessageListener, IPeer {
     private readonly routingTable: RoutingTable;
-    private readonly receiveHandlers: Map<string, (message: Message, senderIp: string, response: (body: string) => void) => void>;
+    private readonly externalReceiveHandlers: Map<string, (message: Message, senderGuid: string, response: (body: string) => void) => void>;
+    private readonly internalReceiveHandlers: Map<string, (message: Message, senderGuid: string, senderIp: string) => void>;
     private readonly sender: Sender;
     private readonly receiver: Receiver;
     private GUID: string;
@@ -28,7 +29,8 @@ export class Peer implements IMessageListener, IPeer {
 
 
     constructor(port: string, initialPeers?: string[]) {
-        this.receiveHandlers = new Map();
+        this.externalReceiveHandlers = new Map();
+        this.internalReceiveHandlers = new Map();
         this.requestsMap = new Map();
         this.createReceiverHandlers();
 
@@ -53,27 +55,23 @@ export class Peer implements IMessageListener, IPeer {
      * @param messageType - The messageType that the receiver handles
      * @param implementation - The implementation of the receiver handler
      */
-
     public registerReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, sender: string,
                                                                                       response: (body: string) => void) => void): void {
-        this.receiveHandlers.set(messageType, implementation);
+        this.externalReceiveHandlers.set(messageType, implementation);
     }
 
     /**
      * Send a message to the given destination.
      *
      * @param messageType - The message type
-     * @param destination
+     * @param destination - The destination GUID
      * @param [body] - The message body
      */
     public sendMessage(messageType: string, destination: string, body?: string, responseImplementation?: (response: Message) => void): void {
-        const destinationIp = this.routingTable.peers.get(destination);
-        if (!destinationIp) {
-            throw new UnknownDestinationError(`Unknown destination. Could not find an IP for: ${destination}`);
-        }
+        const destinationIp = this.getIpFromRoutingTable(destination);
         const message = new Message(messageType, this.GUID, body);
         this.sender.sendMessage(message, destinationIp, destination);
-        
+
         if (responseImplementation) {
             this.requestsMap.set(message.guid, responseImplementation);
         }
@@ -93,7 +91,7 @@ export class Peer implements IMessageListener, IPeer {
                 logger.info(messageType, "message");
                 this.sender.sendMessage(message, ip, guid);
             }
-            
+
             if (responseImplementation) {
                 this.requestsMap.set(message.guid, responseImplementation);
             }
@@ -104,21 +102,32 @@ export class Peer implements IMessageListener, IPeer {
      * Check of messageType of the given message has a known implementation, and executes the implementation.
      *
      * @param message - The incoming message
+     * @param senderGuid - The GUID of the sender
      * @param senderIp - The IP of the sender
      */
-    public onMessage(message: Message, senderIp: string): void {
-        logger.info(`Message received from ${senderIp}: ${message.type}`);
+    public onMessage(message: Message, senderGuid: string, senderIp: string): void {
+        logger.info(`Message received from ${senderGuid}: ${message.type}`);
 
-        const implementation = this.receiveHandlers.get(message.type);
-        if (implementation && typeof implementation === "function") {
+        const internalImplementation = this.internalReceiveHandlers.get(message.type);
+        if (internalImplementation && typeof internalImplementation === "function") {
+            internalImplementation(message, senderGuid, senderIp);
+
             // Acknowledge this message
-            logger.info(message.type);
-
-            implementation(message, senderIp, (body: string) => {
-                this.sendMessage(`${message.type}reply`, senderIp, body);
-            });
             if (message.type !== MessageType.ACKNOWLEDGE) {
-                this.sender.sendAcknowledgeMessage(message, senderIp);
+                this.sender.sendAcknowledgeMessage(message, this.getIpFromRoutingTable(senderGuid));
+            }
+            return;
+        }
+
+        const externalImplementation = this.externalReceiveHandlers.get(message.type);
+        if (externalImplementation && typeof externalImplementation === "function") {
+            externalImplementation(message, senderGuid, (body: string) => {
+                this.sendMessage(`${message.type}reply`, senderGuid, body);
+            });
+
+            // Acknowledge this message
+            if (message.type !== MessageType.ACKNOWLEDGE) {
+                this.sender.sendAcknowledgeMessage(message, this.getIpFromRoutingTable(senderGuid));
             }
         }
     }
@@ -135,14 +144,14 @@ export class Peer implements IMessageListener, IPeer {
      */
     private createReceiverHandlers(): void {
         // Handle acknowledge messages
-        this.registerReceiveHandlerForMessageType(MessageType.ACKNOWLEDGE, async (message: Message, senderIp: string) => {
-            if (senderIp && message.body) {
+        this.registerInternalReceiveHandlerForMessageType(MessageType.ACKNOWLEDGE, async (message: Message, senderGuid: string, senderIp: string) => {
+            if (senderGuid && message.body) {
                 this.sender.removeSentMessage(message.body);
             }
         });
 
         // Handle join messages
-        this.registerReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message, senderIp: string) => {
+        this.registerInternalReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message, senderGuid: string, senderIp: string) => {
             // Check if node already has an id, if so do not proceed with join request
             if (message.originalSenderGuid === Guid.EMPTY) {
                 const newPeerId: string = Guid.create().toString();
@@ -166,7 +175,7 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle join response messages
-        this.registerReceiveHandlerForMessageType(MessageType.JOIN_RESPONSE, async (message: Message, senderIp: string) => {
+        this.registerInternalReceiveHandlerForMessageType(MessageType.JOIN_RESPONSE, async (message: Message, senderGuid: string, senderIp: string) => {
             if (message.body && this.GUID === Guid.EMPTY && senderIp && message.originalSenderGuid) {
                 const body = JSON.parse(message.body);
                 this.GUID = body.guid;
@@ -176,8 +185,8 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle new peer messages
-        this.registerReceiveHandlerForMessageType(MessageType.NEW_PEER, async (message: Message, senderIp: string) => {
-            if (senderIp && message.body) {
+        this.registerInternalReceiveHandlerForMessageType(MessageType.NEW_PEER, async (message: Message, senderGuid: string, senderIp: string) => {
+            if (senderGuid && message.body) {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
                 this.routingTable.addPeer(body.guid, body.sender);
@@ -185,12 +194,16 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle leave messages
-        this.registerReceiveHandlerForMessageType(MessageType.LEAVE, async (message: Message, senderIp: string) => {
-            if (message && senderIp) {
+        this.registerInternalReceiveHandlerForMessageType(MessageType.LEAVE, async (message: Message, senderGuid: string, senderIp: string) => {
+            if (message && senderGuid) {
                 // Remove the new peer from our registry
                 this.routingTable.removePeer(message.originalSenderGuid);
             }
         });
+    }
+
+    public registerInternalReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, senderGuid: string, senderIp: string) => void): void {
+        this.internalReceiveHandlers.set(messageType, implementation);
     }
 
     /**
@@ -217,5 +230,14 @@ export class Peer implements IMessageListener, IPeer {
                 logger.info(`Peer removed from routing table: ${value}`);
             }
         }, MESSAGE_HISTORY_CLEANUP_TIMER);
+    }
+
+    private getIpFromRoutingTable(guid: string): string {
+        const destinationIp = this.routingTable.peers.get(guid);
+        if (!destinationIp) {
+            throw new UnknownDestinationError(`Unknown destination. Could not find an IP for: ${guid}`);
+        }
+
+        return destinationIp;
     }
 }

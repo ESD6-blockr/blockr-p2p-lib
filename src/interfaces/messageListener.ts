@@ -8,7 +8,8 @@ export interface IMessageListener {
      * Receive a message
      *
      * @param message - The received message
-     * @param sender - IP of the sender
+     * @param senderGuid - GUID of the sender
+     * @param senderIp - IP of the sender
      */
-    onMessage(message: Message, sender: string): void;
+    onMessage(message: Message, senderGuid: string, senderIp: string): void;
 }
