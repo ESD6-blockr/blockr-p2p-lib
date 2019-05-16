@@ -1,5 +1,5 @@
 import {listen, Server, Socket} from "socket.io";
-import { IMessageListener } from "./interfaces/iMessageListener";
+import { IMessageListener } from "./interfaces/messageListener";
 
 /**
  * Handles the receiving of messages.
