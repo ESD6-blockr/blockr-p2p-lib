@@ -11,7 +11,7 @@ export interface IPeer {
      * @param implementation - The implementation of the receiver handler
      *                         The implementation should be a void that receives the following arguments:
      *                              message - The message
-     *                              sender - The IP of the message sender
+     *                              sender - The GUID of the message sender
      * @param [response] - Methode for sending the response message
      */
     registerReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, sender: string,
@@ -21,7 +21,7 @@ export interface IPeer {
      * Send a message to the given destination.
      *
      * @param messageType - The message type
-     * @param destination - The destination ip
+     * @param destination - The destination GUID
      * @param [body] - The message body
      * @param [responseImplementation] - The implementation for the response message
      */
