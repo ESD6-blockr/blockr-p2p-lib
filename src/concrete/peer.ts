@@ -76,6 +76,7 @@ export class Peer implements IMessageListener, IPeer {
     public sendMessage(messageType: string, destination: string, body?: string, responseImplementation?: RESPONSE_TYPE,
                        correlationId?: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
+            logger.info(`leuke teskst destination: ${destination}`);
             if (!this.sender || !this.GUID) {
                 reject();
                 return;
@@ -89,6 +90,8 @@ export class Peer implements IMessageListener, IPeer {
             if (responseImplementation) {
                 this.requestsMap.set(message.guid, responseImplementation);
             }
+
+            logger.info(`ip: ${destinationIp} destination: ${destination}`);
             await this.sender.sendMessage(message, destinationIp, destination);
             resolve();
         });
@@ -191,7 +194,9 @@ export class Peer implements IMessageListener, IPeer {
                 const body = JSON.parse(message.body);
                 // Add the new peer to our registry
                 this.routingTable.addPeer(newPeerId, body.ip);
-
+                logger.info(`${newPeerId}==================================${body.ip}`);
+                console.log(this.routingTable);
+                
                 // Send response
                 response(new Message(MessageType.JOIN_RESPONSE,
                     newPeerId,
@@ -276,6 +281,9 @@ export class Peer implements IMessageListener, IPeer {
 
     private getIpFromRoutingTable(guid: string): string {
         const destinationIp = this.routingTable.peers.get(guid);
+        logger.info(`${destinationIp}=======${guid}`);
+        console.log("nieuwe table");
+        console.log(this.routingTable);
         if (!destinationIp) {
             throw new UnknownDestinationError(`Unknown destination. Could not find an IP for: ${guid}`);
         }
