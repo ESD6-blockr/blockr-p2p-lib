@@ -139,7 +139,15 @@ export class Peer implements IMessageListener, IPeer {
 
             // Acknowledge this message
             if (message.type !== MessageType.ACKNOWLEDGE) {
-                this.sender.sendAcknowledgeMessage(message, this.getIpFromRoutingTable(senderGuid));
+                let destination;
+                if (message.body) {
+                    const body = JSON.parse(message.body);
+                    destination = body.ip;
+                }
+                if (!destination) {
+                    destination = this.getIpFromRoutingTable(senderGuid);
+                }
+                this.sender.sendAcknowledgeMessage(message, destination);
             }
         }
     }
@@ -228,6 +236,7 @@ export class Peer implements IMessageListener, IPeer {
     }
 
     private joinResponse(message: Message) {
+        console.log("join response");
         if (message.body && this.GUID === Guid.EMPTY && message.originalSenderGuid) {
             const body = JSON.parse(message.body);
             this.GUID = body.guid;
