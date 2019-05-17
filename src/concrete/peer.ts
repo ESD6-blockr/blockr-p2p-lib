@@ -38,7 +38,6 @@ export class Peer implements IMessageListener, IPeer {
     public init(port: string = DEFAULT_PORT, initialPeers?: string[]): Promise<void> {
         return new Promise(async (resolve) => {
             this.createReceiverHandlers();
-            
             this.sender = new Sender(port);
             this.receiver = new Receiver(this, port);
 
@@ -79,8 +78,10 @@ export class Peer implements IMessageListener, IPeer {
                 reject();
                 return;
             }
-            
-            const destinationIp = this.getIpFromRoutingTable(destination);
+            let destinationIp = destination;
+            if (messageType !== MessageType.JOIN) {
+                destinationIp = this.getIpFromRoutingTable(destination);
+            }
             const message = new Message(messageType, this.GUID, body);
             if (responseImplementation) {
                 this.requestsMap.set(message.guid, responseImplementation);
@@ -133,7 +134,7 @@ export class Peer implements IMessageListener, IPeer {
         if (implementation && typeof implementation === "function") {
 
             implementation(message, senderGuid, (message: Message) => {
-                this.sendMessage(message.type, senderGuid, message.body);
+                this.sendMessage(message.type, message.originalSenderGuid, message.body);
             });
 
             // Acknowledge this message
@@ -211,11 +212,15 @@ export class Peer implements IMessageListener, IPeer {
      * Try to join the network. Send a join request to every given peer.
      */
     private checkInitialPeers(peers: string[]): Promise<void> {
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve, reject) => {
+            if (!this.sender || !this.GUID) {
+                reject();
+                return;
+            }
             const promises = [];
             for (const peer of peers) {
                 // Check if peer is online and try to join
-                promises.push(this.sendMessage(MessageType.JOIN, peer, "", this.joinResponse));
+                promises.push(this.sendMessage(MessageType.JOIN, peer, JSON.stringify({ip: "145.93.120.201"}), this.joinResponse));
             }
             await Promise.all(promises);
             resolve();

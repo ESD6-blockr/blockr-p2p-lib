@@ -9,7 +9,7 @@ export { Peer } from "./concrete/peer";
 
 async function start() {
     const peer = new Peer();
-    await peer.init();
+    await peer.init("8081", ["145.93.57.128"]);
     peer.registerReceiveHandlerForMessageType("test", (message: Message, sender: string, response: RESPONSE_TYPE) => {
         message = message;
         sender = sender;
