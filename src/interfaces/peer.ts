@@ -1,5 +1,8 @@
 import { Message } from "../models/message";
 
+
+export type RESPONSE_TYPE = (message: Message) => void;
+
 /**
  * Peer interface.
  */
@@ -15,7 +18,7 @@ export interface IPeer {
      * @param [response] - Methode for sending the response message
      */
     registerReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, sender: string,
-                                                                               response: (body: string) => void) => void): void;
+                                                                               response: RESPONSE_TYPE) => void): void;
 
     /**
      * Send a message to the given destination.
@@ -25,7 +28,7 @@ export interface IPeer {
      * @param [body] - The message body
      * @param [responseImplementation] - The implementation for the response message
      */
-    sendMessage(messageType: string, destination: string, body?: string, responseImplementation?: (response: Message) => void): void;
+    sendMessage(messageType: string, destination: string, body?: string, responseImplementation?: RESPONSE_TYPE): void;
 
     /**
      * Send a broadcast to the network.
@@ -34,7 +37,7 @@ export interface IPeer {
      * @param [body] - The message body
      * @param [responseImplementation] - The implementation for the response message
      */
-    sendBroadcast(messageType: string, body?: string, responseImplementation?: (response: Message) => void): void;
+    sendBroadcast(messageType: string, body?: string, responseImplementation?: RESPONSE_TYPE): void;
 
     /**
      * Leave the network.
