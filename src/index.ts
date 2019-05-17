@@ -10,16 +10,17 @@ export { Peer } from "./concrete/peer";
 async function start() {
     const peer = new Peer();
     await peer.init("8081", ["145.93.57.128"]);
-    peer.registerReceiveHandlerForMessageType("test", (message: Message, sender: string, response: RESPONSE_TYPE) => {
-        message = message;
-        sender = sender;
-        logger.info(`recieved test message`);
-        response(new Message("test", ""));
-    });
+    // peer.registerReceiveHandlerForMessageType("test", (message: Message, sender: string, response: RESPONSE_TYPE) => {
+    //     message = message;
+    //     sender = sender;
+    //     logger.info(`recieved test message`);
+    //     response(new Message("test", ""));
+    // });
 
-    await peer.sendBroadcast("test", "text",  () => {
-        logger.info(`recieved test message response`);
-    });
+    // console.log("send broadcast");
+    // await peer.sendBroadcast("test", "text",  () => {
+    //     logger.info(`recieved test message response`);
+    // });
     
 }
 

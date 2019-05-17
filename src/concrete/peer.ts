@@ -11,6 +11,7 @@ import { RoutingTable } from "../routingTable";
 import { Sender } from "../sender";
 import { DateManipulator } from "../util/dateManipulator";
 import { rejects } from "assert";
+import { promises } from "fs";
 
 
 const MESSAGE_EXPIRATION_TIMER: number = 1;
@@ -72,7 +73,8 @@ export class Peer implements IMessageListener, IPeer {
      * @param destination - The destination GUID
      * @param [body] - The message body
      */
-    public sendMessage(messageType: string, destination: string, body?: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
+    public sendMessage(messageType: string, destination: string, body?: string, responseImplementation?: RESPONSE_TYPE,
+                       correlationId?: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
             if (!this.sender || !this.GUID) {
                 reject();
@@ -83,6 +85,7 @@ export class Peer implements IMessageListener, IPeer {
                 destinationIp = this.getIpFromRoutingTable(destination);
             }
             const message = new Message(messageType, this.GUID, body);
+            message.correlationId = correlationId;
             if (responseImplementation) {
                 this.requestsMap.set(message.guid, responseImplementation);
             }
@@ -129,12 +132,15 @@ export class Peer implements IMessageListener, IPeer {
         }
         
         logger.info(`Message received from ${senderGuid}: ${message.type}`);
+        console.log(this.requestsMap);
+        console.log(message);
+
 
         const implementation = this.receiveHandlers.get(message.type);
         if (implementation && typeof implementation === "function") {
 
-            implementation(message, senderGuid, (message: Message) => {
-                this.sendMessage(message.type, message.originalSenderGuid, message.body);
+            implementation(message, senderGuid, (responseMessage: Message) => {
+                this.sendMessage(responseMessage.type, responseMessage.originalSenderGuid, responseMessage.body, undefined, message.guid);
             });
 
             // Acknowledge this message
@@ -235,14 +241,18 @@ export class Peer implements IMessageListener, IPeer {
         });
     }
 
-    private joinResponse(message: Message) {
-        console.log("join response");
-        if (message.body && this.GUID === Guid.EMPTY && message.originalSenderGuid) {
-            const body = JSON.parse(message.body);
-            this.GUID = body.guid;
-            this.routingTable.addPeer(message.originalSenderGuid, body.ip);
-            this.routingTable.mergeRoutingTables(new Map(body.routingTable));
-        }
+    private joinResponse(message: Message) : Promise<void> {
+        console.log("joinResponse");
+        return new Promise(async (resolve, reject) => {
+            if (message.body && this.GUID === Guid.EMPTY && message.originalSenderGuid) {
+                const body = JSON.parse(message.body);
+                this.GUID = body.guid;
+                this.routingTable.addPeer(message.originalSenderGuid, body.ip);
+                this.routingTable.mergeRoutingTables(new Map(body.routingTable));
+                resolve();
+            }
+            reject();
+        });
     }
 
 

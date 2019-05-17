@@ -9,6 +9,7 @@ export class Message {
     public date: Date;
     public originalSenderGuid: string;
     public body?: string;
+    public correlationId?: string;
 
     constructor(type: string, originalSenderGuid: string, body?: string) {
         this.guid = Guid.createEmpty().toString();
@@ -16,6 +17,7 @@ export class Message {
         this.date = new Date();
         this.originalSenderGuid = originalSenderGuid;
         this.body = body;
+        this.createGuid();
     }
 
     /**

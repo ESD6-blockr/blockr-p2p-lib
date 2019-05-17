@@ -1,7 +1,7 @@
 import { Message } from "../models/message";
 
 
-export type RESPONSE_TYPE = (message: Message) => void;
+export type RESPONSE_TYPE = (message: Message) => Promise<void> | void;
 
 /**
  * Peer interface.
