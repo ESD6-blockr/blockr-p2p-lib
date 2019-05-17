@@ -6,7 +6,7 @@ export { IPeer } from "./interfaces/peer";
 export { Peer } from "./concrete/peer";
 
 
-const peer = new Peer("9274");
+const peer = new Peer("8081");
 
 peer.registerReceiveHandlerForMessageType("test", (message: Message, sender: string, response: (body: string) => void ) => {
     console.log(message, sender);
@@ -14,12 +14,9 @@ peer.registerReceiveHandlerForMessageType("test", (message: Message, sender: str
     logger.info(`recieved test message`);
     response("test response");
 });
-setTimeout( () => { 
-    console.log("sendMessage");
+
+
     peer.sendBroadcast("test", "text",  (response: Message) => {
         console.log("recieved response")
         console.log(response)
     });
-
-
-}, 10000 );

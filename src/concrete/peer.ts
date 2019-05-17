@@ -20,33 +20,38 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
  */
 export class Peer implements IMessageListener, IPeer {
     private readonly routingTable: RoutingTable;
-    private readonly externalReceiveHandlers: Map<string, (message: Message, senderGuid: string, response: (body: string) => void) => void>;
-    private readonly internalReceiveHandlers: Map<string, (message: Message, senderGuid: string, senderIp: string) => void>;
-    private readonly sender: Sender;
-    private readonly receiver: Receiver;
+    private readonly receiveHandlers: Map<string, (message: Message, senderGuid: string, response: (body: string) => void) => void>;
+    private sender: Sender;
+    private receiver: Receiver;
     private GUID: string;
     private readonly requestsMap: Map<string, (response: Message) => void>;
 
 
-    constructor(port: string, initialPeers?: string[]) {
-        this.externalReceiveHandlers = new Map();
-        this.internalReceiveHandlers = new Map();
+    constructor() {
+        this.receiveHandlers = new Map();
         this.requestsMap = new Map();
-        this.createReceiverHandlers();
-
         this.routingTable = new RoutingTable();
-        this.sender = new Sender(port);
-        this.receiver = new Receiver(this, port);
 
-        this.createRoutingTableCleanupTimer();
+    }
 
-        // If initialPeers is undefined, this instance is the first peer
-        if (!initialPeers) {
+    public init(port: string | "8081", initialPeers?: string[]): Promise<void> {
+        return new Promise(async (resolve) => {
+            this.createReceiverHandlers();
+            
+            this.sender = new Sender(port);
+            this.receiver = new Receiver(this, port);
+
+            this.createRoutingTableCleanupTimer();
+
+            if (initialPeers) {
+                this.GUID = Guid.createEmpty().toString();
+                await this.checkInitialPeers(initialPeers);
+                resolve();
+            }
+
             this.GUID = Guid.create().toString();
-            return;
-        }
-        this.GUID = Guid.createEmpty().toString();
-        this.checkInitialPeers(initialPeers);
+            resolve();
+        });
     }
 
     /**
@@ -57,7 +62,7 @@ export class Peer implements IMessageListener, IPeer {
      */
     public registerReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, sender: string,
                                                                                       response: (body: string) => void) => void): void {
-        this.externalReceiveHandlers.set(messageType, implementation);
+        this.receiveHandlers.set(messageType, implementation);
     }
 
     /**
@@ -67,14 +72,13 @@ export class Peer implements IMessageListener, IPeer {
      * @param destination - The destination GUID
      * @param [body] - The message body
      */
-    public sendMessage(messageType: string, destination: string, body?: string, responseImplementation?: (response: Message) => void): void {
+    public sendMessage(messageType: string, destination: string, body?: string, responseImplementation?: (response: Message) => void): Promise<void> {
         const destinationIp = this.getIpFromRoutingTable(destination);
         const message = new Message(messageType, this.GUID, body);
-        this.sender.sendMessage(message, destinationIp, destination);
-
         if (responseImplementation) {
             this.requestsMap.set(message.guid, responseImplementation);
         }
+        return this.sender.sendMessage(message, destinationIp, destination);
     }
 
     /**
@@ -108,20 +112,9 @@ export class Peer implements IMessageListener, IPeer {
     public onMessage(message: Message, senderGuid: string, senderIp: string): void {
         logger.info(`Message received from ${senderGuid}: ${message.type}`);
 
-        const internalImplementation = this.internalReceiveHandlers.get(message.type);
-        if (internalImplementation && typeof internalImplementation === "function") {
-            internalImplementation(message, senderGuid, senderIp);
-
-            // Acknowledge this message
-            if (message.type !== MessageType.ACKNOWLEDGE) {
-                this.sender.sendAcknowledgeMessage(message, this.getIpFromRoutingTable(senderGuid));
-            }
-            return;
-        }
-
-        const externalImplementation = this.externalReceiveHandlers.get(message.type);
-        if (externalImplementation && typeof externalImplementation === "function") {
-            externalImplementation(message, senderGuid, (body: string) => {
+        const implementation = this.receiveHandlers.get(message.type);
+        if (implementation && typeof implementation === "function") {
+            implementation(message, senderGuid, (body: string) => {
                 this.sendMessage(`${message.type}reply`, senderGuid, body);
             });
 
@@ -144,14 +137,14 @@ export class Peer implements IMessageListener, IPeer {
      */
     private createReceiverHandlers(): void {
         // Handle acknowledge messages
-        this.registerInternalReceiveHandlerForMessageType(MessageType.ACKNOWLEDGE, async (message: Message, senderGuid: string, senderIp: string) => {
+        this.registerReceiveHandlerForMessageType(MessageType.ACKNOWLEDGE, async (message: Message, senderGuid: string, senderIp: string) => {
             if (senderGuid && message.body && senderIp) {
                 this.sender.removeSentMessage(message.body);
             }
         });
 
         // Handle join messages
-        this.registerInternalReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message, senderGuid: string, senderIp: string) => {
+        this.registerReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message, senderGuid: string, senderIp: string) => {
             // Check if node already has an id, if so do not proceed with join request
             if (message.originalSenderGuid === Guid.EMPTY && senderGuid) {
                 const newPeerId: string = Guid.create().toString();
@@ -174,18 +167,8 @@ export class Peer implements IMessageListener, IPeer {
             }
         });
 
-        // Handle join response messages
-        this.registerInternalReceiveHandlerForMessageType(MessageType.JOIN_RESPONSE, async (message: Message, senderGuid: string, senderIp: string) => {
-            if (message.body && this.GUID === Guid.EMPTY && senderIp && senderGuid && message.originalSenderGuid) {
-                const body = JSON.parse(message.body);
-                this.GUID = body.guid;
-                this.routingTable.addPeer(message.originalSenderGuid, senderIp);
-                this.routingTable.mergeRoutingTables(new Map(body.routingTable));
-            }
-        });
-
         // Handle new peer messages
-        this.registerInternalReceiveHandlerForMessageType(MessageType.NEW_PEER, async (message: Message, senderGuid: string, senderIp: string) => {
+        this.registerReceiveHandlerForMessageType(MessageType.NEW_PEER, async (message: Message, senderGuid: string, senderIp: string) => {
             if (senderGuid && message.body && senderIp) {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
@@ -194,27 +177,28 @@ export class Peer implements IMessageListener, IPeer {
         });
 
         // Handle leave messages
-        this.registerInternalReceiveHandlerForMessageType(MessageType.LEAVE, async (message: Message, senderGuid: string, senderIp: string) => {
+        this.registerReceiveHandlerForMessageType(MessageType.LEAVE, async (message: Message, senderGuid: string, senderIp: string) => {
             if (message && senderGuid && senderIp) {
                 // Remove the new peer from our registry
                 this.routingTable.removePeer(message.originalSenderGuid);
             }
         });
     }
-
-    public registerInternalReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, senderGuid: string, senderIp: string) => void): void {
-        this.internalReceiveHandlers.set(messageType, implementation);
-    }
-
     /**
      * Try to join the network. Send a join request to every given peer.
      */
-    private checkInitialPeers(peers: string[]): void {
-        for (const peer of peers) {
-            // Check if peer is online and try to join
-            const message = new Message(MessageType.JOIN, this.GUID);
-            this.sender.sendMessage(message, peer);
-        }
+    private checkInitialPeers(peers: string[]): Promise<void> {
+        return new Promise(async (resolve) => {
+            const promises = [];
+            for (const peer of peers) {
+                // Check if peer is online and try to join
+                promises.push(this.sendMessage(MessageType.JOIN, peer, (body: string) => void ) => {
+                    response();
+                });
+            }
+            await Promise.all(promises);
+            resolve();
+        });
     }
 
     /**

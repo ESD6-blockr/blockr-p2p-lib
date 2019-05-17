@@ -20,38 +20,6 @@ export class Sender {
     }
 
     /**
-     * Send the given message to the given destinationIp.
-     *
-     * @param message - The message
-     * @param destinationIp - The destinationIp ip
-     * @param destinationGuid
-     */
-    public sendMessage(message: Message, destinationIp: string, destinationGuid?: string): void {
-        this.emitMessage(message, destinationIp, destinationGuid);
-    }
-
-    /**
-     * Send an acknowledge message to the given destinationIp, based on the given message.
-     *
-     * @param originalMessage - The message
-     * @param destinationIp - The destinationIp
-     */
-    public sendAcknowledgeMessage(originalMessage: Message, destinationIp: string): void {
-        const response = new Message(
-            MessageType.ACKNOWLEDGE,
-            originalMessage.originalSenderGuid,
-            originalMessage.guid,
-        );
-        response.createGuid();
-
-        // Send the response
-        const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
-        socket.emit("message", JSON.stringify(response));
-
-        logger.info(`Message sent to: ${destinationIp}: ${response.type}`);
-    }
-
-    /**
      * Get guids from the senders of the sent messages after the given date.
      * Deletes messages that are sent before the given date from the history.
      *
@@ -94,17 +62,35 @@ export class Sender {
      * @param destinationIp - The destinationIp ip
      * @param destinationGuid
      */
-    private emitMessage(message: Message, destinationIp: string, destinationGuid?: string): void {
-        message.createGuid();
+    public sendMessage(message: Message, destinationIp: string, destinationGuid?: string): Promise<void> {
+        return new Promise((resolve) => {
+            message.createGuid();
 
-        const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
-        socket.emit("message", JSON.stringify(message));
+            const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
+            socket.emit("message", JSON.stringify(message));
 
-        if (destinationGuid) {
-            this.sentMessages.set(message.guid, message);
-            this.sentMessageSenders.set(message.guid, destinationGuid);
-        }
+            if (destinationGuid) {
+                this.sentMessages.set(message.guid, message);
+                this.sentMessageSenders.set(message.guid, destinationGuid);
+            }
+            logger.info(`Message sent to: ${destinationIp}: ${message.type}`);
+            resolve();
+        });
+    }
 
-        logger.info(`Message sent to: ${destinationIp}: ${message.type}`);
+    /**
+     * Send an acknowledge message to the given destinationIp, based on the given message.
+     *
+     * @param originalMessage - The message
+     * @param destinationIp - The destinationIp
+     */
+    public sendAcknowledgeMessage(originalMessage: Message, destinationIp: string): Promise<void> {
+        const message = new Message(
+            MessageType.ACKNOWLEDGE,
+            originalMessage.originalSenderGuid,
+            originalMessage.guid,
+        );
+
+        return this.sendMessage(message, destinationIp);
     }
 }
