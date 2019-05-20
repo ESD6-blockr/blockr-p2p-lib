@@ -1,17 +1,17 @@
 import { Guid } from "guid-typescript";
 
 import { MessageType } from "../enums/messageType.enum";
-import { RESPONSE_TYPE } from "../interfaces/peer";
+import { IPeer, RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
 import { ConnectionService } from "../services/connection.service";
 
 const DEFAULT_PORT: string = "8081";
-const THIS_IP: string = "145.93.58.247"; // TODO: get the ip dynamic of the current machine
+const THIS_IP: string = "145.93.121.205"; // TODO: get the ip dynamic of the current machine
   
 /**
  * Handles the peer network.
  */
-export class Peer {
+export class Peer implements IPeer{
     private GUID?: string;
     private readonly connectionService: ConnectionService;
     
@@ -32,6 +32,34 @@ export class Peer {
             this.GUID = Guid.create().toString();
             resolve();
         });
+    }
+
+    public registerReceiveHandlerForMessageType(messageType: string, implementation: RECIEVE_HANDLER_TYPE): void {
+        this.connectionService.registerReceiveHandlerForMessageType(messageType, implementation);
+    }
+
+    public sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
+        if (this.GUID) {
+            message.originalSenderGuid = this.GUID;
+        }
+        return this.connectionService.sendBroadcast(message, responseImplementation);
+    }
+
+    public sendMessage(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
+        if (this.GUID) {
+            message.originalSenderGuid = this.GUID;
+        }
+        return this.connectionService.sendMessage(message, destinationGuid, responseImplementation);
+    }
+
+    public leave() {
+        if (this.GUID) {
+            this.connectionService.leave(this.GUID);
+        }
+    }
+
+    public getPromiseForResponse(message: Message): Promise<void> {
+        return this.connectionService.getPromiseForResponse(message);
     }
 
     /**
@@ -75,7 +103,9 @@ export class Peer {
             if (senderGuid && message.body) {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
-                this.connectionService.routingTable.addPeer(body.guid, body.sender);
+                if (this.GUID !== body.guid) {
+                    this.connectionService.routingTable.addPeer(body.guid, body.sender);
+                }
             }
         });
 
@@ -83,7 +113,7 @@ export class Peer {
         this.connectionService.registerReceiveHandlerForMessageType(MessageType.LEAVE, async (message: Message, senderGuid: string) => {
             if (message && senderGuid) {
                 // Remove the new peer from our registry
-                this.connectionService.routingTable.removePeer(message.originalSenderGuid);
+                this.connectionService.routingTable.removePeer(senderGuid);
             }
         });
     }
@@ -96,14 +126,13 @@ export class Peer {
                 reject();
                 return;
             }
-            const promises = [];
             for (const peer of peers) {
                 // Check if peer is online and try to join
                 const message = new Message(MessageType.JOIN, this.GUID, JSON.stringify({ip: THIS_IP}));
-                promises.push(this.connectionService.sendMessageByIp(message, peer,
-                    async (responseMessage: Message) => { await this.joinResponse(responseMessage); }));
+                await this.connectionService.sendMessageByIp(message, peer,
+                    async (responseMessage: Message) => { await this.joinResponse(responseMessage); });
+                await this.connectionService.getPromiseForResponse(message);
             }
-            await Promise.all(promises);
             resolve();
         });
     }

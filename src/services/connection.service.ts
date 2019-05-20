@@ -9,6 +9,7 @@ import { RoutingTable } from "../models/routingTable.model";
 import { Receiver } from "../services/receiver.service";
 import { Sender } from "../services/sender.service";
 import { DateManipulator } from "../util/dateManipulator";
+import { Deferred } from "../util/deffered.util";
 
 
 const MESSAGE_EXPIRATION_TIMER: number = 1;
@@ -22,6 +23,7 @@ export class ConnectionService implements IMessageListener {
     private readonly receiveHandlers: Map<string, RECIEVE_HANDLER_TYPE>;
     private sender?: Sender;
     private receiver?: Receiver;
+    private readonly responseDefferedsMap: Map<string, Deferred<boolean>>;
     private readonly requestsMap: Map<string, RESPONSE_TYPE>;
     private readonly sentMessages: Map<string, Message>;
 
@@ -31,6 +33,7 @@ export class ConnectionService implements IMessageListener {
         this.requestsMap = new Map<string, RESPONSE_TYPE>();
         this.routingTable = new RoutingTable();
         this.sentMessages = new Map<string, Message>();
+        this.responseDefferedsMap = new Map<string, Deferred<boolean>>();
     }
 
     public init(port: string): Promise<void> {
@@ -73,7 +76,6 @@ export class ConnectionService implements IMessageListener {
             this.sentMessages.set(destinationGuid, message);
         }
 
-        console.log("============== SEND MESSAGE GUID ============", destinationGuid);
         const destinationIp = this.getIpFromRoutingTable(destinationGuid);
         return this.sendMessageByIp(message, destinationIp, responseImplementation);
     }
@@ -110,6 +112,10 @@ export class ConnectionService implements IMessageListener {
             const responseImplementation = this.requestsMap.get(message.correlationId);
             if (responseImplementation) {
                 await responseImplementation(message);
+                const responseDeffered = this.responseDefferedsMap.get(message.correlationId);
+                if (responseDeffered) {
+                    responseDeffered.resolve!(true);
+                }
             }
 
             const implementation = this.receiveHandlers.get(message.type);
@@ -122,7 +128,6 @@ export class ConnectionService implements IMessageListener {
 
             // Acknowledge this message
             if (message.type !== MessageType.ACKNOWLEDGE) {
-                console.log("============== ACK ============", message);
                 const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
                 this.sender.sendAcknowledgeMessage(message, destination);
             }
@@ -148,10 +153,21 @@ export class ConnectionService implements IMessageListener {
             
             if (responseImplementation) {
                 this.requestsMap.set(message.guid, responseImplementation);
+                this.responseDefferedsMap.set(message.guid, new Deferred());
             }
-            
             await this.sender.sendMessage(message, destinationIp);
             resolve();
+        });
+    }
+
+    public getPromiseForResponse(message: Message): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            const responseDeffered = this.responseDefferedsMap.get(message.correlationId);
+            if (responseDeffered) {
+                await responseDeffered.promise;
+                resolve();
+            }
+            reject();
         });
     }
 
