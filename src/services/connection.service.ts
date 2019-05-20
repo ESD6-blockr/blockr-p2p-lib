@@ -98,30 +98,34 @@ export class ConnectionService implements IMessageListener {
      * @param senderGuid - The GUID of the sender
      * @param senderIp - The IP of the sender
      */
-    public onMessage(message: Message): void {
-        if (!this.sender) {
-            return;
-        }
-        logger.info(`Message received from ${message.originalSenderGuid}: ${message.type}`);
-        
-        const responseImplementation = this.requestsMap.get(message.correlationId);
-        if (responseImplementation) {
-            responseImplementation(message);
-        }
+    public onMessage(message: Message): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            if (!this.sender) {
+                reject();
+                return;
+            }
+            logger.info(`Message received from ${message.originalSenderGuid}: ${message.type}`);
+            
+            const responseImplementation = this.requestsMap.get(message.correlationId);
+            if (responseImplementation) {
+                await responseImplementation(message);
+            }
 
-        const implementation = this.receiveHandlers.get(message.type);
-        if (implementation && typeof implementation === "function") {
-            implementation(message, message.originalSenderGuid, (responseMessage: Message) => {
-                responseMessage.correlationId = message.guid;
-                this.sendMessage(responseMessage, responseMessage.originalSenderGuid);
-            });
-        }
+            const implementation = this.receiveHandlers.get(message.type);
+            if (implementation && typeof implementation === "function") {
+                await implementation(message, message.originalSenderGuid, (responseMessage: Message) => {
+                    responseMessage.correlationId = message.guid;
+                    this.sendMessage(responseMessage, responseMessage.originalSenderGuid);
+                });
+            }
 
-        // Acknowledge this message
-        if (message.type !== MessageType.ACKNOWLEDGE) {
-            const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
-            this.sender.sendAcknowledgeMessage(message, destination);
-        }
+            // Acknowledge this message
+            if (message.type !== MessageType.ACKNOWLEDGE) {
+                const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
+                this.sender.sendAcknowledgeMessage(message, destination);
+            }
+            resolve();
+        });
     }
 
     /**
@@ -190,6 +194,8 @@ export class ConnectionService implements IMessageListener {
     }
 
     private getIpFromRoutingTable(guid: string): string {
+        console.log("==========================guid==========================", guid);
+        console.log("==========================table==========================", this.routingTable);
         const destinationIp = this.routingTable.peers.get(guid);
         if (!destinationIp) {
             throw new UnknownDestinationError(`Unknown destination. Could not find an IP for: ${guid}`);

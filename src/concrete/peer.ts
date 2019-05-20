@@ -46,30 +46,27 @@ export class Peer {
         });
 
         // Handle join messages
-        this.connectionService.registerReceiveHandlerForMessageType(MessageType.JOIN, (message: Message,
-                                                                                       senderGuid: string, response: RESPONSE_TYPE) => {
-            return new Promise(async (resolve) => {
-                // Check if node already has an id, if so do not proceed with join request
-                if (message.originalSenderGuid === Guid.EMPTY && senderGuid) {
-                    if (!message.body) {
-                        return;
-                    }
-                    const newPeerId: string = Guid.create().toString();
-                    const body = JSON.parse(message.body);
-                    
-                    // Send response
-                    const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
-                        routingTable: Array.from(this.connectionService.routingTable.peers)});
-                    response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
-
-                    // Let other peers know about the newly joined peer
-                    await this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER, newPeerId));
-
-                    // Add the new peer to our registry
-                    this.connectionService.routingTable.addPeer(newPeerId, body.ip);
-                    resolve();
+        this.connectionService.registerReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message,
+                                                                                             senderGuid: string, response: RESPONSE_TYPE) => {
+            // Check if node already has an id, if so do not proceed with join request
+            if (message.originalSenderGuid === Guid.EMPTY && senderGuid) {
+                if (!message.body) {
+                    return;
                 }
-            });
+                const newPeerId: string = Guid.create().toString();
+                const body = JSON.parse(message.body);
+                const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
+                                    routingTable: Array.from(this.connectionService.routingTable.peers)});
+
+                // Add the new peer to our registry
+                this.connectionService.routingTable.addPeer(newPeerId, body.ip);
+                
+
+                response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
+
+                // Let other peers know about the newly joined peer
+                await this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER, newPeerId));
+            }
         });
 
         // Handle new peer messages
@@ -102,7 +99,8 @@ export class Peer {
             for (const peer of peers) {
                 // Check if peer is online and try to join
                 const message = new Message(MessageType.JOIN, this.GUID, JSON.stringify({ip: THIS_IP}));
-                promises.push(this.connectionService.sendMessageByIp(message, peer, this.joinResponse));
+                promises.push(this.connectionService.sendMessageByIp(message, peer,
+                    async (responseMessage: Message) => { await this.joinResponse(responseMessage); }));
             }
             await Promise.all(promises);
             resolve();
@@ -110,15 +108,14 @@ export class Peer {
     }
 
     private joinResponse(message: Message): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            if (message.body && this.GUID === Guid.EMPTY && message.originalSenderGuid) {
+        return new Promise(async (resolve) => {
+            if (message.body && message.originalSenderGuid) {
                 const body = JSON.parse(message.body);
                 this.GUID = body.guid;
                 this.connectionService.routingTable.addPeer(message.originalSenderGuid, body.ip);
                 this.connectionService.routingTable.mergeRoutingTables(new Map(body.routingTable));
-                resolve();
             }
-            reject();
+            resolve();
         });
     }
 }
