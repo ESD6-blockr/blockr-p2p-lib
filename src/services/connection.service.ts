@@ -73,6 +73,7 @@ export class ConnectionService implements IMessageListener {
             this.sentMessages.set(destinationGuid, message);
         }
 
+        console.log("============== SEND MESSAGE GUID ============", destinationGuid);
         const destinationIp = this.getIpFromRoutingTable(destinationGuid);
         return this.sendMessageByIp(message, destinationIp, responseImplementation);
     }
@@ -121,6 +122,7 @@ export class ConnectionService implements IMessageListener {
 
             // Acknowledge this message
             if (message.type !== MessageType.ACKNOWLEDGE) {
+                console.log("============== ACK ============", message);
                 const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
                 this.sender.sendAcknowledgeMessage(message, destination);
             }

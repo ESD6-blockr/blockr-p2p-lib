@@ -6,7 +6,7 @@ import { Message } from "../models/message.model";
 import { ConnectionService } from "../services/connection.service";
 
 const DEFAULT_PORT: string = "8081";
-const THIS_IP: string = "145.93.121.205"; // TODO: get the ip dynamic of the current machine
+const THIS_IP: string = "145.93.58.247"; // TODO: get the ip dynamic of the current machine
   
 /**
  * Handles the peer network.
@@ -54,6 +54,7 @@ export class Peer {
                     return;
                 }
                 const newPeerId: string = Guid.create().toString();
+                message.originalSenderGuid = newPeerId;
                 const body = JSON.parse(message.body);
                 const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
                                     routingTable: Array.from(this.connectionService.routingTable.peers)});
@@ -61,7 +62,7 @@ export class Peer {
                 // Add the new peer to our registry
                 this.connectionService.routingTable.addPeer(newPeerId, body.ip);
                 
-
+                
                 response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
                 // Let other peers know about the newly joined peer
