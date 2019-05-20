@@ -1,5 +1,4 @@
-import { Message } from "../models/message";
-
+import { Message } from "../models/message.model";
 
 export type RESPONSE_TYPE = (message: Message) => Promise<void> | void;
 

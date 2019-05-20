@@ -1,17 +1,9 @@
-import { logger } from "@blockr/blockr-logger";
 import { Guid } from "guid-typescript";
 
 import { MessageType } from "../enums/messageType.enum";
-import { UnknownDestinationError } from "../exceptions/unknownDestinationError";
-import { IMessageListener } from "../interfaces/messageListener";
-import { IPeer, RESPONSE_TYPE } from "../interfaces/peer";
+import { RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
-import { RoutingTable } from "../models/routingTable.model";
 import { ConnectionService } from "../services/connection.service";
-import { Receiver } from "../services/receiver.service";
-import { Sender } from "../services/sender.service";
-import { DateManipulator } from "../util/dateManipulator";
-
 
 const DEFAULT_PORT: string = "8081";
 const THIS_IP: string = ""; // TODO: get the ip dynamic of the current machine
@@ -19,7 +11,7 @@ const THIS_IP: string = ""; // TODO: get the ip dynamic of the current machine
 /**
  * Handles the peer network.
  */
-export class Peer implements IMessageListener, IPeer {
+export class Peer {
     private GUID?: string;
     private readonly connectionService: ConnectionService;
     

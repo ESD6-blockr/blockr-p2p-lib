@@ -1,5 +1,4 @@
 import { logger } from "@blockr/blockr-logger";
-import { Guid } from "guid-typescript";
 
 import { MessageType } from "../enums/messageType.enum";
 import { UnknownDestinationError } from "../exceptions/unknownDestinationError";
@@ -144,7 +143,7 @@ export class ConnectionService implements IMessageListener {
 
     public sendMessageByIp(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (!this.sender || !this.GUID) {
+            if (!this.sender) {
                 reject();
                 return;
             }
