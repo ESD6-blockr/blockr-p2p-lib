@@ -1,7 +1,8 @@
 import { Message } from "../models/message.model";
 
-export type RESPONSE_TYPE = (message: Message) => Promise<void> | void;
 
+export type RESPONSE_TYPE = (message: Message) => Promise<void> | void;
+export type RECIEVE_HANDLER_TYPE = (message: Message, senderGuid: string, response: RESPONSE_TYPE) => void;
 /**
  * Peer interface.
  */

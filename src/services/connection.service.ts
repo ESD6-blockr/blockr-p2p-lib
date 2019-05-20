@@ -3,7 +3,7 @@ import { logger } from "@blockr/blockr-logger";
 import { MessageType } from "../enums/messageType.enum";
 import { UnknownDestinationError } from "../exceptions/unknownDestinationError";
 import { IMessageListener } from "../interfaces/messageListener";
-import { RESPONSE_TYPE } from "../interfaces/peer";
+import { RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
 import { RoutingTable } from "../models/routingTable.model";
 import { Receiver } from "../services/receiver.service";
@@ -19,20 +19,18 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
  */
 export class ConnectionService implements IMessageListener {
     public readonly routingTable: RoutingTable;
-    private readonly receiveHandlers: Map<string, (message: Message, senderGuid: string, response: RESPONSE_TYPE) => void>;
+    private readonly receiveHandlers: Map<string, RECIEVE_HANDLER_TYPE>;
     private sender?: Sender;
     private receiver?: Receiver;
-    private readonly requestsMap: Map<string, (response: Message) => void>;
+    private readonly requestsMap: Map<string, RESPONSE_TYPE>;
     private readonly sentMessages: Map<string, Message>;
-    private readonly sentMessageSenders: Map<string, string>;
 
     
     constructor() {
-        this.receiveHandlers = new Map();
-        this.requestsMap = new Map();
+        this.receiveHandlers = new Map<string, RECIEVE_HANDLER_TYPE>();
+        this.requestsMap = new Map<string, RESPONSE_TYPE>();
         this.routingTable = new RoutingTable();
         this.sentMessages = new Map<string, Message>();
-        this.sentMessageSenders = new Map<string, string>();
     }
 
     public init(port: string): Promise<void> {
@@ -49,9 +47,8 @@ export class ConnectionService implements IMessageListener {
      *
      * @param messageGuid - The message hash of the message to remove
      */
-    public removeSentMessage(messageGuid: string): void {
-        this.sentMessages.delete(messageGuid);
-        this.sentMessageSenders.delete(messageGuid);
+    public removeSentMessage(senderGuid: string): void {
+        this.sentMessages.delete(senderGuid);
     }
 
     /**
@@ -60,8 +57,7 @@ export class ConnectionService implements IMessageListener {
      * @param messageType - The messageType that the receiver handles
      * @param implementation - The implementation of the receiver handler
      */
-    public registerReceiveHandlerForMessageType(messageType: string, implementation: (message: Message, sender: string,
-                                                                                      response: RESPONSE_TYPE) => void): void {
+    public registerReceiveHandlerForMessageType(messageType: string, implementation: RECIEVE_HANDLER_TYPE): void {
         this.receiveHandlers.set(messageType, implementation);
     }
 
@@ -74,8 +70,7 @@ export class ConnectionService implements IMessageListener {
      */
     public sendMessage(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         if (destinationGuid) {
-            this.sentMessages.set(message.guid, message);
-            this.sentMessageSenders.set(message.guid, destinationGuid);
+            this.sentMessages.set(destinationGuid, message);
         }
 
         const destinationIp = this.getIpFromRoutingTable(destinationGuid);
@@ -103,32 +98,29 @@ export class ConnectionService implements IMessageListener {
      * @param senderGuid - The GUID of the sender
      * @param senderIp - The IP of the sender
      */
-    public onMessage(message: Message, senderGuid: string): void {
+    public onMessage(message: Message): void {
         if (!this.sender) {
             return;
         }
-        logger.info(`Message received from ${senderGuid}: ${message.type}`);
+        logger.info(`Message received from ${message.originalSenderGuid}: ${message.type}`);
         
+        const responseImplementation = this.requestsMap.get(message.correlationId);
+        if (responseImplementation) {
+            responseImplementation(message);
+        }
+
         const implementation = this.receiveHandlers.get(message.type);
-
         if (implementation && typeof implementation === "function") {
-
-            implementation(message, senderGuid, (responseMessage: Message) => {
+            implementation(message, message.originalSenderGuid, (responseMessage: Message) => {
+                responseMessage.correlationId = message.guid;
                 this.sendMessage(responseMessage, responseMessage.originalSenderGuid);
             });
+        }
 
-            // Acknowledge this message
-            if (message.type !== MessageType.ACKNOWLEDGE) {
-                let destination;
-                if (message.body) {
-                    const body = JSON.parse(message.body);
-                    destination = body.ip;
-                }
-                if (!destination) {
-                    destination = this.getIpFromRoutingTable(senderGuid);
-                }
-                this.sender.sendAcknowledgeMessage(message, destination);
-            }
+        // Acknowledge this message
+        if (message.type !== MessageType.ACKNOWLEDGE) {
+            const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
+            this.sender.sendAcknowledgeMessage(message, destination);
         }
     }
 
@@ -147,8 +139,6 @@ export class ConnectionService implements IMessageListener {
                 reject();
                 return;
             }
-            // const message = new Message(messageType, this.GUID, body);
-            // message.correlationId = correlationId;
             
             if (responseImplementation) {
                 this.requestsMap.set(message.guid, responseImplementation);
@@ -171,17 +161,12 @@ export class ConnectionService implements IMessageListener {
         const guids: string[] = [];
 
         for (const guid of this.sentMessages.keys()) {
-            const sentMessageSender = this.sentMessageSenders.get(guid);
             const message = this.sentMessages.get(guid);
 
-            if (message && message.isOlderThan(date) && sentMessageSender) {
-                guids.push(sentMessageSender);
-
-                this.sentMessages.delete(guid);
-                this.sentMessageSenders.delete(guid);
+            if (message && message.isOlderThan(date) && guid) {
+                guids.push(guid);
             }
         }
-
         return guids;
     }
 

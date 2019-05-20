@@ -9,24 +9,15 @@ export class Message {
     public date: Date;
     public originalSenderGuid: string;
     public body?: string;
-    public correlationId?: string;
+    public correlationId: string;
 
-    constructor(type: string, originalSenderGuid: string, body?: string) {
-        this.guid = Guid.createEmpty().toString();
+    constructor(type: string, originalSenderGuid: string, body?: string, correlationId?: string) {
+        this.guid = Guid.create().toString();
         this.type = type;
         this.date = new Date();
         this.originalSenderGuid = originalSenderGuid;
         this.body = body;
-        this.createGuid();
-    }
-
-    /**
-     * Create a guid for this message if guid has not been created yet.
-     */
-    public createGuid() {
-        if (this.guid === Guid.EMPTY) {
-            this.guid = Guid.create().toString();
-        }
+        this.correlationId = (correlationId) ? correlationId : this.guid;
     }
 
     /**

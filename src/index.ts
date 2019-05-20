@@ -1,4 +1,7 @@
+import { logger } from "@blockr/blockr-logger";
 import { Peer } from "./concrete/peer";
+import { RESPONSE_TYPE } from "./interfaces/peer";
+import { Message } from "./models/message.model";
 
 export { IPeer } from "./interfaces/peer";
 export { Peer } from "./concrete/peer";

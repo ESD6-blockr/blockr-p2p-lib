@@ -41,7 +41,7 @@ export class Peer {
         // Handle acknowledge messages
         this.connectionService.registerReceiveHandlerForMessageType(MessageType.ACKNOWLEDGE, async (message: Message, senderGuid: string) => {
             if (senderGuid && message.body) {
-                this.connectionService.removeSentMessage(message.body);
+                this.connectionService.removeSentMessage(senderGuid);
             }
         });
 
@@ -50,22 +50,22 @@ export class Peer {
                                                                                              senderGuid: string, response: RESPONSE_TYPE) => {
             // Check if node already has an id, if so do not proceed with join request
             if (message.originalSenderGuid === Guid.EMPTY && senderGuid) {
-                const newPeerId: string = Guid.create().toString();
                 if (!message.body) {
                     return;
                 }
+                const newPeerId: string = Guid.create().toString();
                 const body = JSON.parse(message.body);
-                // Add the new peer to our registry
-                this.connectionService.routingTable.addPeer(newPeerId, body.ip);
                 
                 // Send response
-                response(new Message(MessageType.JOIN_RESPONSE,
-                    newPeerId,
-                    JSON.stringify({guid: newPeerId, ip: body.ip, routingTable: Array.from(this.connectionService.routingTable.peers)})));
+                const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
+                    routingTable: Array.from(this.connectionService.routingTable.peers)});
+                response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
                 // Let other peers know about the newly joined peer
-                this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER,
-                    JSON.stringify({guid: newPeerId, sender: body.ip})));
+                this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER, newPeerId));
+
+                // Add the new peer to our registry
+                this.connectionService.routingTable.addPeer(newPeerId, body.ip);
             }
         });
 

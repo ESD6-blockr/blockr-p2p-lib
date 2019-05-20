@@ -23,8 +23,6 @@ export class Sender {
      */
     public sendMessage(message: Message, destinationIp: string): Promise<void> {
         return new Promise((resolve) => {
-            message.createGuid();
-
             const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
             socket.emit("message", JSON.stringify(message));
 

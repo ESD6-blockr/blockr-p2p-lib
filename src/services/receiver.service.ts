@@ -28,7 +28,7 @@ export class Receiver {
                 if (!this.receivedMessages.includes(message.guid)) {
                     this.receivedMessages.push(message.guid);
                     const senderIp = socket.request.connection.remoteAddress.split(":").pop();
-                    this.messageListener.onMessage(message, message.originalSenderGuid, senderIp);
+                    this.messageListener.onMessage(message);
                 }
             });
         });
