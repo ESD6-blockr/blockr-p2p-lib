@@ -86,7 +86,7 @@ export class Peer implements IPeer {
                 message.originalSenderGuid = newPeerId;
                 const body = JSON.parse(message.body);
 
-                const routingTable = this.connectionService.routingTable;
+                const routingTable = this.connectionService.routingTable.clone();
                 routingTable.addPeer(this.GUID, THIS_IP);
 
                 const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
@@ -94,7 +94,8 @@ export class Peer implements IPeer {
 
                 // Add the new peer to our registry
                 this.connectionService.routingTable.addPeer(newPeerId, body.ip);
-                
+                console.log("===== ConnectionService After RoutingTable ====", this.connectionService.routingTable);
+                console.log("===== ConnectionService CONST RoutingTable ====", routingTable);
                 
                 response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
