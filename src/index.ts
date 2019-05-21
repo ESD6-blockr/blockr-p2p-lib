@@ -12,7 +12,8 @@ async function start() {
     HostIp.getIp();
     const peer = new Peer("validator");
     await peer.init("8081");
-    console.log(peer.getPeerOfType("validator"));
+    console.log("=====================finished init2 =====================");
+    console.log("====================peer of type====================",peer.getPeerOfType("validator"));
     // // peer.registerReceiveHandlerForMessageType("test", (message: Message, sender: string, response: RESPONSE_TYPE) => {
     // //     message = message;
     // //     sender = sender;

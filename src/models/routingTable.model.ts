@@ -1,4 +1,5 @@
 import { PeerNode } from "./peerNode.model";
+import { Peer } from "../concrete/peer";
 
 /**
  * Routing table registry.
@@ -22,12 +23,8 @@ export class RoutingTable {
     }
 
     public getPeerOfType(type: string): string {
-        for (const peer in this.peers) {
-            if (this.peers.get(peer)!.type === type) {
-                return peer;
-            }
-        }
-        return "";
+        console.log(this.peers.keys());
+        return type;
     }
 
     /**

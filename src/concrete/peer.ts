@@ -1,6 +1,5 @@
 import { Guid } from "guid-typescript";
 
-import { injectable } from "inversify";
 import { MessageType } from "../enums/messageType.enum";
 import { IPeer, RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
@@ -12,7 +11,6 @@ const DEFAULT_PORT: string = "8081";
 /**
  * Handles the peer network.
  */
-@injectable()
 export class Peer implements IPeer {
     private readonly connectionService: ConnectionService;
     private readonly type: string;
@@ -41,9 +39,10 @@ export class Peer implements IPeer {
                 this.connectionService.GUID = Guid.createEmpty().toString();
                 await this.checkInitialPeers(initialPeers);
                 resolve();
+                console.log("=====================finished init =====================");
                 return;
             }
-
+            console.log("=====================finished init =====================");
             this.connectionService.GUID = Guid.create().toString();
             resolve();
         });
@@ -141,7 +140,7 @@ export class Peer implements IPeer {
                 await response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
                 // Let other peers know about the newly joined peer
-                await this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER,
+                await this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER, this.connectionService.GUID,
                     JSON.stringify({guid: this.connectionService.GUID, type: this.type})));
             }
         });
