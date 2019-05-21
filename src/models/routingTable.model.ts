@@ -1,54 +1,53 @@
-export class node {
-    public id: string;
-    public type: string;
-
-    public init(){
-        
-    }
-}
+import { PeerNode } from "./peerNode.model";
 
 /**
- * Routing table
+ * Routing table registry.
  */
 export class RoutingTable {
-    public peers: Map<string, string>;
+    public peers: Map<string, PeerNode>;
 
-    /**
-     * Creates an instance of routing table.
-     */
     constructor() {
         this.peers = new Map();
     }
 
     /**
-     * Adds peer
-     * @param guid 
-     * @param ip 
+     * Add a peer to the registry.
+     *
+     * @param guid - The GUID
+     * @param ip - The IP
+     * @param type - The Type
      */
-    public addPeer(guid: string, ip: string): void {
-        this.peers.set(guid, ip);
+    public addPeer(guid: string, ip: string, type: string): void {
+        this.peers.set(guid, new PeerNode(ip, type));
+    }
+
+    public getPeerOfType(type: string): string {
+        for (const peer in this.peers) {
+            if (this.peers.get(peer)!.type === type) {
+                return peer;
+            }
+        }
+        return "";
     }
 
     /**
-     * Removes peer
-     * @param guid 
+     * Remove peer by its guid.
+     *
+     * @param guid - The GUID
      */
     public removePeer(guid: string): void {
         this.peers.delete(guid);
     }
 
     /**
-     * Merges routing tables
-     * @param routingTable 
+     * Merge two existing peer registries.
+     *
+     * @param routingTable - The RoutingTable
      */
-    public mergeRoutingTables(routingTable: Map<string, string>): void {
+    public mergeRoutingTables(routingTable: Map<string, PeerNode>): void {
         this.peers = new Map([...this.peers, ...routingTable]);
     }
 
-    /**
-     * Clones routing table
-     * @returns clone 
-     */
     public clone(): RoutingTable {
         const routingTable = new RoutingTable();
         for (const peer of this.peers) {

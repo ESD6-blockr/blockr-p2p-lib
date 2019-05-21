@@ -10,7 +10,8 @@ export { Peer } from "./concrete/peer";
 
 async function start() {
     HostIp.getIp();
-    // const peer = new Peer();
+    const peer = new Peer("validator");
+    console.log(peer.getPeerOfType("validator"));
     // await peer.init("8081", ["145.93.58.247"]);
     // // peer.registerReceiveHandlerForMessageType("test", (message: Message, sender: string, response: RESPONSE_TYPE) => {
     // //     message = message;

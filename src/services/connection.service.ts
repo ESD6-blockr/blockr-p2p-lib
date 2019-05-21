@@ -242,6 +242,6 @@ export class ConnectionService implements IMessageListener {
         if (!destinationIp) {
             throw new UnknownDestinationException(`Unknown destination. Could not find an IP for: ${guid}`);
         }
-        return destinationIp;
+        return destinationIp.ip;
     }
 }
