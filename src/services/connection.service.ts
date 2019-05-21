@@ -89,7 +89,6 @@ export class ConnectionService implements IMessageListener {
     public sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         const promises = [];
         for (const guid of this.routingTable.peers.keys()) {
-            console.log("==============sendbroadcast guid==============", guid);
             promises.push(this.sendMessage(message, guid, responseImplementation));
         }
         return Promise.all(promises);
@@ -125,12 +124,12 @@ export class ConnectionService implements IMessageListener {
                     responseMessage.correlationId = message.guid;
                     this.sendMessage(responseMessage, responseMessage.originalSenderGuid);
                 });
-            }
-
-            // Acknowledge this message
-            if (message.type !== MessageType.ACKNOWLEDGE) {
-                const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
-                this.sender.sendAcknowledgeMessage(message, destination);
+                // Acknowledge this message
+                if (message.type !== MessageType.ACKNOWLEDGE) {
+                    console.log("========================acknowledge===========",message.originalSenderGuid);
+                    const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
+                    this.sender.sendAcknowledgeMessage(message, destination);
+                }
             }
             resolve();
         });
