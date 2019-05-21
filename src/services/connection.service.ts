@@ -213,8 +213,6 @@ export class ConnectionService implements IMessageListener {
 
     private getIpFromRoutingTable(guid: string): string {
         const destinationIp = this.routingTable.peers.get(guid);
-        console.log("==========================guid==========================", guid);
-        console.log("==========================table==========================", this.routingTable);
         if (!destinationIp) {
             throw new UnknownDestinationError(`Unknown destination. Could not find an IP for: ${guid}`);
         }
