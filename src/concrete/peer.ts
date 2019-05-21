@@ -102,7 +102,7 @@ export class Peer implements IPeer {
         return this.connectionService.getPromiseForResponse(message);
     }
 
-    public getPeerOfType(type: string): string {
+    public getPeerOfType(type: string): string | undefined {
         return this.connectionService.routingTable.getPeerOfType(type);
     }
     /**

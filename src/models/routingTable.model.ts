@@ -22,9 +22,13 @@ export class RoutingTable {
         this.peers.set(guid, new PeerNode(ip, type));
     }
 
-    public getPeerOfType(type: string): string {
-        console.log(this.peers.keys());
-        return type;
+    public getPeerOfType(type: string): string | undefined {
+        for (const peer of this.peers) {
+            if (peer[1].type === type) {
+                return peer[0];
+            }
+        }
+        return undefined;
     }
 
     /**
