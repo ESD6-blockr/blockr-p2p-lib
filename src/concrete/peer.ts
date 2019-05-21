@@ -6,7 +6,7 @@ import { Message } from "../models/message.model";
 import { ConnectionService } from "../services/connection.service";
 
 const DEFAULT_PORT: string = "8081";
-const THIS_IP: string = "145.93.120.194"; // TODO: get the ip dynamic of the current machine
+const THIS_IP: string = "145.93.58.247"; // TODO: get the ip dynamic of the current machine
   
 /**
  * Handles the peer network.
