@@ -11,6 +11,14 @@ export class Message {
     public body?: string;
     public correlationId: string;
 
+
+    /**
+     * Creates an instance of message.
+     * @param type 
+     * @param originalSenderGuid 
+     * @param [body] 
+     * @param [correlationId] 
+     */
     constructor(type: string, originalSenderGuid: string, body?: string, correlationId?: string) {
         this.guid = Guid.create().toString();
         this.type = type;

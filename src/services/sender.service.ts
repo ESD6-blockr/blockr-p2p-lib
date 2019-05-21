@@ -7,9 +7,13 @@ import { Message } from "../models/message.model";
  * Handles the sending of messages.
  */
 export class Sender {
-    private readonly protocol = "http://";
+    private readonly protocol = "http";
     private readonly port: string;
 
+    /**
+     * Creates an instance of sender.
+     * @param port 
+     */
     constructor(port: string) {
         this.port = port;
     }
@@ -19,11 +23,10 @@ export class Sender {
      *
      * @param message - The message
      * @param destinationIp - The destinationIp ip
-     * @param destinationGuid
      */
     public sendMessage(message: Message, destinationIp: string): Promise<void> {
         return new Promise((resolve) => {
-            const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
+            const socket = connect(`${this.protocol}://${destinationIp}:${this.port}`);
             socket.emit("message", JSON.stringify(message));
 
             logger.info(`Message sent to: ${destinationIp}: ${message.type}`);

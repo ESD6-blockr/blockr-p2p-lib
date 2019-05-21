@@ -1,26 +1,39 @@
 import { Guid } from "guid-typescript";
 
+import { injectable } from "inversify";
 import { MessageType } from "../enums/messageType.enum";
 import { IPeer, RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
 import { ConnectionService } from "../services/connection.service";
+import { HostIp } from "../util/hostIp.util";
 
 const DEFAULT_PORT: string = "8081";
-const THIS_IP: string = ""; // TODO: get the ip dynamic of the current machine
   
 /**
  * Handles the peer network.
  */
+@injectable()
 export class Peer implements IPeer {
     private readonly connectionService: ConnectionService;
-    
+    private ip?: string;
+
+    /**
+     * Creates an instance of peer.
+     */
     constructor() {
         this.connectionService = new ConnectionService();
         this.createReceiverHandlers();
     }
 
+    /**
+     * Inits peer
+     * @param [port] 
+     * @param [initialPeers] 
+     * @returns init 
+     */
     public init(port: string = DEFAULT_PORT, initialPeers?: string[]): Promise<void> {
         return new Promise(async (resolve) => {
+            this.ip = HostIp.getIp();
             await this.connectionService.init(port);
             if (initialPeers) {
                 this.connectionService.GUID = Guid.createEmpty().toString();
@@ -34,10 +47,21 @@ export class Peer implements IPeer {
         });
     }
 
+    /**
+     * Registers receive handler for message type
+     * @param messageType 
+     * @param implementation 
+     */
     public registerReceiveHandlerForMessageType(messageType: string, implementation: RECIEVE_HANDLER_TYPE): void {
         this.connectionService.registerReceiveHandlerForMessageType(messageType, implementation);
     }
 
+    /**
+     * Sends broadcast
+     * @param message 
+     * @param [responseImplementation] 
+     * @returns broadcast 
+     */
     public sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         if (this.connectionService.GUID) {
             message.originalSenderGuid = this.connectionService.GUID;
@@ -45,6 +69,13 @@ export class Peer implements IPeer {
         return this.connectionService.sendBroadcast(message, responseImplementation);
     }
 
+    /**
+     * Sends message
+     * @param message 
+     * @param destinationGuid 
+     * @param [responseImplementation] 
+     * @returns message 
+     */
     public sendMessage(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         if (this.connectionService.GUID) {
             message.originalSenderGuid = this.connectionService.GUID;
@@ -52,12 +83,20 @@ export class Peer implements IPeer {
         return this.connectionService.sendMessage(message, destinationGuid, responseImplementation);
     }
 
+    /**
+     * Leaves peer
+     */
     public leave() {
         if (this.connectionService.GUID) {
             this.connectionService.leave(this.connectionService.GUID);
         }
     }
 
+    /**
+     * Gets promise for response
+     * @param message 
+     * @returns promise for response 
+     */
     public getPromiseForResponse(message: Message): Promise<void> {
         return this.connectionService.getPromiseForResponse(message);
     }
@@ -86,7 +125,7 @@ export class Peer implements IPeer {
                 const body = JSON.parse(message.body);
 
                 const routingTable = this.connectionService.routingTable.clone();
-                routingTable.addPeer(this.connectionService.GUID, THIS_IP);
+                routingTable.addPeer(this.connectionService.GUID, this.ip!);
 
                 const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
                                     routingTable: Array.from(routingTable.peers)});
@@ -122,6 +161,8 @@ export class Peer implements IPeer {
     }
     /**
      * Try to join the network. Send a join request to every given peer.
+     * @param peers 
+     * @returns initial peers 
      */
     private checkInitialPeers(peers: string[]): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -131,7 +172,7 @@ export class Peer implements IPeer {
             }
             for (const peer of peers) {
                 // Check if peer is online and try to join
-                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({ip: THIS_IP}));
+                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({ip: this.ip}));
                 await this.connectionService.sendMessageByIp(message, peer,
                     async (responseMessage: Message) => { await this.joinResponse(responseMessage); });
                 await this.connectionService.getPromiseForResponse(message);
@@ -140,6 +181,12 @@ export class Peer implements IPeer {
         });
     }
 
+
+    /**
+     * Joins response
+     * @param message 
+     * @returns response 
+     */
     private joinResponse(message: Message): Promise<void> {
         return new Promise(async (resolve) => {
             if (message.body && message.originalSenderGuid) {

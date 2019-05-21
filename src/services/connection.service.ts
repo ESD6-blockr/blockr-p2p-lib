@@ -1,7 +1,7 @@
 import { logger } from "@blockr/blockr-logger";
 
 import { MessageType } from "../enums/messageType.enum";
-import { UnknownDestinationError } from "../exceptions/unknownDestinationError";
+import { UnknownDestinationException } from "../exceptions/unknownDestination.exception";
 import { IMessageListener } from "../interfaces/messageListener";
 import { RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
@@ -29,6 +29,9 @@ export class ConnectionService implements IMessageListener {
     private readonly sentMessages: Map<string, Message>;
 
     
+    /**
+     * Creates an instance of connection service.
+     */
     constructor() {
         this.receiveHandlers = new Map<string, RECIEVE_HANDLER_TYPE>();
         this.requestsMap = new Map<string, RESPONSE_TYPE>();
@@ -37,6 +40,11 @@ export class ConnectionService implements IMessageListener {
         this.responseDefferedsMap = new Map<string, Deferred<boolean>>();
     }
 
+    /**
+     * Inits connection service
+     * @param port 
+     * @returns init 
+     */
     public init(port: string): Promise<void> {
         return new Promise(async (resolve) => {
             this.sender = new Sender(port);
@@ -80,11 +88,12 @@ export class ConnectionService implements IMessageListener {
         return this.sendMessageByIp(message, destinationIp, responseImplementation);
     }
 
+
     /**
-     * Send a broadcast to the network.
-     *
-     * @param messageType - The message type
-     * @param [body] - The message body
+     * Sends broadcast
+     * @param message 
+     * @param [responseImplementation] 
+     * @returns broadcast 
      */
     public sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         const promises = [];
@@ -98,8 +107,6 @@ export class ConnectionService implements IMessageListener {
      * Check of messageType of the given message has a known implementation, and executes the implementation.
      *
      * @param message - The incoming message
-     * @param senderGuid - The GUID of the sender
-     * @param senderIp - The IP of the sender
      */
     public onMessage(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -135,8 +142,10 @@ export class ConnectionService implements IMessageListener {
         });
     }
 
+
     /**
-     * Leave the network.
+     * Leaves connection service
+     * @param guid 
      */
     public leave(guid: string): void {
         const message = new Message(MessageType.LEAVE, guid);
@@ -144,6 +153,13 @@ export class ConnectionService implements IMessageListener {
     }
 
 
+    /**
+     * Sends message by ip
+     * @param message 
+     * @param destinationIp 
+     * @param [responseImplementation] 
+     * @returns message by ip 
+     */
     public sendMessageByIp(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         return new Promise(async (resolve, reject) => {
             if (!this.sender) {
@@ -160,6 +176,11 @@ export class ConnectionService implements IMessageListener {
         });
     }
 
+    /**
+     * Gets promise for response
+     * @param message 
+     * @returns promise for response 
+     */
     public getPromiseForResponse(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const responseDeffered = this.responseDefferedsMap.get(message.correlationId);
@@ -211,12 +232,15 @@ export class ConnectionService implements IMessageListener {
         }, MESSAGE_HISTORY_CLEANUP_TIMER);
     }
 
+    /**
+     * Gets ip from routing table
+     * @param guid 
+     * @returns ip from routing table 
+     */
     private getIpFromRoutingTable(guid: string): string {
         const destinationIp = this.routingTable.peers.get(guid);
-        console.log("==========================guid==========================", guid);
-        console.log("==========================table==========================", this.routingTable);
         if (!destinationIp) {
-            throw new UnknownDestinationError(`Unknown destination. Could not find an IP for: ${guid}`);
+            throw new UnknownDestinationException(`Unknown destination. Could not find an IP for: ${guid}`);
         }
         return destinationIp;
     }

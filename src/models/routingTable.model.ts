@@ -1,41 +1,54 @@
+export class node {
+    public id: string;
+    public type: string;
+
+    public init(){
+        
+    }
+}
+
 /**
- * Routing table registry.
+ * Routing table
  */
 export class RoutingTable {
     public peers: Map<string, string>;
 
+    /**
+     * Creates an instance of routing table.
+     */
     constructor() {
         this.peers = new Map();
     }
 
     /**
-     * Add a peer to the registry.
-     *
-     * @param guid - The GUID
-     * @param ip - The IP
+     * Adds peer
+     * @param guid 
+     * @param ip 
      */
     public addPeer(guid: string, ip: string): void {
         this.peers.set(guid, ip);
     }
 
     /**
-     * Remove peer by its guid.
-     *
-     * @param guid - The GUID
+     * Removes peer
+     * @param guid 
      */
     public removePeer(guid: string): void {
         this.peers.delete(guid);
     }
 
     /**
-     * Merge two existing peer registries.
-     *
-     * @param routingTable - The RoutingTable
+     * Merges routing tables
+     * @param routingTable 
      */
     public mergeRoutingTables(routingTable: Map<string, string>): void {
         this.peers = new Map([...this.peers, ...routingTable]);
     }
 
+    /**
+     * Clones routing table
+     * @returns clone 
+     */
     public clone(): RoutingTable {
         const routingTable = new RoutingTable();
         for (const peer of this.peers) {

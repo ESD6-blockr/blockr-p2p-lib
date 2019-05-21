@@ -1,3 +1,7 @@
+
+/**
+ * Message type
+ */
 export enum MessageType {
     PING = "ping",
     PING_RESPONSE = "ping_res",

@@ -2,8 +2,11 @@
 export class Deferred<T> {
     public promise: Promise<T>;
     public resolve?: (result: T | PromiseLike<T>) => void;
-    public reject?: (reason: any) => void;
+    public reject?: (reason: Error) => void;
 
+    /**
+     * Creates an instance of deferred.
+     */
     constructor() {
         this.promise = new Promise<T>((resolve, reject) => {
             this.resolve = resolve;
