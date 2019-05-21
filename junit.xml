@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="6" failures="0" time="8.008">
+  <testsuite name="Creating routingTable model" errors="0" failures="0" skipped="0" timestamp="2019-05-21T11:18:08" time="1.726" tests="4">
+    <testcase classname="Creating routingTable model Should match the defined routingTable format &amp; properties values" name="Creating routingTable model Should match the defined routingTable format &amp; properties values" time="0.007">
+    </testcase>
+    <testcase classname="Adding/removing a peer Should add/remove the peer to/from the peers map" name="Adding/removing a peer Should add/remove the peer to/from the peers map" time="0.002">
+    </testcase>
+    <testcase classname="Merging routing tables Should merge routing tables" name="Merging routing tables Should merge routing tables" time="0.001">
+    </testcase>
+    <testcase classname="Cloning the routing table Should clone the routing table object" name="Cloning the routing table Should clone the routing table object" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Creating message model" errors="0" failures="0" skipped="0" timestamp="2019-05-21T11:18:08" time="3.229" tests="2">
+    <testcase classname="Creating message model Should match the defined message format &amp; properties values" name="Creating message model Should match the defined message format &amp; properties values" time="0.024">
+    </testcase>
+    <testcase classname="Comparing dates with isOlder function Should return the right value" name="Comparing dates with isOlder function Should return the right value" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>
