@@ -35,4 +35,12 @@ export class RoutingTable {
     public mergeRoutingTables(routingTable: Map<string, string>): void {
         this.peers = new Map([...this.peers, ...routingTable]);
     }
+
+    public clone(): RoutingTable {
+        const routingTable = new RoutingTable();
+        for (const peer of this.peers) {
+            routingTable.peers.set(peer[0], peer[1]);
+        }
+        return routingTable;
+    }
 }
