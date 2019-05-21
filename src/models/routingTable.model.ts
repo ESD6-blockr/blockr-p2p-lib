@@ -1,5 +1,6 @@
-import { PeerNode } from "./peerNode.model";
 import { Peer } from "../concrete/peer";
+import { PeerType } from "../enums/peerType.enum";
+import { PeerNode } from "./peerNode.model";
 
 /**
  * Routing table registry.
@@ -7,8 +8,12 @@ import { Peer } from "../concrete/peer";
 export class RoutingTable {
     public peers: Map<string, PeerNode>;
 
+
+    /**
+     * Creates an instance of routing table.
+     */
     constructor() {
-        this.peers = new Map();
+        this.peers = new Map<string, PeerNode>();
     }
 
     /**
@@ -18,10 +23,16 @@ export class RoutingTable {
      * @param ip - The IP
      * @param type - The Type
      */
-    public addPeer(guid: string, ip: string, type: string): void {
+    public addPeer(guid: string, ip: string, type: PeerType): void {
         this.peers.set(guid, new PeerNode(ip, type));
     }
 
+
+    /**
+     * Gets peer of type
+     * @param type 
+     * @returns peer of type 
+     */
     public getPeerOfType(type: string): string | undefined {
         for (const peer of this.peers) {
             if (peer[1].type === type) {
@@ -49,6 +60,10 @@ export class RoutingTable {
         this.peers = new Map([...this.peers, ...routingTable]);
     }
 
+    /**
+     * Clones routing table
+     * @returns clone 
+     */
     public clone(): RoutingTable {
         const routingTable = new RoutingTable();
         for (const peer of this.peers) {
