@@ -6,7 +6,7 @@ import { Message } from "../models/message.model";
 import { ConnectionService } from "../services/connection.service";
 
 const DEFAULT_PORT: string = "8081";
-const THIS_IP: string = "145.93.120.194"; // TODO: get the ip dynamic of the current machine
+const THIS_IP: string = ""; // TODO: get the ip dynamic of the current machine
   
 /**
  * Handles the peer network.
@@ -94,7 +94,7 @@ export class Peer implements IPeer {
                 // Add the new peer to our registry
                 this.connectionService.routingTable.addPeer(newPeerId, body.ip);
                 
-                response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
+                await response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
                 // Let other peers know about the newly joined peer
                 await this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER, this.connectionService.GUID));
