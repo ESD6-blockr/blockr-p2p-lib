@@ -20,6 +20,7 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
  */
 export class ConnectionService implements IMessageListener {
     public readonly routingTable: RoutingTable;
+    public GUID?: string;
     private readonly receiveHandlers: Map<string, RECIEVE_HANDLER_TYPE>;
     private sender?: Sender;
     private receiver?: Receiver;
@@ -75,7 +76,6 @@ export class ConnectionService implements IMessageListener {
         if (destinationGuid) {
             this.sentMessages.set(destinationGuid, message);
         }
-
         const destinationIp = this.getIpFromRoutingTable(destinationGuid);
         return this.sendMessageByIp(message, destinationIp, responseImplementation);
     }
@@ -122,6 +122,7 @@ export class ConnectionService implements IMessageListener {
             if (implementation && typeof implementation === "function") {
                 await implementation(message, message.originalSenderGuid, (responseMessage: Message) => {
                     responseMessage.correlationId = message.guid;
+                    responseMessage.originalSenderGuid = this.GUID!;
                     this.sendMessage(responseMessage, responseMessage.originalSenderGuid);
                 });
                 // Acknowledge this message

@@ -18,10 +18,10 @@ async function start() {
     // });
 
     // console.log("send broadcast");
-    // const message = new Message("test", "", "test");
-    // await peer.sendBroadcast(message,  () => {
-    //      logger.info(`recieved test message response`);
-    //  });
+    const message = new Message("test", "", "test");
+    await peer.sendBroadcast(message,  () => {
+         logger.info(`==================recieved test message response`);
+     });
     
 }
 

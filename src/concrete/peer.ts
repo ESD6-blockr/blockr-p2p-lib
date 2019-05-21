@@ -12,7 +12,6 @@ const THIS_IP: string = "145.93.120.194"; // TODO: get the ip dynamic of the cur
  * Handles the peer network.
  */
 export class Peer implements IPeer {
-    private GUID?: string;
     private readonly connectionService: ConnectionService;
     
     constructor() {
@@ -24,13 +23,13 @@ export class Peer implements IPeer {
         return new Promise(async (resolve) => {
             await this.connectionService.init(port);
             if (initialPeers) {
-                this.GUID = Guid.createEmpty().toString();
+                this.connectionService.GUID = Guid.createEmpty().toString();
                 await this.checkInitialPeers(initialPeers);
                 resolve();
+                return;
             }
 
-            this.GUID = Guid.create().toString();
-            console.log("====================init finished===================");
+            this.connectionService.GUID = Guid.create().toString();
             resolve();
         });
     }
@@ -40,22 +39,23 @@ export class Peer implements IPeer {
     }
 
     public sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
-        if (this.GUID) {
-            message.originalSenderGuid = this.GUID;
+        if (this.connectionService.GUID) {
+            message.originalSenderGuid = this.connectionService.GUID;
         }
+        console.log(message);
         return this.connectionService.sendBroadcast(message, responseImplementation);
     }
 
     public sendMessage(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
-        if (this.GUID) {
-            message.originalSenderGuid = this.GUID;
+        if (this.connectionService.GUID) {
+            message.originalSenderGuid = this.connectionService.GUID;
         }
         return this.connectionService.sendMessage(message, destinationGuid, responseImplementation);
     }
 
     public leave() {
-        if (this.GUID) {
-            this.connectionService.leave(this.GUID);
+        if (this.connectionService.GUID) {
+            this.connectionService.leave(this.connectionService.GUID);
         }
     }
 
@@ -78,7 +78,7 @@ export class Peer implements IPeer {
         this.connectionService.registerReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message,
                                                                                              senderGuid: string, response: RESPONSE_TYPE) => {
             // Check if node already has an id, if so do not proceed with join request
-            if (message.originalSenderGuid === Guid.EMPTY && senderGuid && this.GUID) {
+            if (message.originalSenderGuid === Guid.EMPTY && senderGuid && this.connectionService.GUID) {
                 if (!message.body) {
                     return;
                 }
@@ -87,7 +87,7 @@ export class Peer implements IPeer {
                 const body = JSON.parse(message.body);
 
                 const routingTable = this.connectionService.routingTable.clone();
-                routingTable.addPeer(this.GUID, THIS_IP);
+                routingTable.addPeer(this.connectionService.GUID, THIS_IP);
 
                 const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
                                     routingTable: Array.from(routingTable.peers)});
@@ -100,7 +100,7 @@ export class Peer implements IPeer {
                 response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
                 // Let other peers know about the newly joined peer
-                await this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER, this.GUID));
+                await this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER, this.connectionService.GUID));
             }
         });
 
@@ -109,7 +109,7 @@ export class Peer implements IPeer {
             if (senderGuid && message.body) {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
-                if (this.GUID !== body.guid) {
+                if (this.connectionService.GUID !== body.guid) {
                     console.log("====================new peer==================", body.guid);
                     this.connectionService.routingTable.addPeer(body.guid, body.sender);
                 }
@@ -129,13 +129,13 @@ export class Peer implements IPeer {
      */
     private checkInitialPeers(peers: string[]): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (!this.GUID) {
+            if (!this.connectionService.GUID) {
                 reject();
                 return;
             }
             for (const peer of peers) {
                 // Check if peer is online and try to join
-                const message = new Message(MessageType.JOIN, this.GUID, JSON.stringify({ip: THIS_IP}));
+                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({ip: THIS_IP}));
                 await this.connectionService.sendMessageByIp(message, peer,
                     async (responseMessage: Message) => { await this.joinResponse(responseMessage); });
                 await this.connectionService.getPromiseForResponse(message);
@@ -148,7 +148,7 @@ export class Peer implements IPeer {
         return new Promise(async (resolve) => {
             if (message.body && message.originalSenderGuid) {
                 const body = JSON.parse(message.body);
-                this.GUID = body.guid;
+                this.connectionService.GUID = body.guid;
                 this.connectionService.routingTable.mergeRoutingTables(new Map(body.routingTable));
             }
             resolve();
