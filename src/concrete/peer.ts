@@ -42,7 +42,6 @@ export class Peer implements IPeer {
         if (this.connectionService.GUID) {
             message.originalSenderGuid = this.connectionService.GUID;
         }
-        console.log(message);
         return this.connectionService.sendBroadcast(message, responseImplementation);
     }
 
@@ -94,8 +93,6 @@ export class Peer implements IPeer {
 
                 // Add the new peer to our registry
                 this.connectionService.routingTable.addPeer(newPeerId, body.ip);
-                console.log("===== ConnectionService After RoutingTable ====", this.connectionService.routingTable);
-                console.log("===== ConnectionService CONST RoutingTable ====", routingTable);
                 
                 response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
@@ -110,7 +107,6 @@ export class Peer implements IPeer {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
                 if (this.connectionService.GUID !== body.guid) {
-                    console.log("====================new peer==================", body.guid);
                     this.connectionService.routingTable.addPeer(body.guid, body.sender);
                 }
             }

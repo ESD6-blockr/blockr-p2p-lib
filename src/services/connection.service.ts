@@ -122,12 +122,11 @@ export class ConnectionService implements IMessageListener {
             if (implementation && typeof implementation === "function") {
                 await implementation(message, message.originalSenderGuid, (responseMessage: Message) => {
                     responseMessage.correlationId = message.guid;
-                    responseMessage.originalSenderGuid = this.GUID!;
+                    responseMessage.originalSenderGuid = message.originalSenderGuid;
                     this.sendMessage(responseMessage, responseMessage.originalSenderGuid);
                 });
                 // Acknowledge this message
                 if (message.type !== MessageType.ACKNOWLEDGE) {
-                    console.log("========================acknowledge===========",message.originalSenderGuid);
                     const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
                     this.sender.sendAcknowledgeMessage(message, destination);
                 }
@@ -213,8 +212,6 @@ export class ConnectionService implements IMessageListener {
     }
 
     private getIpFromRoutingTable(guid: string): string {
-        console.log("==========================guid==========================", guid);
-        console.log("==========================table==========================", this.routingTable);
         const destinationIp = this.routingTable.peers.get(guid);
         if (!destinationIp) {
             throw new UnknownDestinationError(`Unknown destination. Could not find an IP for: ${guid}`);
