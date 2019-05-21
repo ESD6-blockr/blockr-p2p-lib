@@ -6,12 +6,12 @@ import { Message } from "../models/message.model";
 import { ConnectionService } from "../services/connection.service";
 
 const DEFAULT_PORT: string = "8081";
-const THIS_IP: string = "145.93.121.205"; // TODO: get the ip dynamic of the current machine
+const THIS_IP: string = "145.93.120.194"; // TODO: get the ip dynamic of the current machine
   
 /**
  * Handles the peer network.
  */
-export class Peer implements IPeer{
+export class Peer implements IPeer {
     private GUID?: string;
     private readonly connectionService: ConnectionService;
     
@@ -30,6 +30,7 @@ export class Peer implements IPeer{
             }
 
             this.GUID = Guid.create().toString();
+            console.log("====================init finished===================");
             resolve();
         });
     }
@@ -77,15 +78,19 @@ export class Peer implements IPeer{
         this.connectionService.registerReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message,
                                                                                              senderGuid: string, response: RESPONSE_TYPE) => {
             // Check if node already has an id, if so do not proceed with join request
-            if (message.originalSenderGuid === Guid.EMPTY && senderGuid) {
+            if (message.originalSenderGuid === Guid.EMPTY && senderGuid && this.GUID) {
                 if (!message.body) {
                     return;
                 }
                 const newPeerId: string = Guid.create().toString();
                 message.originalSenderGuid = newPeerId;
                 const body = JSON.parse(message.body);
+
+                const routingTable = this.connectionService.routingTable;
+                routingTable.addPeer(this.GUID, THIS_IP);
+
                 const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
-                                    routingTable: Array.from(this.connectionService.routingTable.peers)});
+                                    routingTable: Array.from(routingTable.peers)});
 
                 // Add the new peer to our registry
                 this.connectionService.routingTable.addPeer(newPeerId, body.ip);
