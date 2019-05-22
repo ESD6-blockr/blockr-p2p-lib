@@ -1,17 +1,11 @@
-import { PeerNode } from "./peerNode.model";
-
 /**
  * Routing table registry.
  */
 export class RoutingTable {
-    public peers: Map<string, PeerNode>;
+    public peers: Map<string, string>;
 
-
-    /**
-     * Creates an instance of routing table.
-     */
     constructor() {
-        this.peers = new Map<string, PeerNode>();
+        this.peers = new Map();
     }
 
     /**
@@ -19,25 +13,9 @@ export class RoutingTable {
      *
      * @param guid - The GUID
      * @param ip - The IP
-     * @param type - The Type
      */
-    public addPeer(guid: string, ip: string, type: string): void {
-        this.peers.set(guid, new PeerNode(ip, type));
-    }
-
-
-    /**
-     * Gets peer of type
-     * @param type 
-     * @returns peer of type 
-     */
-    public getPeerOfType(type: string): string | undefined {
-        for (const peer of this.peers) {
-            if (peer[1].type === type) {
-                return peer[1].ip;
-            }
-        }
-        return undefined;
+    public addPeer(guid: string, ip: string): void {
+        this.peers.set(guid, ip);
     }
 
     /**
@@ -54,14 +32,10 @@ export class RoutingTable {
      *
      * @param routingTable - The RoutingTable
      */
-    public mergeRoutingTables(routingTable: Map<string, PeerNode>): void {
+    public mergeRoutingTables(routingTable: Map<string, string>): void {
         this.peers = new Map([...this.peers, ...routingTable]);
     }
 
-    /**
-     * Clones routing table
-     * @returns clone 
-     */
     public clone(): RoutingTable {
         const routingTable = new RoutingTable();
         for (const peer of this.peers) {
