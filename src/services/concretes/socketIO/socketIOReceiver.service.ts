@@ -32,7 +32,7 @@ export class SocketIOReceiver {
             socket.on("message", (body: string) => {
                 const message: Message = JSON.parse(body);
                 if (!this.receivedMessages.includes(message.guid)) {
-                    message.senderIp = socket.request.connection.remoteAddress;
+                    message.senderIp = socket.request.connection.remoteAddress.split(":").pop();
                     this.receivedMessages.push(message.guid);
                     this.messageListener.onMessageAsync(message);
                 }
