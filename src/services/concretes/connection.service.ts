@@ -234,9 +234,11 @@ export class ConnectionService implements IMessageListener {
      */
     private getIpFromRoutingTable(guid: string): string {
         const destinationIp = this.routingTable.peers.get(guid);
+        
         if (!destinationIp) {
             throw new UnknownDestinationException(`Unknown destination. Could not find an IP for: ${guid}`);
         }
+        
         return destinationIp.ip;
     }
 }

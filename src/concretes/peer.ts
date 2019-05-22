@@ -35,13 +35,16 @@ export class Peer implements IPeer {
         return new Promise(async (resolve) => {
             this.ip = HostIp.getIp();
             await this.connectionService.init(port);
+            
             if (initialPeers) {
                 this.connectionService.GUID = Guid.createEmpty().toString();
                 await this.checkInitialPeers(initialPeers);
+                
                 resolve();
                 return;
             }
             this.connectionService.GUID = Guid.create().toString();
+
             resolve();
         });
     }
