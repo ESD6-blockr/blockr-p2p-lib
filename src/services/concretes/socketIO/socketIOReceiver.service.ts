@@ -1,10 +1,10 @@
 import { listen, Server, Socket } from "socket.io";
-import { IMessageListener } from "../interfaces/messageListener";
+import { IMessageListener } from "../../../interfaces/messageListener";
 
 /**
  * Handles the receiving of messages.
  */
-export class Receiver {
+export class SocketIOReceiver {
     private readonly messageListener: IMessageListener;
     private readonly server: Server;
     private readonly receivedMessages: string[];
@@ -32,7 +32,7 @@ export class Receiver {
                 const message = JSON.parse(body);
                 if (!this.receivedMessages.includes(message.guid)) {
                     this.receivedMessages.push(message.guid);
-                    this.messageListener.onMessage(message);
+                    this.messageListener.onMessageAsync(message);
                 }
             });
         });

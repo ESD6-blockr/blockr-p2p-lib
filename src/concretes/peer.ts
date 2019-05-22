@@ -1,10 +1,9 @@
 import { Guid } from "guid-typescript";
 
-import { injectable } from "inversify";
 import { MessageType } from "../enums/messageType.enum";
 import { IPeer, RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
-import { ConnectionService } from "../services/connection.service";
+import { ConnectionService } from "../services/concretes/connection.service";
 import { HostIp } from "../util/hostIp.util";
 
 const DEFAULT_PORT: string = "8081";
@@ -12,17 +11,18 @@ const DEFAULT_PORT: string = "8081";
 /**
  * Handles the peer network.
  */
-@injectable()
 export class Peer implements IPeer {
     private readonly connectionService: ConnectionService;
+    private readonly type: string;
     private ip?: string;
 
     /**
      * Creates an instance of peer.
      */
-    constructor() {
+    constructor(type: string) {
         this.connectionService = new ConnectionService();
         this.createReceiverHandlers();
+        this.type = type;
     }
 
     /**
@@ -35,14 +35,16 @@ export class Peer implements IPeer {
         return new Promise(async (resolve) => {
             this.ip = HostIp.getIp();
             await this.connectionService.init(port);
+            
             if (initialPeers) {
                 this.connectionService.GUID = Guid.createEmpty().toString();
                 await this.checkInitialPeers(initialPeers);
+                
                 resolve();
                 return;
             }
-
             this.connectionService.GUID = Guid.create().toString();
+
             resolve();
         });
     }
@@ -62,11 +64,11 @@ export class Peer implements IPeer {
      * @param [responseImplementation] 
      * @returns broadcast 
      */
-    public sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
+    public sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         if (this.connectionService.GUID) {
             message.originalSenderGuid = this.connectionService.GUID;
         }
-        return this.connectionService.sendBroadcast(message, responseImplementation);
+        return this.connectionService.sendBroadcastAsync(message, responseImplementation);
     }
 
     /**
@@ -76,11 +78,11 @@ export class Peer implements IPeer {
      * @param [responseImplementation] 
      * @returns message 
      */
-    public sendMessage(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
+    public sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         if (this.connectionService.GUID) {
             message.originalSenderGuid = this.connectionService.GUID;
         }
-        return this.connectionService.sendMessage(message, destinationGuid, responseImplementation);
+        return this.connectionService.sendMessageAsync(message, destinationGuid, responseImplementation);
     }
 
     /**
@@ -101,6 +103,9 @@ export class Peer implements IPeer {
         return this.connectionService.getPromiseForResponse(message);
     }
 
+    public getPeerOfType(type: string): string | undefined {
+        return this.connectionService.routingTable.getPeerOfType(type);
+    }
     /**
      * Create the default handlers that act on a received message, depending on the messageType.
      */
@@ -115,29 +120,7 @@ export class Peer implements IPeer {
         // Handle join messages
         this.connectionService.registerReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message,
                                                                                              senderGuid: string, response: RESPONSE_TYPE) => {
-            // Check if node already has an id, if so do not proceed with join request
-            if (message.originalSenderGuid === Guid.EMPTY && senderGuid && this.connectionService.GUID) {
-                if (!message.body) {
-                    return;
-                }
-                const newPeerId: string = Guid.create().toString();
-                message.originalSenderGuid = newPeerId;
-                const body = JSON.parse(message.body);
-
-                const routingTable = this.connectionService.routingTable.clone();
-                routingTable.addPeer(this.connectionService.GUID, this.ip!);
-
-                const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
-                                    routingTable: Array.from(routingTable.peers)});
-
-                // Add the new peer to our registry
-                this.connectionService.routingTable.addPeer(newPeerId, body.ip);
-                
-                await response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
-
-                // Let other peers know about the newly joined peer
-                await this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER, this.connectionService.GUID));
-            }
+            await this.handleJoinAsync(message, senderGuid, response);
         });
 
         // Handle new peer messages
@@ -146,7 +129,7 @@ export class Peer implements IPeer {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
                 if (this.connectionService.GUID !== body.guid) {
-                    this.connectionService.routingTable.addPeer(body.guid, body.sender);
+                    this.connectionService.routingTable.addPeer(body.guid, body.ip, body.type);
                 }
             }
         });
@@ -172,22 +155,55 @@ export class Peer implements IPeer {
             }
             for (const peer of peers) {
                 // Check if peer is online and try to join
-                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({ip: this.ip}));
-                await this.connectionService.sendMessageByIp(message, peer,
-                    async (responseMessage: Message) => { await this.joinResponse(responseMessage); });
+                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({ip: this.ip, type: this.type}));
+                await this.connectionService.sendMessageByIpAsync(message, peer,
+                    async (responseMessage: Message) => { await this.joinResponseAsync(responseMessage); });
                 await this.connectionService.getPromiseForResponse(message);
             }
             resolve();
         });
     }
 
+    /**
+     * Handels join
+     * @param message 
+     * @param senderGuid 
+     * @param response 
+     * @returns Promise<void>
+     */
+    private async handleJoinAsync(message: Message, senderGuid: string, response: RESPONSE_TYPE) {
+        // Check if node already has an id, if so do not proceed with join request
+        if (message.originalSenderGuid === Guid.EMPTY && senderGuid && this.connectionService.GUID && this.ip) {
+            if (!message.body) {
+                return;
+            }
+            const newPeerId: string = Guid.create().toString();
+            message.originalSenderGuid = newPeerId;
+            const body = JSON.parse(message.body);
+
+            const routingTable = this.connectionService.routingTable.clone();
+            routingTable.addPeer(this.connectionService.GUID, this.ip, this.type);
+
+            const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
+                                routingTable: Array.from(routingTable.peers)});
+
+            // Add the new peer to our registry
+            this.connectionService.routingTable.addPeer(newPeerId, body.ip, body.type);
+            
+            await response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
+
+            // Let other peers know about the newly joined peer
+            await this.connectionService.sendBroadcastAsync(new Message(MessageType.NEW_PEER, this.connectionService.GUID,
+                JSON.stringify({guid: this.connectionService.GUID, ip: body.ip, type: this.type})));
+        }
+    }
 
     /**
      * Joins response
      * @param message 
      * @returns response 
      */
-    private joinResponse(message: Message): Promise<void> {
+    private joinResponseAsync(message: Message): Promise<void> {
         return new Promise(async (resolve) => {
             if (message.body && message.originalSenderGuid) {
                 const body = JSON.parse(message.body);

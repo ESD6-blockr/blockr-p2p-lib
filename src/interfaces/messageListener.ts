@@ -11,5 +11,5 @@ export interface IMessageListener {
      * @param senderGuid - GUID of the sender
      * @param senderIp - IP of the sender
      */
-    onMessage(message: Message): Promise<void>;
+    onMessageAsync(message: Message): Promise<void>;
 }
