@@ -12,8 +12,7 @@ import { SocketIOSender } from "./socketIOSender.service";
  */
 export class SocketIOCommunicationProtocol implements ICommunicationProtocol {
     private readonly sender: SocketIOSender;
-    private readonly reciever: SocketIOReceiver;
-
+    private readonly receiver: SocketIOReceiver;
 
     /**
      * Creates an instance of socket io.
@@ -21,7 +20,7 @@ export class SocketIOCommunicationProtocol implements ICommunicationProtocol {
      * @param port 
      */
     constructor(messageListener: IMessageListener, port: string) {
-        this.reciever = new SocketIOReceiver(messageListener, port);
+        this.receiver = new SocketIOReceiver(messageListener, port);
         this.sender = new SocketIOSender(port);
     }
 

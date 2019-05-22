@@ -126,7 +126,7 @@ export class Peer implements IPeer {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
                 if (this.connectionService.GUID !== body.guid) {
-                    this.connectionService.routingTable.addPeer(body.guid, body.ip, body.type);
+                    this.connectionService.routingTable.addPeer(body.guid, body.ip, body.peerType);
                 }
             }
         });
@@ -152,7 +152,7 @@ export class Peer implements IPeer {
             }
             for (const peer of peers) {
                 // Check if peer is online and try to join
-                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({type: this.type}));
+                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({peerType: this.type}));
                 await this.connectionService.sendMessageByIpAsync(message, peer,
                     async (responseMessage: Message) => { await this.joinResponseAsync(responseMessage); });
                 await this.connectionService.getPromiseForResponse(message);
@@ -185,13 +185,13 @@ export class Peer implements IPeer {
                                 routingTable: Array.from(routingTable.peers)});
 
             // Add the new peer to our registry
-            this.connectionService.routingTable.addPeer(newPeerId, message.senderIp, body.type);
+            this.connectionService.routingTable.addPeer(newPeerId, message.senderIp, body.peerType);
             
             await response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
             // Let other peers know about the newly joined peer
             await this.connectionService.sendBroadcastAsync(new Message(MessageType.NEW_PEER, this.connectionService.GUID,
-                JSON.stringify({guid: this.connectionService.GUID, ip: message.senderIp, type: this.type})));
+                JSON.stringify({guid: this.connectionService.GUID, ip: message.senderIp, peerType: this.type})));
         }
     }
 
