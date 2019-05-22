@@ -8,6 +8,14 @@ export type RECIEVE_HANDLER_TYPE = (message: Message, senderGuid: string, respon
  */
 export interface IPeer {
     /**
+     * Inits peer
+     * @param [port] 
+     * @param [initialPeers] 
+     * @returns init 
+     */
+    init(port?: string, initialPeers?: string[]): Promise<void>;
+
+    /**
      * Register custom receiver handlers.
      *
      * @param messageType - The messageType that the receiver handles
