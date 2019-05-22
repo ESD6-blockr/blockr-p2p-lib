@@ -114,8 +114,6 @@ export class ConnectionService implements IMessageListener {
                 reject();
                 return;
             }
-            logger.info(`${message.type} message received`);
-            
             const responseImplementation = this.requestsMap.get(message.correlationId);
             if (responseImplementation) {
                 await responseImplementation(message);
@@ -227,7 +225,6 @@ export class ConnectionService implements IMessageListener {
             const minDate = DateManipulator.minusMinutes(new Date(), MESSAGE_EXPIRATION_TIMER);
             for (const value of this.getSentMessagesSendersSince(minDate)) {
                 this.routingTable.removePeer(value);
-                logger.info(`Peer removed from routing table: ${value}`);
             }
         }, MESSAGE_HISTORY_CLEANUP_TIMER);
     }

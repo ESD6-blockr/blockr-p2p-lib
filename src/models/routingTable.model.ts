@@ -1,5 +1,3 @@
-import { Peer } from "../concrete/peer";
-import { PeerType } from "../enums/peerType.enum";
 import { PeerNode } from "./peerNode.model";
 
 /**
@@ -23,7 +21,7 @@ export class RoutingTable {
      * @param ip - The IP
      * @param type - The Type
      */
-    public addPeer(guid: string, ip: string, type: PeerType): void {
+    public addPeer(guid: string, ip: string, type: string): void {
         this.peers.set(guid, new PeerNode(ip, type));
     }
 
@@ -36,7 +34,7 @@ export class RoutingTable {
     public getPeerOfType(type: string): string | undefined {
         for (const peer of this.peers) {
             if (peer[1].type === type) {
-                return peer[0];
+                return peer[1].ip;
             }
         }
         return undefined;

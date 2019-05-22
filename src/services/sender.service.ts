@@ -28,8 +28,6 @@ export class Sender {
         return new Promise((resolve) => {
             const socket = connect(`${this.protocol}://${destinationIp}:${this.port}`);
             socket.emit("message", JSON.stringify(message));
-
-            logger.info(`Message sent to: ${destinationIp}: ${message.type}`);
             resolve();
         });
     }

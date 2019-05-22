@@ -1,8 +1,6 @@
 import { Guid } from "guid-typescript";
 
-import { logger } from "@blockr/blockr-logger";
 import { MessageType } from "../enums/messageType.enum";
-import { PeerType } from "../enums/peerType.enum";
 import { IPeer, RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
 import { ConnectionService } from "../services/connection.service";
@@ -15,13 +13,13 @@ const DEFAULT_PORT: string = "8081";
  */
 export class Peer implements IPeer {
     private readonly connectionService: ConnectionService;
-    private readonly type: PeerType;
+    private readonly type: string;
     private ip?: string;
 
     /**
      * Creates an instance of peer.
      */
-    constructor(type: PeerType) {
+    constructor(type: string) {
         this.connectionService = new ConnectionService();
         this.createReceiverHandlers();
         this.type = type;
@@ -41,10 +39,8 @@ export class Peer implements IPeer {
                 this.connectionService.GUID = Guid.createEmpty().toString();
                 await this.checkInitialPeers(initialPeers);
                 resolve();
-                logger.info("=====================finished init =====================");
                 return;
             }
-            logger.info("=====================finished init =====================");
             this.connectionService.GUID = Guid.create().toString();
             resolve();
         });
@@ -105,7 +101,8 @@ export class Peer implements IPeer {
     }
 
     public getPeerOfType(type: string): string | undefined {
-        return this.connectionService.routingTable.getPeerOfType(type);
+        const typee = this.connectionService.routingTable.getPeerOfType(type);
+        return typee;
     }
     /**
      * Create the default handlers that act on a received message, depending on the messageType.
