@@ -1,12 +1,12 @@
 import { logger } from "@blockr/blockr-logger";
 import { connect } from "socket.io-client";
-import { MessageType } from "../enums/messageType.enum";
-import { Message } from "../models/message.model";
+import { MessageType } from "../../../enums/messageType.enum";
+import { Message } from "../../../models/message.model";
 
 /**
  * Handles the sending of messages.
  */
-export class Sender {
+export class SocketIOSender {
     private readonly protocol = "http";
     private readonly port: string;
 

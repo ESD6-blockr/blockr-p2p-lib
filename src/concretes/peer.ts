@@ -3,7 +3,7 @@ import { Guid } from "guid-typescript";
 import { MessageType } from "../enums/messageType.enum";
 import { IPeer, RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
-import { ConnectionService } from "../services/connection.service";
+import { ConnectionService } from "../services/concretes/connection.service";
 import { HostIp } from "../util/hostIp.util";
 
 const DEFAULT_PORT: string = "8081";

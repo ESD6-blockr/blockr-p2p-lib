@@ -1,10 +1,10 @@
 import { listen, Server, Socket } from "socket.io";
-import { IMessageListener } from "../interfaces/messageListener";
+import { IMessageListener } from "../../../interfaces/messageListener";
 
 /**
  * Handles the receiving of messages.
  */
-export class Receiver {
+export class SocketIOReceiver {
     private readonly messageListener: IMessageListener;
     private readonly server: Server;
     private readonly receivedMessages: string[];

@@ -1,15 +1,15 @@
 import { logger } from "@blockr/blockr-logger";
 
-import { MessageType } from "../enums/messageType.enum";
-import { UnknownDestinationException } from "../exceptions/unknownDestination.exception";
-import { IMessageListener } from "../interfaces/messageListener";
-import { RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
-import { Message } from "../models/message.model";
-import { RoutingTable } from "../models/routingTable.model";
-import { Receiver } from "../services/receiver.service";
-import { Sender } from "../services/sender.service";
-import { DateManipulator } from "../util/dateManipulator";
-import { Deferred } from "../util/deffered.util";
+import { MessageType } from "../../enums/messageType.enum";
+import { UnknownDestinationException } from "../../exceptions/unknownDestination.exception";
+import { IMessageListener } from "../../interfaces/messageListener";
+import { RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";
+import { Message } from "../../models/message.model";
+import { RoutingTable } from "../../models/routingTable.model";
+import { DateManipulator } from "../../util/dateManipulator";
+import { Deferred } from "../../util/deffered.util";
+import { ICommunicationProtocol } from "../interfaces/communicationProtocol.service";
+import { SocketIOCommunicationProtocol } from "./socketIO/socketIO.service";
 
 
 const MESSAGE_EXPIRATION_TIMER: number = 1;
@@ -22,8 +22,7 @@ export class ConnectionService implements IMessageListener {
     public readonly routingTable: RoutingTable;
     public GUID?: string;
     private readonly receiveHandlers: Map<string, RECIEVE_HANDLER_TYPE>;
-    private sender?: Sender;
-    private receiver?: Receiver;
+    private communicationProtocol?: ICommunicationProtocol;
     private readonly responseDefferedsMap: Map<string, Deferred<boolean>>;
     private readonly requestsMap: Map<string, RESPONSE_TYPE>;
     private readonly sentMessages: Map<string, Message>;
@@ -47,8 +46,7 @@ export class ConnectionService implements IMessageListener {
      */
     public init(port: string): Promise<void> {
         return new Promise(async (resolve) => {
-            this.sender = new Sender(port);
-            this.receiver = new Receiver(this, port);
+            this.communicationProtocol = new SocketIOCommunicationProtocol(this, port);
             this.createRoutingTableCleanupTimer();
             resolve();
         });
@@ -110,7 +108,7 @@ export class ConnectionService implements IMessageListener {
      */
     public onMessage(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (!this.sender) {
+            if (!this.communicationProtocol) {
                 reject();
                 return;
             }
@@ -133,7 +131,7 @@ export class ConnectionService implements IMessageListener {
                 // Acknowledge this message
                 if (message.type !== MessageType.ACKNOWLEDGE) {
                     const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
-                    this.sender.sendAcknowledgeMessage(message, destination);
+                    this.communicationProtocol.sendAcknowledgeMessage(message, destination);
                 }
             }
             resolve();
@@ -160,7 +158,7 @@ export class ConnectionService implements IMessageListener {
      */
     public sendMessageByIp(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (!this.sender) {
+            if (!this.communicationProtocol) {
                 reject();
                 return;
             }
@@ -169,7 +167,7 @@ export class ConnectionService implements IMessageListener {
                 this.requestsMap.set(message.guid, responseImplementation);
                 this.responseDefferedsMap.set(message.guid, new Deferred());
             }
-            await this.sender.sendMessage(message, destinationIp);
+            await this.communicationProtocol.sendMessage(message, destinationIp);
             resolve();
         });
     }
@@ -219,7 +217,7 @@ export class ConnectionService implements IMessageListener {
      */
     private createRoutingTableCleanupTimer() {
         setInterval(() => {
-            if (!this.sender) {
+            if (!this.communicationProtocol) {
                 return;
             }
             const minDate = DateManipulator.minusMinutes(new Date(), MESSAGE_EXPIRATION_TIMER);
