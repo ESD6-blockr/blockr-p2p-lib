@@ -1,5 +1,6 @@
 import { listen, Server, Socket } from "socket.io";
 import { IMessageListener } from "../../../interfaces/messageListener";
+import { Message } from "../../../models";
 
 /**
  * Handles the receiving of messages.
@@ -29,8 +30,9 @@ export class SocketIOReceiver {
         // event fired every time a new client connects:
         this.server.on("connection", (socket: Socket) => {
             socket.on("message", (body: string) => {
-                const message = JSON.parse(body);
+                const message: Message = JSON.parse(body);
                 if (!this.receivedMessages.includes(message.guid)) {
+                    message.senderIp = socket.request.connection.remoteAddress;
                     this.receivedMessages.push(message.guid);
                     this.messageListener.onMessageAsync(message);
                 }

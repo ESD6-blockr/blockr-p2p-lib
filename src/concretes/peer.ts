@@ -14,7 +14,6 @@ const DEFAULT_PORT: string = "8081";
 export class Peer implements IPeer {
     private readonly connectionService: ConnectionService;
     private readonly type: string;
-    private ip?: string;
 
     /**
      * Creates an instance of peer.
@@ -33,7 +32,6 @@ export class Peer implements IPeer {
      */
     public init(port: string = DEFAULT_PORT, initialPeers?: string[]): Promise<void> {
         return new Promise(async (resolve) => {
-            this.ip = HostIp.getIp();
             await this.connectionService.init(port);
             
             if (initialPeers) {
@@ -155,7 +153,7 @@ export class Peer implements IPeer {
             }
             for (const peer of peers) {
                 // Check if peer is online and try to join
-                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({ip: this.ip, type: this.type}));
+                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({type: this.type}));
                 await this.connectionService.sendMessageByIpAsync(message, peer,
                     async (responseMessage: Message) => { await this.joinResponseAsync(responseMessage); });
                 await this.connectionService.getPromiseForResponse(message);
@@ -173,8 +171,8 @@ export class Peer implements IPeer {
      */
     private async handleJoinAsync(message: Message, senderGuid: string, response: RESPONSE_TYPE) {
         // Check if node already has an id, if so do not proceed with join request
-        if (message.originalSenderGuid === Guid.EMPTY && senderGuid && this.connectionService.GUID && this.ip) {
-            if (!message.body) {
+        if (message && message.originalSenderGuid === Guid.EMPTY && senderGuid && this.connectionService.GUID) {
+            if (!message.body || !message.senderIp) {
                 return;
             }
             const newPeerId: string = Guid.create().toString();
@@ -182,19 +180,19 @@ export class Peer implements IPeer {
             const body = JSON.parse(message.body);
 
             const routingTable = this.connectionService.routingTable.clone();
-            routingTable.addPeer(this.connectionService.GUID, this.ip, this.type);
+            routingTable.addPeer(this.connectionService.GUID, message.senderIp, this.type);
 
-            const responseBody = JSON.stringify({guid: newPeerId, ip: body.ip,
+            const responseBody = JSON.stringify({guid: newPeerId, ip: message.senderIp,
                                 routingTable: Array.from(routingTable.peers)});
 
             // Add the new peer to our registry
-            this.connectionService.routingTable.addPeer(newPeerId, body.ip, body.type);
+            this.connectionService.routingTable.addPeer(newPeerId, message.senderIp, body.type);
             
             await response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
             // Let other peers know about the newly joined peer
             await this.connectionService.sendBroadcastAsync(new Message(MessageType.NEW_PEER, this.connectionService.GUID,
-                JSON.stringify({guid: this.connectionService.GUID, ip: body.ip, type: this.type})));
+                JSON.stringify({guid: this.connectionService.GUID, ip: message.senderIp, type: this.type})));
         }
     }
 
