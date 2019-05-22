@@ -116,8 +116,8 @@ export class ConnectionService implements IMessageListener {
             if (responseImplementation) {
                 await responseImplementation(message);
                 const responseDeffered = this.responseDefferedsMap.get(message.correlationId);
-                if (responseDeffered) {
-                    responseDeffered.resolve!(true);
+                if (responseDeffered && responseDeffered.resolve) {
+                    responseDeffered.resolve(true);
                 }
             }
 

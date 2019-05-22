@@ -101,8 +101,7 @@ export class Peer implements IPeer {
     }
 
     public getPeerOfType(type: string): string | undefined {
-        const typee = this.connectionService.routingTable.getPeerOfType(type);
-        return typee;
+        return this.connectionService.routingTable.getPeerOfType(type);
     }
     /**
      * Create the default handlers that act on a received message, depending on the messageType.
