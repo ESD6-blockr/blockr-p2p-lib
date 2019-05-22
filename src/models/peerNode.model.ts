@@ -1,5 +1,6 @@
 /**
- * Peer node
+ * Peer node.
+ * This model is used to store different type op PeerNodes in the routingtable.
  */
 export class PeerNode {
     public readonly ip: string;

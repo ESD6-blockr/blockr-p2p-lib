@@ -64,11 +64,11 @@ export class Peer implements IPeer {
      * @param [responseImplementation] 
      * @returns broadcast 
      */
-    public sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
+    public sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         if (this.connectionService.GUID) {
             message.originalSenderGuid = this.connectionService.GUID;
         }
-        return this.connectionService.sendBroadcast(message, responseImplementation);
+        return this.connectionService.sendBroadcastAsync(message, responseImplementation);
     }
 
     /**
@@ -78,11 +78,11 @@ export class Peer implements IPeer {
      * @param [responseImplementation] 
      * @returns message 
      */
-    public sendMessage(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
+    public sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         if (this.connectionService.GUID) {
             message.originalSenderGuid = this.connectionService.GUID;
         }
-        return this.connectionService.sendMessage(message, destinationGuid, responseImplementation);
+        return this.connectionService.sendMessageAsync(message, destinationGuid, responseImplementation);
     }
 
     /**
@@ -120,7 +120,7 @@ export class Peer implements IPeer {
         // Handle join messages
         this.connectionService.registerReceiveHandlerForMessageType(MessageType.JOIN, async (message: Message,
                                                                                              senderGuid: string, response: RESPONSE_TYPE) => {
-            await this.handelJoin(message, senderGuid, response);
+            await this.handleJoinAsync(message, senderGuid, response);
         });
 
         // Handle new peer messages
@@ -129,7 +129,7 @@ export class Peer implements IPeer {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
                 if (this.connectionService.GUID !== body.guid) {
-                    this.connectionService.routingTable.addPeer(body.guid, body.guid, body.type);
+                    this.connectionService.routingTable.addPeer(body.guid, body.ip, body.type);
                 }
             }
         });
@@ -156,8 +156,8 @@ export class Peer implements IPeer {
             for (const peer of peers) {
                 // Check if peer is online and try to join
                 const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({ip: this.ip, type: this.type}));
-                await this.connectionService.sendMessageByIp(message, peer,
-                    async (responseMessage: Message) => { await this.joinResponse(responseMessage); });
+                await this.connectionService.sendMessageByIpAsync(message, peer,
+                    async (responseMessage: Message) => { await this.joinResponseAsync(responseMessage); });
                 await this.connectionService.getPromiseForResponse(message);
             }
             resolve();
@@ -169,9 +169,9 @@ export class Peer implements IPeer {
      * @param message 
      * @param senderGuid 
      * @param response 
-     * @returns  
+     * @returns Promise<void>
      */
-    private async handelJoin(message: Message, senderGuid: string, response: RESPONSE_TYPE) {
+    private async handleJoinAsync(message: Message, senderGuid: string, response: RESPONSE_TYPE) {
         // Check if node already has an id, if so do not proceed with join request
         if (message.originalSenderGuid === Guid.EMPTY && senderGuid && this.connectionService.GUID && this.ip) {
             if (!message.body) {
@@ -193,8 +193,8 @@ export class Peer implements IPeer {
             await response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
 
             // Let other peers know about the newly joined peer
-            await this.connectionService.sendBroadcast(new Message(MessageType.NEW_PEER, this.connectionService.GUID,
-                JSON.stringify({guid: this.connectionService.GUID, type: this.type})));
+            await this.connectionService.sendBroadcastAsync(new Message(MessageType.NEW_PEER, this.connectionService.GUID,
+                JSON.stringify({guid: this.connectionService.GUID, ip: body.ip, type: this.type})));
         }
     }
 
@@ -203,7 +203,7 @@ export class Peer implements IPeer {
      * @param message 
      * @returns response 
      */
-    private joinResponse(message: Message): Promise<void> {
+    private joinResponseAsync(message: Message): Promise<void> {
         return new Promise(async (resolve) => {
             if (message.body && message.originalSenderGuid) {
                 const body = JSON.parse(message.body);

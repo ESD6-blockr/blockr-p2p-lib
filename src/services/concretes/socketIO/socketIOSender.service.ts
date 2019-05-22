@@ -24,7 +24,7 @@ export class SocketIOSender {
      * @param message - The message
      * @param destinationIp - The destinationIp ip
      */
-    public sendMessage(message: Message, destinationIp: string): Promise<void> {
+    public sendMessageAsync(message: Message, destinationIp: string): Promise<void> {
         return new Promise((resolve) => {
             const socket = connect(`${this.protocol}://${destinationIp}:${this.port}`);
             socket.emit("message", JSON.stringify(message));
@@ -38,13 +38,13 @@ export class SocketIOSender {
      * @param originalMessage - The message
      * @param destinationIp - The destinationIp
      */
-    public sendAcknowledgeMessage(originalMessage: Message, destinationIp: string): Promise<void> {
+    public sendAcknowledgeMessageAsync(originalMessage: Message, destinationIp: string): Promise<void> {
         const message = new Message(
             MessageType.ACKNOWLEDGE,
             originalMessage.originalSenderGuid,
             originalMessage.guid,
         );
 
-        return this.sendMessage(message, destinationIp);
+        return this.sendMessageAsync(message, destinationIp);
     }
 }

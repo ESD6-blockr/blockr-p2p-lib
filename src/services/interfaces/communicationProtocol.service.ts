@@ -10,7 +10,7 @@ export interface ICommunicationProtocol {
      * @param message - The message
      * @param destinationIp - The destinationIp ip
      */
-    sendMessage(message: Message, destinationIp: string): Promise<void>;
+    sendMessageAsync(message: Message, destinationIp: string): Promise<void>;
 
     /**
      * Send an acknowledge message to the given destinationIp, based on the given message.
@@ -18,5 +18,5 @@ export interface ICommunicationProtocol {
      * @param originalMessage - The message
      * @param destinationIp - The destinationIp
      */
-    sendAcknowledgeMessage(originalMessage: Message, destinationIp: string): Promise<void>;
+    sendAcknowledgeMessageAsync(originalMessage: Message, destinationIp: string): Promise<void>;
 }

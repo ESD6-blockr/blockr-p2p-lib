@@ -4,8 +4,7 @@ import { MessageType } from "../../enums/messageType.enum";
 import { UnknownDestinationException } from "../../exceptions/unknownDestination.exception";
 import { IMessageListener } from "../../interfaces/messageListener";
 import { RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";
-import { Message } from "../../models/message.model";
-import { RoutingTable } from "../../models/routingTable.model";
+import { Message, RoutingTable } from "../../models";
 import { DateManipulator } from "../../util/dateManipulator";
 import { Deferred } from "../../util/deffered.util";
 import { ICommunicationProtocol } from "../interfaces/communicationProtocol.service";
@@ -78,12 +77,12 @@ export class ConnectionService implements IMessageListener {
      * @param destination - The destination GUID
      * @param [body] - The message body
      */
-    public sendMessage(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
+    public sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         if (destinationGuid) {
             this.sentMessages.set(destinationGuid, message);
         }
         const destinationIp = this.getIpFromRoutingTable(destinationGuid);
-        return this.sendMessageByIp(message, destinationIp, responseImplementation);
+        return this.sendMessageByIpAsync(message, destinationIp, responseImplementation);
     }
 
 
@@ -93,10 +92,10 @@ export class ConnectionService implements IMessageListener {
      * @param [responseImplementation] 
      * @returns broadcast 
      */
-    public sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
+    public sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         const promises = [];
         for (const guid of this.routingTable.peers.keys()) {
-            promises.push(this.sendMessage(message, guid, responseImplementation));
+            promises.push(this.sendMessageAsync(message, guid, responseImplementation));
         }
         return Promise.all(promises);
     }
@@ -106,7 +105,7 @@ export class ConnectionService implements IMessageListener {
      *
      * @param message - The incoming message
      */
-    public onMessage(message: Message): Promise<void> {
+    public onMessageAsync(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
             if (!this.communicationProtocol) {
                 reject();
@@ -126,12 +125,12 @@ export class ConnectionService implements IMessageListener {
                 await implementation(message, message.originalSenderGuid, (responseMessage: Message) => {
                     responseMessage.correlationId = message.guid;
                     responseMessage.originalSenderGuid = message.originalSenderGuid;
-                    this.sendMessage(responseMessage, responseMessage.originalSenderGuid);
+                    this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid);
                 });
                 // Acknowledge this message
                 if (message.type !== MessageType.ACKNOWLEDGE) {
                     const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
-                    this.communicationProtocol.sendAcknowledgeMessage(message, destination);
+                    this.communicationProtocol.sendAcknowledgeMessageAsync(message, destination);
                 }
             }
             resolve();
@@ -145,7 +144,7 @@ export class ConnectionService implements IMessageListener {
      */
     public leave(guid: string): void {
         const message = new Message(MessageType.LEAVE, guid);
-        this.sendBroadcast(message);
+        this.sendBroadcastAsync(message);
     }
 
 
@@ -156,7 +155,7 @@ export class ConnectionService implements IMessageListener {
      * @param [responseImplementation] 
      * @returns message by ip 
      */
-    public sendMessageByIp(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
+    public sendMessageByIpAsync(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         return new Promise(async (resolve, reject) => {
             if (!this.communicationProtocol) {
                 reject();
@@ -167,7 +166,7 @@ export class ConnectionService implements IMessageListener {
                 this.requestsMap.set(message.guid, responseImplementation);
                 this.responseDefferedsMap.set(message.guid, new Deferred());
             }
-            await this.communicationProtocol.sendMessage(message, destinationIp);
+            await this.communicationProtocol.sendMessageAsync(message, destinationIp);
             resolve();
         });
     }

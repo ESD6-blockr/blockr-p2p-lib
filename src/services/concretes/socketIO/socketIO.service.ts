@@ -31,8 +31,8 @@ export class SocketIOCommunicationProtocol implements ICommunicationProtocol {
      * @param message - The message
      * @param destinationIp - The destinationIp ip
      */
-    public sendMessage(message: Message, destinationIp: string): Promise<void> {
-        return this.sender.sendMessage(message, destinationIp);
+    public sendMessageAsync(message: Message, destinationIp: string): Promise<void> {
+        return this.sender.sendMessageAsync(message, destinationIp);
     }
 
     /**
@@ -41,7 +41,7 @@ export class SocketIOCommunicationProtocol implements ICommunicationProtocol {
      * @param originalMessage - The message
      * @param destinationIp - The destinationIp
      */
-    public sendAcknowledgeMessage(originalMessage: Message, destinationIp: string): Promise<void> {
-        return this.sender.sendAcknowledgeMessage(originalMessage, destinationIp);
+    public sendAcknowledgeMessageAsync(originalMessage: Message, destinationIp: string): Promise<void> {
+        return this.sender.sendAcknowledgeMessageAsync(originalMessage, destinationIp);
     }
 }

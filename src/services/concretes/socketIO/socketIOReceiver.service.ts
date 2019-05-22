@@ -32,7 +32,7 @@ export class SocketIOReceiver {
                 const message = JSON.parse(body);
                 if (!this.receivedMessages.includes(message.guid)) {
                     this.receivedMessages.push(message.guid);
-                    this.messageListener.onMessage(message);
+                    this.messageListener.onMessageAsync(message);
                 }
             });
         });
