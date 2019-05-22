@@ -8,7 +8,7 @@ let correlationId: string;
 let message: Message;
 let message2: Message;
 
-beforeEach(() => {
+beforeAll(() => {
     type = "ping";
     originalSenderGuid = Guid.create().toString();
     body = "body";
