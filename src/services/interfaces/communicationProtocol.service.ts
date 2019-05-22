@@ -18,5 +18,5 @@ export interface ICommunicationProtocol {
      * @param originalMessage - The message
      * @param destinationIp - The destinationIp
      */
-    sendAcknowledgeMessageAsync(originalMessage: Message, destinationIp: string): Promise<void>;
+    sendAcknowledgementAsync(originalMessage: Message, destinationIp: string): Promise<void>;
 }

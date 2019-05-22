@@ -41,7 +41,7 @@ export class SocketIOCommunicationProtocol implements ICommunicationProtocol {
      * @param originalMessage - The message
      * @param destinationIp - The destinationIp
      */
-    public sendAcknowledgeMessageAsync(originalMessage: Message, destinationIp: string): Promise<void> {
-        return this.sender.sendAcknowledgeMessageAsync(originalMessage, destinationIp);
+    public sendAcknowledgementAsync(originalMessage: Message, destinationIp: string): Promise<void> {
+        return this.sender.sendAcknowledgementAsync(originalMessage, destinationIp);
     }
 }

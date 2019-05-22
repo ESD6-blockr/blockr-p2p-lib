@@ -38,7 +38,7 @@ export class SocketIOSender {
      * @param originalMessage - The message
      * @param destinationIp - The destinationIp
      */
-    public sendAcknowledgeMessageAsync(originalMessage: Message, destinationIp: string): Promise<void> {
+    public sendAcknowledgementAsync(originalMessage: Message, destinationIp: string): Promise<void> {
         const message = new Message(
             MessageType.ACKNOWLEDGE,
             originalMessage.originalSenderGuid,

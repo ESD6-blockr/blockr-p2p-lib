@@ -130,7 +130,7 @@ export class ConnectionService implements IMessageListener {
                 // Acknowledge this message
                 if (message.type !== MessageType.ACKNOWLEDGE) {
                     const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
-                    this.communicationProtocol.sendAcknowledgeMessageAsync(message, destination);
+                    this.communicationProtocol.sendAcknowledgementAsync(message, destination);
                 }
             }
             resolve();
