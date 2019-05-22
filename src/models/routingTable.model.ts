@@ -32,9 +32,9 @@ export class RoutingTable {
      * @returns peer of type 
      */
     public getPeerOfType(type: string): string | undefined {
-        for (const peer of this.peers) {
-            if (peer[1].type === type) {
-                return peer[1].ip;
+        for (const peer of this.peers.values()) {
+            if (peer.type === type) {
+                return peer.ip;
             }
         }
         return undefined;
