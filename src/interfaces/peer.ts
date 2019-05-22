@@ -27,7 +27,7 @@ export interface IPeer {
      * @param [body] - The message body
      * @param [responseImplementation] - The implementation for the response message
      */
-    sendMessage(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void>;
+    sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void>;
 
     /**
      * Send a broadcast to the network.
@@ -36,7 +36,7 @@ export interface IPeer {
      * @param [body] - The message body
      * @param [responseImplementation] - The implementation for the response message
      */
-    sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]>;
+    sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]>;
 
     /**
      * Leave the network.
