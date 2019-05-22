@@ -9,6 +9,11 @@ export class Receiver {
     private readonly server: Server;
     private readonly receivedMessages: string[];
 
+    /**
+     * Creates an instance of receiver.
+     * @param messageListener 
+     * @param port 
+     */
     constructor(messageListener: IMessageListener, port: string) {
         this.messageListener = messageListener;
         this.server = listen(port);
@@ -27,7 +32,6 @@ export class Receiver {
                 const message = JSON.parse(body);
                 if (!this.receivedMessages.includes(message.guid)) {
                     this.receivedMessages.push(message.guid);
-                    const senderIp = socket.request.connection.remoteAddress.split(":").pop();
                     this.messageListener.onMessage(message);
                 }
             });
