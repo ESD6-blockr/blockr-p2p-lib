@@ -140,7 +140,7 @@ export class ConnectionService implements IMessageListener {
      * @param guid  The guid of a peer
      */
     public leave(guid: string): void {
-        const message = new Message(MessageType.LEAVE, guid);
+        const message = new Message(MessageType.LEAVE, undefined, guid);
         this.sendBroadcastAsync(message);
     }
 

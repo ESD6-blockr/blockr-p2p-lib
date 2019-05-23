@@ -20,7 +20,7 @@ export class Message {
      * @param [body] 
      * @param [correlationId] 
      */
-    constructor(type: string, originalSenderGuid?: string, body?: string, correlationId?: string) {
+    constructor(type: string, body?: string, originalSenderGuid?: string, correlationId?: string) {
         this.guid = Guid.create().toString();
         this.type = type;
         this.date = new Date();

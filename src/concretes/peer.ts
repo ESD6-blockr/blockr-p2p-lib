@@ -159,7 +159,7 @@ export class Peer implements IPeer {
             }
             for (const peer of peers) {
                 // Check if peer is online and try to join
-                const message = new Message(MessageType.JOIN, this.connectionService.GUID, JSON.stringify({peerType: this.type}));
+                const message = new Message(MessageType.JOIN, JSON.stringify({peerType: this.type}), this.connectionService.GUID);
                 await this.connectionService.sendMessageByIpAsync(message, peer,
                     async (responseMessage: Message) => { await this.joinResponseAsync(responseMessage); });
                 await this.connectionService.getPromiseForResponse(message);
@@ -194,11 +194,11 @@ export class Peer implements IPeer {
             // Add the new peer to our registry
             this.connectionService.routingTable.addPeer(newPeerId, message.senderIp, body.peerType);
             
-            await response(new Message(MessageType.JOIN_RESPONSE, newPeerId, responseBody));
+            await response(new Message(MessageType.JOIN_RESPONSE, responseBody, newPeerId));
 
             // Let other peers know about the newly joined peer
-            await this.connectionService.sendBroadcastAsync(new Message(MessageType.NEW_PEER, this.connectionService.GUID,
-                JSON.stringify({guid: this.connectionService.GUID, ip: message.senderIp, peerType: this.type})));
+            await this.connectionService.sendBroadcastAsync(new Message(MessageType.NEW_PEER,
+                JSON.stringify({guid: this.connectionService.GUID, ip: message.senderIp, peerType: this.type}), this.connectionService.GUID));
         }
     }
 
