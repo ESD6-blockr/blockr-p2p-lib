@@ -23,7 +23,6 @@ export interface IPeer {
      *                         The implementation should be a void that receives the following arguments:
      *                              message - The message
      *                              sender - The GUID of the message sender
-     * @param [response] - Method for sending the response message
      */
     registerReceiveHandlerForMessageType(messageType: string, implementation: RECEIVE_HANDLER_TYPE): void;
 
