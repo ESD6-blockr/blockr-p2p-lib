@@ -7,7 +7,7 @@ export class Message {
     public guid: string;
     public type: string;
     public date: Date;
-    public originalSenderGuid: string;
+    public originalSenderGuid?: string;
     public body?: string;
     public correlationId: string;
     public senderIp?: string;
@@ -20,7 +20,7 @@ export class Message {
      * @param [body] 
      * @param [correlationId] 
      */
-    constructor(type: string, originalSenderGuid: string, body?: string, correlationId?: string) {
+    constructor(type: string, originalSenderGuid?: string, body?: string, correlationId?: string) {
         this.guid = Guid.create().toString();
         this.type = type;
         this.date = new Date();
