@@ -2,7 +2,7 @@ import { Guid } from "guid-typescript";
 
 import { MessageType } from "../enums/messageType.enum";
 import { IPeer, RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
-import { Message } from "../models/message.model";
+import { Message } from "../models/";
 import { ConnectionService } from "../services/concretes/connection.service";
 
 const DEFAULT_PORT: string = "8081";

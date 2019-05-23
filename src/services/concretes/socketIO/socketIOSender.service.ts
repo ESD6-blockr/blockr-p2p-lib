@@ -1,6 +1,6 @@
 import { connect } from "socket.io-client";
 import { MessageType } from "../../../enums/messageType.enum";
-import { Message } from "../../../models/message.model";
+import { Message } from "../../../models/";
 
 /**
  * Handles the sending of messages.

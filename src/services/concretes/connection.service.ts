@@ -71,9 +71,9 @@ export class ConnectionService implements IMessageListener {
     /**
      * Send a message to the given destination.
      *
-     * @param messageType - The message type
+     * @param message - The message
      * @param destination - The destination GUID
-     * @param [body] - The message body
+     * @param [responseImplementation] - The implementation for the response message
      */
     public sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         if (destinationGuid) {

@@ -1,5 +1,5 @@
 import { IMessageListener } from "../../../interfaces/messageListener";
-import { Message } from "../../../models/message.model";
+import { Message } from "../../../models/";
 import { ICommunicationProtocol } from "../../interfaces/communicationProtocol.service";
 import { SocketIOReceiver } from "./socketIOReceiver.service";
 import { SocketIOSender } from "./socketIOSender.service";

@@ -1,4 +1,4 @@
-import { Message } from "../models/message.model";
+import { Message } from "../models/";
 
 
 export type RESPONSE_TYPE = (message: Message) => Promise<void> | void;
@@ -31,7 +31,7 @@ export interface IPeer {
      * Send a message to the given destination.
      *
      * @param message - The message
-     * @param destination - The destination GUID
+     * @param destinationGuid - The destination GUID
      * @param [responseImplementation] - The implementation for the response message
      */
     sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void>;
