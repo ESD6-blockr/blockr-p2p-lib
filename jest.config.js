@@ -1,6 +1,8 @@
 module.exports = {
     collectCoverageFrom: [
         "src/**/*.ts",
+        "!src/index.ts",
+        "!src/main.ts",
         "!src/__tests__/**/*",
     ],
     coverageReporters: [
