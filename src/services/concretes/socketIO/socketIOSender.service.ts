@@ -1,4 +1,3 @@
-import { logger } from "@blockr/blockr-logger";
 import { connect } from "socket.io-client";
 import { MessageType } from "../../../enums/messageType.enum";
 import { Message } from "../../../models/message.model";

@@ -1,9 +1,7 @@
-import { logger } from "@blockr/blockr-logger";
-
 import { MessageType } from "../../enums/messageType.enum";
 import { UnknownDestinationException } from "../../exceptions/unknownDestination.exception";
 import { IMessageListener } from "../../interfaces/messageListener";
-import { RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";
+import { RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";
 import { Message, RoutingTable } from "../../models";
 import { DateManipulator } from "../../util/dateManipulator";
 import { Deferred } from "../../util/deffered.util";
@@ -20,7 +18,7 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
 export class ConnectionService implements IMessageListener {
     public readonly routingTable: RoutingTable;
     public GUID?: string;
-    private readonly receiveHandlers: Map<string, RECIEVE_HANDLER_TYPE>;
+    private readonly receiveHandlers: Map<string, RECEIVE_HANDLER_TYPE>;
     private communicationProtocol?: ICommunicationProtocol;
     private readonly responseDefferedsMap: Map<string, Deferred<boolean>>;
     private readonly requestsMap: Map<string, RESPONSE_TYPE>;
@@ -31,7 +29,7 @@ export class ConnectionService implements IMessageListener {
      * Creates an instance of connection service.
      */
     constructor() {
-        this.receiveHandlers = new Map<string, RECIEVE_HANDLER_TYPE>();
+        this.receiveHandlers = new Map<string, RECEIVE_HANDLER_TYPE>();
         this.requestsMap = new Map<string, RESPONSE_TYPE>();
         this.routingTable = new RoutingTable();
         this.sentMessages = new Map<string, Message>();
@@ -54,7 +52,7 @@ export class ConnectionService implements IMessageListener {
     /**
      * Remove the given message from the sent messages history.
      *
-     * @param messageGuid - The message hash of the message to remove
+     * @param senderGuid - The guid of the sender
      */
     public removeSentMessage(senderGuid: string): void {
         this.sentMessages.delete(senderGuid);
@@ -66,7 +64,7 @@ export class ConnectionService implements IMessageListener {
      * @param messageType - The messageType that the receiver handles
      * @param implementation - The implementation of the receiver handler
      */
-    public registerReceiveHandlerForMessageType(messageType: string, implementation: RECIEVE_HANDLER_TYPE): void {
+    public registerReceiveHandlerForMessageType(messageType: string, implementation: RECEIVE_HANDLER_TYPE): void {
         this.receiveHandlers.set(messageType, implementation);
     }
 
@@ -127,7 +125,6 @@ export class ConnectionService implements IMessageListener {
                     responseMessage.originalSenderGuid = message.originalSenderGuid;
                     this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid);
                 });
-                // Acknowledge this message
                 if (message.type !== MessageType.ACKNOWLEDGE) {
                     const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
                     this.communicationProtocol.sendAcknowledgementAsync(message, destination);

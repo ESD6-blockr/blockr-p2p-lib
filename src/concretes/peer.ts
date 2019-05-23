@@ -1,7 +1,7 @@
 import { Guid } from "guid-typescript";
 
 import { MessageType } from "../enums/messageType.enum";
-import { IPeer, RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
+import { IPeer, RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/message.model";
 import { ConnectionService } from "../services/concretes/connection.service";
 
@@ -51,7 +51,7 @@ export class Peer implements IPeer {
      * @param messageType 
      * @param implementation 
      */
-    public registerReceiveHandlerForMessageType(messageType: string, implementation: RECIEVE_HANDLER_TYPE): void {
+    public registerReceiveHandlerForMessageType(messageType: string, implementation: RECEIVE_HANDLER_TYPE): void {
         this.connectionService.registerReceiveHandlerForMessageType(messageType, implementation);
     }
 
@@ -109,7 +109,7 @@ export class Peer implements IPeer {
     public getPeerOfType(type: string): string | undefined {
         return this.connectionService.routingTable.getPeerOfType(type);
     }
-    
+
     /**
      * Create the default handlers that act on a received message, depending on the messageType.
      */

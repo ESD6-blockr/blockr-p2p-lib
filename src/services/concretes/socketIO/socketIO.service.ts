@@ -1,6 +1,3 @@
-import { listen, Socket } from "socket.io";
-import { connect } from "socket.io-client";
-import { MessageType } from "../../../enums/messageType.enum";
 import { IMessageListener } from "../../../interfaces/messageListener";
 import { Message } from "../../../models/message.model";
 import { ICommunicationProtocol } from "../../interfaces/communicationProtocol.service";
