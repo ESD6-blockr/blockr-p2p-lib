@@ -1,5 +1,6 @@
 import { Guid } from "guid-typescript";
 import { Message } from "../models";
+import { DateManipulator } from "../util/dateManipulator";
 
 let type: string;
 let originalSenderGuid: string;
@@ -34,8 +35,7 @@ describe("Creating message model", () => {
 describe("Comparing dates with isOlder function", () => {
     it("Should return the right value", () => {
         const newDate = new Date();
-        const dateBefore = new Date();
-        dateBefore.setMinutes(message.date.getMinutes() - 1);
+        const dateBefore = DateManipulator.minusMinutes(newDate, 1);
         newDate.setSeconds(newDate.getSeconds() + 1);
 
         expect(message.isOlderThan(newDate)).toBeTruthy();

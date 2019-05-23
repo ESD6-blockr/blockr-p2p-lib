@@ -6,7 +6,6 @@ import { PeerNode } from "./peerNode.model";
 export class RoutingTable {
     public peers: Map<string, PeerNode>;
 
-
     /**
      * Creates an instance of routing table.
      */
@@ -24,7 +23,6 @@ export class RoutingTable {
     public addPeer(guid: string, ip: string, type: string): void {
         this.peers.set(guid, new PeerNode(ip, type));
     }
-
 
     /**
      * Gets peer of type
