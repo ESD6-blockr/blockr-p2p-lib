@@ -100,9 +100,16 @@ export class Peer implements IPeer {
         return this.connectionService.getPromiseForResponse(message);
     }
 
+
+    /**
+     * Gets peer of type
+     * @param type 
+     * @returns peer of type 
+     */
     public getPeerOfType(type: string): string | undefined {
         return this.connectionService.routingTable.getPeerOfType(type);
     }
+    
     /**
      * Create the default handlers that act on a received message, depending on the messageType.
      */

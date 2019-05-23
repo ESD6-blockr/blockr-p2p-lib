@@ -12,7 +12,7 @@ export class SocketIOSender {
 
     /**
      * Creates an instance of sender.
-     * @param port 
+     * @param port The communication port
      */
     constructor(port: string) {
         this.port = port;

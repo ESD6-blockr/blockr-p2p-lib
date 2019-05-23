@@ -88,8 +88,8 @@ export class ConnectionService implements IMessageListener {
 
     /**
      * Sends broadcast
-     * @param message 
-     * @param [responseImplementation] 
+     * @param message The message
+     * @param [responseImplementation] The implemantion of the response message
      * @returns broadcast 
      */
     public sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
@@ -140,7 +140,7 @@ export class ConnectionService implements IMessageListener {
 
     /**
      * Leaves connection service
-     * @param guid 
+     * @param guid  The guid of a peer
      */
     public leave(guid: string): void {
         const message = new Message(MessageType.LEAVE, guid);
@@ -150,9 +150,9 @@ export class ConnectionService implements IMessageListener {
 
     /**
      * Sends message by ip
-     * @param message 
-     * @param destinationIp 
-     * @param [responseImplementation] 
+     * @param message  The message
+     * @param destinationIp The ip address of the destination
+     * @param [responseImplementation] The implemantion of the response message
      * @returns message by ip 
      */
     public sendMessageByIpAsync(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
@@ -173,7 +173,7 @@ export class ConnectionService implements IMessageListener {
 
     /**
      * Gets promise for response
-     * @param message 
+     * @param message The message
      * @returns promise for response 
      */
     public getPromiseForResponse(message: Message): Promise<void> {
@@ -228,7 +228,7 @@ export class ConnectionService implements IMessageListener {
 
     /**
      * Gets ip from routing table
-     * @param guid 
+     * @param guid The guid of a peer
      * @returns ip from routing table 
      */
     private getIpFromRoutingTable(guid: string): string {

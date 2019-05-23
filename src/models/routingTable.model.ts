@@ -28,7 +28,7 @@ export class RoutingTable {
 
     /**
      * Gets peer of type
-     * @param type 
+     * @param type The type of the peer
      * @returns peer of type 
      */
     public getPeerOfType(type: string): string | undefined {

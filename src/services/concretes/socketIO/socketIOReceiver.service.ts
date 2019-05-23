@@ -12,8 +12,8 @@ export class SocketIOReceiver {
 
     /**
      * Creates an instance of receiver.
-     * @param messageListener 
-     * @param port 
+     * @param messageListener The listener for new messages
+     * @param port The communication port
      */
     constructor(messageListener: IMessageListener, port: string) {
         this.messageListener = messageListener;
