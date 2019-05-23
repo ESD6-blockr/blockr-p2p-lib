@@ -43,7 +43,6 @@ export interface IPeer {
      */
     sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]>;
 
-
     /**
      * Gets promise for response
      * @param message 
