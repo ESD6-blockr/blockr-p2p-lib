@@ -1,15 +1,18 @@
-import { logger } from "@blockr/blockr-logger";
 import { connect } from "socket.io-client";
-import { MessageType } from "../enums/messageType.enum";
-import { Message } from "../models/message.model";
+import { MessageType } from "../../../enums/messageType.enum";
+import { Message } from "../../../models/";
 
 /**
  * Handles the sending of messages.
  */
-export class Sender {
-    private readonly protocol = "http://";
+export class SocketIOSender {
+    private readonly protocol = "http";
     private readonly port: string;
 
+    /**
+     * Creates an instance of sender.
+     * @param port The communication port
+     */
     constructor(port: string) {
         this.port = port;
     }
@@ -19,14 +22,11 @@ export class Sender {
      *
      * @param message - The message
      * @param destinationIp - The destinationIp ip
-     * @param destinationGuid
      */
-    public sendMessage(message: Message, destinationIp: string): Promise<void> {
+    public sendMessageAsync(message: Message, destinationIp: string): Promise<void> {
         return new Promise((resolve) => {
-            const socket = connect(`${this.protocol}${destinationIp}:${this.port}`);
+            const socket = connect(`${this.protocol}://${destinationIp}:${this.port}`);
             socket.emit("message", JSON.stringify(message));
-
-            logger.info(`Message sent to: ${destinationIp}: ${message.type}`);
             resolve();
         });
     }
@@ -37,13 +37,13 @@ export class Sender {
      * @param originalMessage - The message
      * @param destinationIp - The destinationIp
      */
-    public sendAcknowledgeMessage(originalMessage: Message, destinationIp: string): Promise<void> {
+    public sendAcknowledgementAsync(originalMessage: Message, destinationIp: string): Promise<void> {
         const message = new Message(
             MessageType.ACKNOWLEDGE,
             originalMessage.originalSenderGuid,
             originalMessage.guid,
         );
 
-        return this.sendMessage(message, destinationIp);
+        return this.sendMessageAsync(message, destinationIp);
     }
 }
