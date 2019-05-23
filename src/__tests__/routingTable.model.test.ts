@@ -1,5 +1,6 @@
 import { Guid } from "guid-typescript";
-import { RoutingTable } from "../models/routingTable.model";
+import { PeerNode, RoutingTable } from "../models";
+import { TestIps } from "./testAddress";
 
 let routingTable: RoutingTable;
 
@@ -18,12 +19,15 @@ describe("Creating routingTable model", () => {
 describe("Adding/removing a peer", () => {
     it("Should add/remove the peer to/from the peers map", () => {
         const peerGuid = Guid.create().toString();
-        const ip = "0.0.0.0";
+        const ip = TestIps.TEST_1;
 
-        routingTable.addPeer(peerGuid, ip);
+        routingTable.addPeer(peerGuid, ip, "validator");
+        const peerNode = routingTable.peers.get(peerGuid);
 
+        expect(peerNode).not.toBeUndefined();
         expect(routingTable.peers.size).toEqual(1);
-        expect(routingTable.peers.get(peerGuid)).toEqual(ip);
+        // @ts-ignore
+        expect(peerNode.ip).toEqual(ip);
 
         routingTable.removePeer(peerGuid);
 
@@ -35,12 +39,13 @@ describe("Merging routing tables", () => {
     it("Should merge routing tables", () => {
         const peerGuid = Guid.create().toString();
         const peerGuid2 = Guid.create().toString();
-        const ip = "0.0.0.0";
-        const ip2 = "0.0.0.1";
+        const ip = TestIps.TEST_1;
+        const ip2 = TestIps.TEST_2;
+        const peerNode = new PeerNode(ip, "validator");
 
-        const peersMap = new Map<string, string>();
-        peersMap.set(peerGuid, ip);
-        routingTable.addPeer(peerGuid2, ip2);
+        const peersMap = new Map<string, PeerNode>();
+        peersMap.set(peerGuid, peerNode);
+        routingTable.addPeer(peerGuid2, ip2, "validator");
 
         routingTable.mergeRoutingTables(peersMap);
 
@@ -53,9 +58,9 @@ describe("Merging routing tables", () => {
 describe("Cloning the routing table", () => {
     it("Should clone the routing table object", () => {
         const peerGuid = Guid.create().toString();
-        const ip = "0.0.0.0";
+        const ip = TestIps.TEST_1;
 
-        routingTable.addPeer(peerGuid, ip);
+        routingTable.addPeer(peerGuid, ip, "validator");
         const clonedRoutingTable = routingTable.clone();
 
         expect(clonedRoutingTable).toBeDefined();

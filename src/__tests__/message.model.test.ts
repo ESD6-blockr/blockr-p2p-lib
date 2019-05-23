@@ -1,5 +1,5 @@
 import { Guid } from "guid-typescript";
-import { Message } from "../models/message.model";
+import { Message } from "../models";
 
 let type: string;
 let originalSenderGuid: string;
@@ -33,8 +33,9 @@ describe("Creating message model", () => {
 
 describe("Comparing dates with isOlder function", () => {
     it("Should return the right value", () => {
-        const dateBefore = new Date(2018, 10, 14, 19, 33, 52, 23);
         const newDate = new Date();
+        const dateBefore = new Date();
+        dateBefore.setMinutes(message.date.getMinutes() - 1);
         newDate.setSeconds(newDate.getSeconds() + 1);
 
         expect(message.isOlderThan(newDate)).toBeTruthy();
