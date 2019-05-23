@@ -11,7 +11,7 @@ The utilities exposed by this library can be consumed by normal construction.
 **ES6**
 ```ts
 import { Peer } from "../concretes/peer";
-import { IPeer } from "../interfaces/peer";
+import { IPeer, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models";
 ```
 
@@ -47,3 +47,53 @@ class MainService {
 
   ### Usage:
  *See the TSDoc of IPeer for more specific information*
+
+ ```ts
+// Create the peer
+const peer: IPeer = new Peer("examplePeer");
+// Connect to the p2p network and await the connection
+await peer.init("8081", ["145.93.101.81"]);
+
+// Add custom receive handler without a response
+peer.registerReceiveHandlerForMessageType("testMessageType", async (message: Message, senderGuid: string) => {
+    if (message && senderGuid) {
+        Logger.info(message.correlationId);
+    }
+});
+// Add custom receive handler with a response type
+peer.registerReceiveHandlerForMessageType("testMessageTypeWithResponse", async (message: Message, senderGuid: string, response: RESPONSE_TYPE) => {
+    if (message && senderGuid) {
+        // Rspond to the message
+        response(message);
+    }
+});
+
+// Get a validator peer
+const validatorGuid: string | undefined = peer.getPeerOfType("Validator");
+if (validatorGuid !== undefined) {
+    // Basic message without responses
+    const message: Message = new Message("testMessageType", "testMessageType");
+
+    // Send the message to the validator
+    // Optional to await the sending of the message
+    await peer.sendMessageAsync(message, validatorGuid);
+    // Send the message to all peers in the network
+    // Optional to await the sending of the message
+    await peer.sendBroadcastAsync(message);
+
+    // Message with a response
+    const message: Message = new Message("testMessageTypeWithResponse", "testMessageType");
+
+    // Send the message to the validator, with a response implementation
+    // Optional to await the sending of the message
+    await peer.sendMessageAsync(message, validatorGuid, (responseMessage: Message) => {
+        Logger.info(responseMessage.correlationId);
+    });
+    // With a response implementation it is possible to wait till the other peer has responded to the message.
+    await peer.getPromiseForResponse(message);
+}
+
+// Leave the network
+peer.leave();
+```
+
