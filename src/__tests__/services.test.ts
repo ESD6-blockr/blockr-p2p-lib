@@ -1,6 +1,6 @@
-import {ConnectionService} from "../services/connection.service";
-import {Message} from "../models/message.model";
 import {Guid} from "guid-typescript";
+import {Message} from "../models";
+import {ConnectionService} from "../services/concretes/connection.service";
 
 let connectionService: ConnectionService;
 let randomPort: number;
