@@ -1,15 +1,12 @@
-import { logger } from "@blockr/blockr-logger";
-
-import { MessageType } from "../enums/messageType.enum";
-import { UnknownDestinationException } from "../exceptions/unknownDestination.exception";
-import { IMessageListener } from "../interfaces/messageListener";
-import { RECIEVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
-import { Message } from "../models/message.model";
-import { RoutingTable } from "../models/routingTable.model";
-import { Receiver } from "../services/receiver.service";
-import { Sender } from "../services/sender.service";
-import { DateManipulator } from "../util/dateManipulator";
-import { Deferred } from "../util/deffered.util";
+import { MessageType } from "../../enums/messageType.enum";
+import { UnknownDestinationException } from "../../exceptions/unknownDestination.exception";
+import { IMessageListener } from "../../interfaces/messageListener";
+import { RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";
+import { Message, RoutingTable } from "../../models";
+import { DateManipulator } from "../../util/dateManipulator";
+import { Deferred } from "../../util/deffered.util";
+import { ICommunicationProtocol } from "../interfaces/communicationProtocol.service";
+import { SocketIOCommunicationProtocol } from "./socketIO/socketIO.service";
 
 
 const MESSAGE_EXPIRATION_TIMER: number = 1;
@@ -21,9 +18,8 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
 export class ConnectionService implements IMessageListener {
     public readonly routingTable: RoutingTable;
     public GUID?: string;
-    private readonly receiveHandlers: Map<string, RECIEVE_HANDLER_TYPE>;
-    private sender?: Sender;
-    private receiver?: Receiver;
+    private readonly receiveHandlers: Map<string, RECEIVE_HANDLER_TYPE>;
+    private communicationProtocol?: ICommunicationProtocol;
     private readonly responseDefferedsMap: Map<string, Deferred<boolean>>;
     private readonly requestsMap: Map<string, RESPONSE_TYPE>;
     private readonly sentMessages: Map<string, Message>;
@@ -33,7 +29,7 @@ export class ConnectionService implements IMessageListener {
      * Creates an instance of connection service.
      */
     constructor() {
-        this.receiveHandlers = new Map<string, RECIEVE_HANDLER_TYPE>();
+        this.receiveHandlers = new Map<string, RECEIVE_HANDLER_TYPE>();
         this.requestsMap = new Map<string, RESPONSE_TYPE>();
         this.routingTable = new RoutingTable();
         this.sentMessages = new Map<string, Message>();
@@ -47,8 +43,7 @@ export class ConnectionService implements IMessageListener {
      */
     public init(port: string): Promise<void> {
         return new Promise(async (resolve) => {
-            this.sender = new Sender(port);
-            this.receiver = new Receiver(this, port);
+            this.communicationProtocol = new SocketIOCommunicationProtocol(this, port);
             this.createRoutingTableCleanupTimer();
             resolve();
         });
@@ -57,7 +52,7 @@ export class ConnectionService implements IMessageListener {
     /**
      * Remove the given message from the sent messages history.
      *
-     * @param messageGuid - The message hash of the message to remove
+     * @param senderGuid - The guid of the sender
      */
     public removeSentMessage(senderGuid: string): void {
         this.sentMessages.delete(senderGuid);
@@ -69,36 +64,36 @@ export class ConnectionService implements IMessageListener {
      * @param messageType - The messageType that the receiver handles
      * @param implementation - The implementation of the receiver handler
      */
-    public registerReceiveHandlerForMessageType(messageType: string, implementation: RECIEVE_HANDLER_TYPE): void {
+    public registerReceiveHandlerForMessageType(messageType: string, implementation: RECEIVE_HANDLER_TYPE): void {
         this.receiveHandlers.set(messageType, implementation);
     }
 
     /**
      * Send a message to the given destination.
      *
-     * @param messageType - The message type
+     * @param message - The message
      * @param destination - The destination GUID
-     * @param [body] - The message body
+     * @param [responseImplementation] - The implementation for the response message
      */
-    public sendMessage(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
+    public sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         if (destinationGuid) {
             this.sentMessages.set(destinationGuid, message);
         }
         const destinationIp = this.getIpFromRoutingTable(destinationGuid);
-        return this.sendMessageByIp(message, destinationIp, responseImplementation);
+        return this.sendMessageByIpAsync(message, destinationIp, responseImplementation);
     }
 
 
     /**
      * Sends broadcast
-     * @param message 
-     * @param [responseImplementation] 
+     * @param message The message
+     * @param [responseImplementation] The implemantion of the response message
      * @returns broadcast 
      */
-    public sendBroadcast(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
+    public sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         const promises = [];
         for (const guid of this.routingTable.peers.keys()) {
-            promises.push(this.sendMessage(message, guid, responseImplementation));
+            promises.push(this.sendMessageAsync(message, guid, responseImplementation));
         }
         return Promise.all(promises);
     }
@@ -108,20 +103,18 @@ export class ConnectionService implements IMessageListener {
      *
      * @param message - The incoming message
      */
-    public onMessage(message: Message): Promise<void> {
+    public onMessageAsync(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (!this.sender) {
+            if (!this.communicationProtocol) {
                 reject();
                 return;
             }
-            logger.info(`${message.type} message received`);
-            
             const responseImplementation = this.requestsMap.get(message.correlationId);
             if (responseImplementation) {
                 await responseImplementation(message);
                 const responseDeffered = this.responseDefferedsMap.get(message.correlationId);
-                if (responseDeffered) {
-                    responseDeffered.resolve!(true);
+                if (responseDeffered && responseDeffered.resolve) {
+                    responseDeffered.resolve(true);
                 }
             }
 
@@ -130,12 +123,11 @@ export class ConnectionService implements IMessageListener {
                 await implementation(message, message.originalSenderGuid, (responseMessage: Message) => {
                     responseMessage.correlationId = message.guid;
                     responseMessage.originalSenderGuid = message.originalSenderGuid;
-                    this.sendMessage(responseMessage, responseMessage.originalSenderGuid);
+                    this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid);
                 });
-                // Acknowledge this message
                 if (message.type !== MessageType.ACKNOWLEDGE) {
                     const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
-                    this.sender.sendAcknowledgeMessage(message, destination);
+                    this.communicationProtocol.sendAcknowledgementAsync(message, destination);
                 }
             }
             resolve();
@@ -145,24 +137,24 @@ export class ConnectionService implements IMessageListener {
 
     /**
      * Leaves connection service
-     * @param guid 
+     * @param guid  The guid of a peer
      */
     public leave(guid: string): void {
         const message = new Message(MessageType.LEAVE, guid);
-        this.sendBroadcast(message);
+        this.sendBroadcastAsync(message);
     }
 
 
     /**
      * Sends message by ip
-     * @param message 
-     * @param destinationIp 
-     * @param [responseImplementation] 
+     * @param message  The message
+     * @param destinationIp The ip address of the destination
+     * @param [responseImplementation] The implemantion of the response message
      * @returns message by ip 
      */
-    public sendMessageByIp(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
+    public sendMessageByIpAsync(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (!this.sender) {
+            if (!this.communicationProtocol) {
                 reject();
                 return;
             }
@@ -171,14 +163,14 @@ export class ConnectionService implements IMessageListener {
                 this.requestsMap.set(message.guid, responseImplementation);
                 this.responseDefferedsMap.set(message.guid, new Deferred());
             }
-            await this.sender.sendMessage(message, destinationIp);
+            await this.communicationProtocol.sendMessageAsync(message, destinationIp);
             resolve();
         });
     }
 
     /**
      * Gets promise for response
-     * @param message 
+     * @param message The message
      * @returns promise for response 
      */
     public getPromiseForResponse(message: Message): Promise<void> {
@@ -221,27 +213,28 @@ export class ConnectionService implements IMessageListener {
      */
     private createRoutingTableCleanupTimer() {
         setInterval(() => {
-            if (!this.sender) {
+            if (!this.communicationProtocol) {
                 return;
             }
             const minDate = DateManipulator.minusMinutes(new Date(), MESSAGE_EXPIRATION_TIMER);
             for (const value of this.getSentMessagesSendersSince(minDate)) {
                 this.routingTable.removePeer(value);
-                logger.info(`Peer removed from routing table: ${value}`);
             }
         }, MESSAGE_HISTORY_CLEANUP_TIMER);
     }
 
     /**
      * Gets ip from routing table
-     * @param guid 
+     * @param guid The guid of a peer
      * @returns ip from routing table 
      */
     private getIpFromRoutingTable(guid: string): string {
         const destinationIp = this.routingTable.peers.get(guid);
+        
         if (!destinationIp) {
             throw new UnknownDestinationException(`Unknown destination. Could not find an IP for: ${guid}`);
         }
-        return destinationIp;
+        
+        return destinationIp.ip;
     }
 }

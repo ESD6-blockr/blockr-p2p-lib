@@ -10,6 +10,7 @@ export class Message {
     public originalSenderGuid: string;
     public body?: string;
     public correlationId: string;
+    public senderIp?: string;
 
 
     /**
