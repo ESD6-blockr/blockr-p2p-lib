@@ -40,7 +40,7 @@ class MainService {
 
 	constructor() {
 		this.peer = new Peer("typeOfPeer");
-		await this.peer.init([145.93.101.81]);
+		await this.peer.init(["0.0.0.0"]);
 	}
 }
 ```
@@ -52,7 +52,7 @@ class MainService {
 // Create the peer
 const peer: IPeer = new Peer("examplePeer");
 // Connect to the p2p network and await the connection
-await peer.init("8081", ["145.93.101.81"]);
+await peer.init("8081", ["0.0.0.0"]);
 
 // Add custom receive handler without a response
 peer.registerReceiveHandlerForMessageType("testMessageType", async (message: Message, senderGuid: string) => {
@@ -70,7 +70,7 @@ peer.registerReceiveHandlerForMessageType("testMessageTypeWithResponse", async (
 
 // Get a validator peer
 const validatorGuid: string | undefined = peer.getPeerOfType("Validator");
-if (validatorGuid !== undefined) {
+if (!validatorGuid) {
     // Basic message without responses
     const message: Message = new Message("testMessageType", "testMessageType");
 
