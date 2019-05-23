@@ -1,10 +1,11 @@
-import { Peer } from "./concretes/peer";
-import { IPeer } from "./interfaces/peer";
-import { Message } from "./models";
+import { Peer } from "../concretes/peer";
+import { IPeer } from "../interfaces/peer";
+import { Message } from "../models";
 
-// Create the peer
+// Create the peer with a peerType
 const peer: IPeer = new Peer("examplePeer");
-// Connect to the p2p network and await the connection
+
+// Connect to the p2p network
 peer.init("8081", ["145.93.101.81"]);
 
 // Add custom receive handler
@@ -15,11 +16,12 @@ peer.registerReceiveHandlerForMessageType("testMessageType", async (message: Mes
     }
 });
 
-// Get a validator peer
-const validatorGuid: string | undefined = peer.getPeerOfType("Validator");
+// Get a validator peer using a peerType
+const validatorGuid: string | undefined = peer.getPeerOfType("validator");
 if (validatorGuid !== undefined) {
     // Create a message
     const message: Message = new Message("testMessageType", "testMessageType");
+
     // Send the message to the validator
     peer.sendMessageAsync(message, validatorGuid);
     // Send the message to all peers in the network

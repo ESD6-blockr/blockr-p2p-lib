@@ -10,14 +10,15 @@ The utilities exposed by this library can be consumed by normal construction.
 ## Importing
 **ES6**
 ```ts
-import { Peer } from "./concretes/peer";
-import { IPeer } from "./interfaces/peer";
+import { Peer } from "../concretes/peer";
+import { IPeer } from "../interfaces/peer";
+import { Message } from "../models";
 ```
 
 ## Construction and initialisation
-In the constructor of `Peer` expects the name of type of peer connection. For example 'Validator' or 'IPFS'.
+In the constructor of `Peer` expects the name of type of peer connection. For example `Validator` or `IPFS`.
 
-The init function expects a `Port`, if left empty the default port is used. And a list of 'initial peers', these are the peers the `Peer` will try to connect to, if left empty the 'Peer' assumes it is the first 'Peer' of the network.
+The init function expects a `Port`, if left empty the default port is used. And a list of `initial peers`, these are the peers the `Peer` will try to connect to, if left empty the `Peer` assumes it is the first `Peer` of the network.
 
   ### Example:
 *First peer of a network*
