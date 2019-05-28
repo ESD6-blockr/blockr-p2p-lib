@@ -14,8 +14,8 @@ beforeAll(() => {
     originalSenderGuid = Guid.create().toString();
     body = "body";
     correlationId = Guid.create().toString();
-    message = new Message(type, originalSenderGuid, body, correlationId);
-    message2 = new Message(type, originalSenderGuid, body);
+    message = new Message(type, body, originalSenderGuid, correlationId);
+    message2 = new Message(type, body, originalSenderGuid);
 });
 
 describe("Creating message model", () => {
