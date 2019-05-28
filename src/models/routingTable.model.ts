@@ -1,5 +1,5 @@
-import { PeerNode } from "./peerNode.model";
 import { PeerType } from "../enums/peerType.enum";
+import { PeerNode } from "./peerNode.model";
 
 /**
  * Routing table registry.
