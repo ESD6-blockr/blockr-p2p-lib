@@ -23,6 +23,7 @@ export class MockSocketIOSender {
     public sendMessageAsync(message: Message, destinationIp: string): Promise<void> {
         return new Promise((resolve) => {
             const socket = new Server(`${this.protocol}://${destinationIp}:${this.port}`);
+            console.log("destinationIp: " + `${this.protocol}://${destinationIp}:${this.port}`);
             socket.emit("message", JSON.stringify(message));
             resolve();
         });

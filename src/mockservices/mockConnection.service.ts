@@ -18,10 +18,11 @@ export class MockConnectionService implements IMessageListener {
     public readonly routingTable: RoutingTable;
     public GUID?: string;
     public readonly receiveHandlers: Map<string, RECEIVE_HANDLER_TYPE>;
+    public readonly sentMessages: Map<string, Message>;
+    public readonly receivedMessages: Map<string, Message>;
     private communicationProtocol?: ICommunicationProtocol;
     private readonly responseDefferedsMap: Map<string, Deferred<boolean>>;
     private readonly requestsMap: Map<string, RESPONSE_TYPE>;
-    private readonly sentMessages: Map<string, Message>;
 
     /**
      * Creates an instance of connection service.
@@ -31,6 +32,7 @@ export class MockConnectionService implements IMessageListener {
         this.requestsMap = new Map<string, RESPONSE_TYPE>();
         this.routingTable = new RoutingTable();
         this.sentMessages = new Map<string, Message>();
+        this.receivedMessages = new Map<string, Message>();
         this.responseDefferedsMap = new Map<string, Deferred<boolean>>();
     }
 
@@ -84,7 +86,7 @@ export class MockConnectionService implements IMessageListener {
     /**
      * Sends broadcast
      * @param message The message
-     * @param [responseImplementation] The implemantion of the response message
+     * @param [responseImplementation] The implementation of the response message
      * @returns broadcast
      */
     public sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
@@ -106,6 +108,7 @@ export class MockConnectionService implements IMessageListener {
                 reject();
                 return;
             }
+            this.receivedMessages.set(message.guid, message);
             const responseImplementation = this.requestsMap.get(message.correlationId);
             if (responseImplementation) {
                 await responseImplementation(message);

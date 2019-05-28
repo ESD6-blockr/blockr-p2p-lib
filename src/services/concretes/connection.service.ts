@@ -104,6 +104,7 @@ export class ConnectionService implements IMessageListener {
      * @param message - The incoming message
      */
     public onMessageAsync(message: Message): Promise<void> {
+        console.log("onMessage: " + message);
         return new Promise(async (resolve, reject) => {
             if (!this.communicationProtocol) {
                 reject();
