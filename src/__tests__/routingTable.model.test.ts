@@ -44,6 +44,7 @@ describe("Merging routing tables", () => {
         const ip = TestIps.TEST_1;
         const ip2 = TestIps.TEST_2;
         const peersMap = new Map<string, PeerNode>();
+        const expectedRoutingTableSize = 2;
 
         peersMap.set(peerGuid, new PeerNode(ip, PeerType.VALIDATOR));
         routingTable.addPeer(peerGuid2, ip2, PeerType.VALIDATOR);
@@ -55,7 +56,7 @@ describe("Merging routing tables", () => {
 
         expect(peerNode).not.toBeUndefined();
         expect(peerNode2).not.toBeUndefined();
-        expect(routingTable.peers.size).toEqual(2);
+        expect(routingTable.peers.size).toEqual(expectedRoutingTableSize);
         if (peerNode) {
             expect(peerNode.ip).toEqual(ip);
         }
