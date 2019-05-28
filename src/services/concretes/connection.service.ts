@@ -18,8 +18,9 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
 export class ConnectionService implements IMessageListener {
     public readonly routingTable: RoutingTable;
     public GUID?: string;
+    // Public only for testing purposes
+    public communicationProtocol?: ICommunicationProtocol;
     private readonly receiveHandlers: Map<string, RECEIVE_HANDLER_TYPE>;
-    private communicationProtocol?: ICommunicationProtocol;
     private readonly responseDefferedsMap: Map<string, Deferred<boolean>>;
     private readonly requestsMap: Map<string, RESPONSE_TYPE>;
     private readonly sentMessages: Map<string, Message>;
@@ -38,8 +39,8 @@ export class ConnectionService implements IMessageListener {
 
     /**
      * Inits connection service
-     * @param port 
-     * @returns init 
+     * @param port
+     * @returns init
      */
     public init(port: string): Promise<void> {
         return new Promise(async (resolve) => {

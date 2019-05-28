@@ -1,17 +1,25 @@
-import { Server } from "mock-socket";
-import { MessageType } from "../../enums/messageType.enum";
-import { Message } from "../../models";
+import {IMessageListener} from "../interfaces/messageListener";
+import {Message} from "../models";
+import {ICommunicationProtocol} from "../services/interfaces/communicationProtocol.service";
+import {MessageType} from "../enums/messageType.enum";
 
-export class MockSocketIOSender {
-    private readonly protocol = "http";
+/**
+ * Handles the sending of messages during tests.
+ */
+export class MockCommunicationProtocol implements ICommunicationProtocol {
+    private readonly messageListener: IMessageListener;
+    private readonly receivedMessages: string[];
     private readonly port: string;
 
     /**
-     * Creates an instance of sender.
+     * Creates an instance of socket io.
+     * @param messageListener The listener for new messages
      * @param port The communication port
      */
-    constructor(port: string) {
+    constructor(messageListener: IMessageListener, port: string) {
+        this.messageListener = messageListener;
         this.port = port;
+        this.receivedMessages = [];
     }
 
     /**
@@ -22,9 +30,11 @@ export class MockSocketIOSender {
      */
     public sendMessageAsync(message: Message, destinationIp: string): Promise<void> {
         return new Promise((resolve) => {
-            const socket = new Server(`${this.protocol}://${destinationIp}:${this.port}`);
-            console.log("destinationIp: " + `${this.protocol}://${destinationIp}:${this.port}`);
-            socket.emit("message", JSON.stringify(message));
+            if (!this.receivedMessages.includes(message.guid)) {
+                message.senderIp = destinationIp;
+                this.receivedMessages.push(message.guid);
+                this.messageListener.onMessageAsync(message);
+            }
             resolve();
         });
     }
@@ -44,4 +54,5 @@ export class MockSocketIOSender {
 
         return this.sendMessageAsync(message, destinationIp);
     }
+
 }
