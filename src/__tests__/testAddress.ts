@@ -17,5 +17,5 @@ export enum TestGuids {
 export enum PeerType {
     VALIDATOR = "validator",
     IPFS = "ipfs",
-    SC_ENGINE = "sc_engine"
+    SC_ENGINE = "sc_engine",
 }

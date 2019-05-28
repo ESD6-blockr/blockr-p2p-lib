@@ -1,7 +1,7 @@
+import {MessageType} from "../enums/messageType.enum";
 import {IMessageListener} from "../interfaces/messageListener";
 import {Message} from "../models";
 import {ICommunicationProtocol} from "../services/interfaces/communicationProtocol.service";
-import {MessageType} from "../enums/messageType.enum";
 
 /**
  * Handles the sending of messages during tests.

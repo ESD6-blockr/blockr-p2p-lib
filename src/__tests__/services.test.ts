@@ -1,7 +1,7 @@
 import { Guid } from "guid-typescript";
+import { MockCommunicationProtocol } from "../mocks/mockCommunicationProtocol.service";
 import { Message } from "../models";
 import { ConnectionService } from "../services/concretes/connection.service";
-import { MockCommunicationProtocol } from "../mocks/mockCommunicationProtocol.service";
 
 let connectionService: ConnectionService;
 let testPort: string;

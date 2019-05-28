@@ -26,7 +26,9 @@ describe("Adding/removing a peer", () => {
 
         expect(peerNode).not.toBeUndefined();
         expect(routingTable.peers.size).toEqual(1);
-        if (peerNode) expect(peerNode.ip).toEqual(ip);
+        if (peerNode) {
+            expect(peerNode.ip).toEqual(ip);
+        }
 
         routingTable.removePeer(peerGuid);
 
@@ -53,8 +55,12 @@ describe("Merging routing tables", () => {
         expect(peerNode).not.toBeUndefined();
         expect(peerNode2).not.toBeUndefined();
         expect(routingTable.peers.size).toEqual(2);
-        if (peerNode) expect(peerNode.ip).toEqual(ip);
-        if (peerNode2) expect(peerNode2.ip).toEqual(ip2);
+        if (peerNode) {
+            expect(peerNode.ip).toEqual(ip);
+        }
+        if (peerNode2) {
+            expect(peerNode2.ip).toEqual(ip2);
+        }
     });
 });
 
@@ -72,7 +78,9 @@ describe("Cloning the routing table", () => {
         expect(clonedRoutingTable.peers.size).toEqual(1);
 
         const peerNode = clonedRoutingTable.peers.get(peerGuid);
-        if (peerNode) expect(peerNode.ip).toEqual(ip);
+        if (peerNode) {
+            expect(peerNode.ip).toEqual(ip);
+        }
     });
 });
 
@@ -84,7 +92,9 @@ describe("Get Peer of Type from routing table", () => {
 
         const valPeerNode = routingTable.getPeerOfType(PeerType.VALIDATOR);
         expect(valPeerNode).not.toBeUndefined();
-        if (valPeerNode) expect(valPeerNode).toEqual(ip);
+        if (valPeerNode) {
+            expect(valPeerNode).toEqual(ip);
+        }
 
         const scPeerNode = routingTable.getPeerOfType(PeerType.SC_ENGINE);
         expect(scPeerNode).toBeUndefined();
