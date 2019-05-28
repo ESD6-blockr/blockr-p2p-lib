@@ -44,6 +44,20 @@ export interface IPeer {
     sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]>;
 
     /**
+     * Gets promise for response
+     * @param message 
+     * @returns promise for response 
+     */
+    getPromiseForResponse(message: Message): Promise<void>;
+
+    /**
+     * Gets peer of type
+     * @param type 
+     * @returns peer of type 
+     */
+     getPeerOfType(type: string): string | undefined;
+
+    /**
      * Leave the network.
      */
     leave(): void;

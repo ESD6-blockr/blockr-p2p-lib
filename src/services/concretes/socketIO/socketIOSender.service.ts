@@ -40,6 +40,7 @@ export class SocketIOSender {
     public sendAcknowledgementAsync(originalMessage: Message, destinationIp: string): Promise<void> {
         const message = new Message(
             MessageType.ACKNOWLEDGE,
+            undefined,
             originalMessage.originalSenderGuid,
             originalMessage.guid,
         );

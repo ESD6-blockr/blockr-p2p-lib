@@ -119,11 +119,11 @@ export class ConnectionService implements IMessageListener {
             }
 
             const implementation = this.receiveHandlers.get(message.type);
-            if (implementation && typeof implementation === "function") {
+            if (implementation && typeof implementation === "function" && message.originalSenderGuid) {
                 await implementation(message, message.originalSenderGuid, (responseMessage: Message) => {
                     responseMessage.correlationId = message.guid;
                     responseMessage.originalSenderGuid = message.originalSenderGuid;
-                    this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid);
+                    this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid as string);
                 });
                 if (message.type !== MessageType.ACKNOWLEDGE) {
                     const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
@@ -140,7 +140,7 @@ export class ConnectionService implements IMessageListener {
      * @param guid  The guid of a peer
      */
     public leave(guid: string): void {
-        const message = new Message(MessageType.LEAVE, guid);
+        const message = new Message(MessageType.LEAVE, undefined, guid);
         this.sendBroadcastAsync(message);
     }
 
