@@ -1,12 +1,12 @@
-import {MessageType} from "../../enums/messageType.enum";
-import {UnknownDestinationException} from "../../exceptions/unknownDestination.exception";
-import {IMessageListener} from "../../interfaces/messageListener";
-import {RECEIVE_HANDLER_TYPE, RESPONSE_TYPE} from "../../interfaces/peer";
-import {Message, RoutingTable} from "../../models";
-import {DateManipulator} from "../../util/dateManipulator";
-import {Deferred} from "../../util/deffered.util";
-import {ICommunicationProtocol} from "../interfaces/communicationProtocol.service";
-import {SocketIOCommunicationProtocol} from "./socketIO/socketIO.service";
+import { MessageType } from "../../enums/messageType.enum";
+import { UnknownDestinationException } from "../../exceptions/unknownDestination.exception";
+import { IMessageListener } from "../../interfaces/messageListener";
+import { RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";
+import { Message, RoutingTable } from "../../models";
+import { DateManipulator } from "../../util/dateManipulator";
+import { Deferred } from "../../util/deffered.util";
+import { ICommunicationProtocol } from "../interfaces/communicationProtocol.service";
+import { SocketIOCommunicationProtocol } from "./socketIO/socketIO.service";
 
 
 const MESSAGE_EXPIRATION_TIMER: number = 1;
@@ -18,14 +18,13 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
 export class ConnectionService implements IMessageListener {
     public readonly routingTable: RoutingTable;
     public GUID?: string;
-    // Public only for testing purposes
-    public communicationProtocol?: ICommunicationProtocol;
     private readonly receiveHandlers: Map<string, RECEIVE_HANDLER_TYPE>;
-    private readonly responseDeferredsMap: Map<string, Deferred<boolean>>;
+    private communicationProtocol?: ICommunicationProtocol;
+    private readonly responseDefferedsMap: Map<string, Deferred<boolean>>;
     private readonly requestsMap: Map<string, RESPONSE_TYPE>;
     private readonly sentMessages: Map<string, Message>;
 
-
+    
     /**
      * Creates an instance of connection service.
      */
@@ -34,13 +33,13 @@ export class ConnectionService implements IMessageListener {
         this.requestsMap = new Map<string, RESPONSE_TYPE>();
         this.routingTable = new RoutingTable();
         this.sentMessages = new Map<string, Message>();
-        this.responseDeferredsMap = new Map<string, Deferred<boolean>>();
+        this.responseDefferedsMap = new Map<string, Deferred<boolean>>();
     }
 
     /**
      * Inits connection service
-     * @param port
-     * @returns init
+     * @param port 
+     * @returns init 
      */
     public init(port: string): Promise<void> {
         return new Promise(async (resolve) => {
@@ -73,7 +72,7 @@ export class ConnectionService implements IMessageListener {
      * Send a message to the given destination.
      *
      * @param message - The message
-     * @param destinationGuid - The destination GUID
+     * @param destination - The destination GUID
      * @param [responseImplementation] - The implementation for the response message
      */
     public sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
@@ -89,7 +88,7 @@ export class ConnectionService implements IMessageListener {
      * Sends broadcast
      * @param message The message
      * @param [responseImplementation] The implemantion of the response message
-     * @returns broadcast
+     * @returns broadcast 
      */
     public sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         const promises = [];
@@ -113,18 +112,18 @@ export class ConnectionService implements IMessageListener {
             const responseImplementation = this.requestsMap.get(message.correlationId);
             if (responseImplementation) {
                 await responseImplementation(message);
-                const responseDeffered = this.responseDeferredsMap.get(message.correlationId);
+                const responseDeffered = this.responseDefferedsMap.get(message.correlationId);
                 if (responseDeffered && responseDeffered.resolve) {
                     responseDeffered.resolve(true);
                 }
             }
 
             const implementation = this.receiveHandlers.get(message.type);
-            if (implementation && typeof implementation === "function") {
+            if (implementation && typeof implementation === "function" && message.originalSenderGuid) {
                 await implementation(message, message.originalSenderGuid, (responseMessage: Message) => {
                     responseMessage.correlationId = message.guid;
                     responseMessage.originalSenderGuid = message.originalSenderGuid;
-                    this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid);
+                    this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid as string);
                 });
                 if (message.type !== MessageType.ACKNOWLEDGE) {
                     const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
@@ -141,7 +140,7 @@ export class ConnectionService implements IMessageListener {
      * @param guid  The guid of a peer
      */
     public leave(guid: string): void {
-        const message = new Message(MessageType.LEAVE, guid);
+        const message = new Message(MessageType.LEAVE, undefined, guid);
         this.sendBroadcastAsync(message);
     }
 
@@ -151,7 +150,7 @@ export class ConnectionService implements IMessageListener {
      * @param message  The message
      * @param destinationIp The ip address of the destination
      * @param [responseImplementation] The implemantion of the response message
-     * @returns message by ip
+     * @returns message by ip 
      */
     public sendMessageByIpAsync(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -159,10 +158,10 @@ export class ConnectionService implements IMessageListener {
                 reject();
                 return;
             }
-
+            
             if (responseImplementation) {
                 this.requestsMap.set(message.guid, responseImplementation);
-                this.responseDeferredsMap.set(message.guid, new Deferred());
+                this.responseDefferedsMap.set(message.guid, new Deferred());
             }
             await this.communicationProtocol.sendMessageAsync(message, destinationIp);
             resolve();
@@ -172,13 +171,13 @@ export class ConnectionService implements IMessageListener {
     /**
      * Gets promise for response
      * @param message The message
-     * @returns promise for response
+     * @returns promise for response 
      */
     public getPromiseForResponse(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            const responseDeferred = this.responseDeferredsMap.get(message.correlationId);
-            if (responseDeferred) {
-                await responseDeferred.promise;
+            const responseDeffered = this.responseDefferedsMap.get(message.correlationId);
+            if (responseDeffered) {
+                await responseDeffered.promise;
                 resolve();
             }
             reject();
@@ -227,15 +226,15 @@ export class ConnectionService implements IMessageListener {
     /**
      * Gets ip from routing table
      * @param guid The guid of a peer
-     * @returns ip from routing table
+     * @returns ip from routing table 
      */
     private getIpFromRoutingTable(guid: string): string {
         const destinationIp = this.routingTable.peers.get(guid);
-
+        
         if (!destinationIp) {
             throw new UnknownDestinationException(`Unknown destination. Could not find an IP for: ${guid}`);
         }
-
+        
         return destinationIp.ip;
     }
 }
