@@ -1,30 +1,28 @@
-import { MessageType } from "../../enums/messageType.enum";
-import { UnknownDestinationException } from "../../exceptions/unknownDestination.exception";
-import { IMessageListener } from "../../interfaces/messageListener";
-import { RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";
-import { Message, RoutingTable } from "../../models";
-import { DateManipulator } from "../../util/dateManipulator";
-import { Deferred } from "../../util/deffered.util";
-import { ICommunicationProtocol } from "../interfaces/communicationProtocol.service";
-import { SocketIOCommunicationProtocol } from "./socketIO/socketIO.service";
-
+import {MessageType} from "../enums/messageType.enum";
+import {UnknownDestinationException} from "../exceptions/unknownDestination.exception";
+import {IMessageListener} from "../interfaces/messageListener";
+import {RECEIVE_HANDLER_TYPE, RESPONSE_TYPE} from "../interfaces/peer";
+import {Message, RoutingTable} from "../models";
+import {ICommunicationProtocol} from "../services/interfaces/communicationProtocol.service";
+import {DateManipulator} from "../util/dateManipulator";
+import {Deferred} from "../util/deffered.util";
+import {MockSocketIOCommunicationProtocol} from "./socketIO/mockSocketIO.service";
 
 const MESSAGE_EXPIRATION_TIMER: number = 1;
 const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
 
 /**
- * Handles the peer network.
+ * Handles the peer network during tests.
  */
-export class ConnectionService implements IMessageListener {
+export class MockConnectionService implements IMessageListener {
     public readonly routingTable: RoutingTable;
     public GUID?: string;
-    private readonly receiveHandlers: Map<string, RECEIVE_HANDLER_TYPE>;
+    public readonly receiveHandlers: Map<string, RECEIVE_HANDLER_TYPE>;
     private communicationProtocol?: ICommunicationProtocol;
     private readonly responseDefferedsMap: Map<string, Deferred<boolean>>;
     private readonly requestsMap: Map<string, RESPONSE_TYPE>;
     private readonly sentMessages: Map<string, Message>;
 
-    
     /**
      * Creates an instance of connection service.
      */
@@ -38,12 +36,12 @@ export class ConnectionService implements IMessageListener {
 
     /**
      * Inits connection service
-     * @param port 
-     * @returns init 
+     * @param port
+     * @returns init
      */
     public init(port: string): Promise<void> {
         return new Promise(async (resolve) => {
-            this.communicationProtocol = new SocketIOCommunicationProtocol(this, port);
+            this.communicationProtocol = new MockSocketIOCommunicationProtocol(this, port);
             this.createRoutingTableCleanupTimer();
             resolve();
         });
@@ -83,12 +81,11 @@ export class ConnectionService implements IMessageListener {
         return this.sendMessageByIpAsync(message, destinationIp, responseImplementation);
     }
 
-
     /**
      * Sends broadcast
      * @param message The message
      * @param [responseImplementation] The implemantion of the response message
-     * @returns broadcast 
+     * @returns broadcast
      */
     public sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         const promises = [];
@@ -134,7 +131,6 @@ export class ConnectionService implements IMessageListener {
         });
     }
 
-
     /**
      * Leaves connection service
      * @param guid  The guid of a peer
@@ -144,13 +140,12 @@ export class ConnectionService implements IMessageListener {
         this.sendBroadcastAsync(message);
     }
 
-
     /**
      * Sends message by ip
      * @param message  The message
      * @param destinationIp The ip address of the destination
      * @param [responseImplementation] The implemantion of the response message
-     * @returns message by ip 
+     * @returns message by ip
      */
     public sendMessageByIpAsync(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -158,7 +153,7 @@ export class ConnectionService implements IMessageListener {
                 reject();
                 return;
             }
-            
+
             if (responseImplementation) {
                 this.requestsMap.set(message.guid, responseImplementation);
                 this.responseDefferedsMap.set(message.guid, new Deferred());
@@ -171,7 +166,7 @@ export class ConnectionService implements IMessageListener {
     /**
      * Gets promise for response
      * @param message The message
-     * @returns promise for response 
+     * @returns promise for response
      */
     public getPromiseForResponse(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -205,7 +200,6 @@ export class ConnectionService implements IMessageListener {
         return guids;
     }
 
-
     /**
      * Create timer that removes peers that did not reply to a sent message.
      *
@@ -226,15 +220,15 @@ export class ConnectionService implements IMessageListener {
     /**
      * Gets ip from routing table
      * @param guid The guid of a peer
-     * @returns ip from routing table 
+     * @returns ip from routing table
      */
     private getIpFromRoutingTable(guid: string): string {
         const destinationIp = this.routingTable.peers.get(guid);
-        
+
         if (!destinationIp) {
             throw new UnknownDestinationException(`Unknown destination. Could not find an IP for: ${guid}`);
         }
-        
+
         return destinationIp.ip;
     }
 }

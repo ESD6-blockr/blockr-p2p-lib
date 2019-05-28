@@ -1,41 +1,32 @@
 import { Guid } from "guid-typescript";
+import {MockConnectionService} from "../mockservices/mockConnection.service";
 import { Message } from "../models";
-import { ConnectionService } from "../services/concretes/connection.service";
 
-let connectionService: ConnectionService;
-let randomPort: number;
+let mockConnectionService: MockConnectionService;
+let testPort: number;
 
 beforeEach(async () => {
-    const minPortRange = 0;
-    const maxPortRange = 65535;
-    randomPort = Math.floor(Math.random() * (+maxPortRange - +minPortRange)) + +minPortRange;
-
-    connectionService = new ConnectionService();
-    await connectionService.init(randomPort.toString());
-    console.log("Connection service initialized with random port: " + randomPort);
-});
-
-afterEach(() => {
-    randomPort = -1;
+    testPort = 65535;
+    mockConnectionService = new MockConnectionService();
+    await mockConnectionService.init(testPort.toString());
 });
 
 describe("Connection service", () => {
     it("Should be instantiated", () => {
-        expect(connectionService).toBeDefined();
-        expect(connectionService).toBeInstanceOf(ConnectionService);
+        expect(mockConnectionService).toBeDefined();
+        expect(mockConnectionService).toBeInstanceOf(MockConnectionService);
     });
 });
 
 describe("", () => {
     it("", () => {
-        const type = "ping";
-        const originalSenderGuid = Guid.create().toString();
-        const body = "body";
-        const correlationId = Guid.create().toString();
-        const message = new Message(type, originalSenderGuid, body, correlationId);
-        const destinationGuid = Guid.create().toString();
-
-        // TODO: Look into parameters for this function (ask Quint).
-        // connectionService.sendMessage(message, destinationGuid, );
+        // const type = "ping";
+        // const originalSenderGuid = Guid.create().toString();
+        // const body = "body";
+        // const correlationId = Guid.create().toString();
+        // const message = new Message(type, originalSenderGuid, body, correlationId);
+        // const destinationGuid = Guid.create().toString();
+        //
+        // mockConnectionService.sendMessageAsync(message, destinationGuid);
     });
 });
