@@ -1,4 +1,5 @@
 import { PeerNode } from "./peerNode.model";
+import { PeerType } from "../enums/peerType.enum";
 
 /**
  * Routing table registry.
@@ -21,7 +22,7 @@ export class RoutingTable {
      * @param ip - The IP
      * @param type - The Type
      */
-    public addPeer(guid: string, ip: string, type: string): void {
+    public addPeer(guid: string, ip: string, type: PeerType): void {
         this.peers.set(guid, new PeerNode(ip, type));
     }
 
@@ -31,10 +32,10 @@ export class RoutingTable {
      * @param type The type of the peer
      * @returns peer of type 
      */
-    public getPeerOfType(type: string): string | undefined {
-        for (const peer of this.peers.values()) {
-            if (peer.type === type) {
-                return peer.ip;
+    public getPeerOfType(type: string): [string, string] | undefined {
+        for (const peer of this.peers.entries()) {
+            if (peer[1].type === type) {
+                return [peer[0], peer[1].ip];
             }
         }
         return undefined;

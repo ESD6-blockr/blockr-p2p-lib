@@ -2,24 +2,26 @@ import { Guid } from "guid-typescript";
 
 import { injectable } from "inversify";
 import { MessageType } from "../enums/messageType.enum";
+import { PeerType } from "../enums/peerType.enum";
 import { IPeer, RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/";
 import { ConnectionService } from "../services/concretes/connection.service";
 
 const DEFAULT_PORT: string = "8081";
-  
+const INITIAL_PEERS: string[] = ["p2p.verux.nl"];
+
 /**
  * Handles the peer network.
  */
 @injectable()
 export class Peer implements IPeer {
     private readonly connectionService: ConnectionService;
-    private readonly type: string;
+    private readonly type: PeerType;
 
     /**
      * Creates an instance of peer.
      */
-    constructor(type: string) {
+    constructor(type: PeerType) {
         this.connectionService = new ConnectionService();
         this.createReceiverHandlers();
         this.type = type;
@@ -31,7 +33,7 @@ export class Peer implements IPeer {
      * @param [initialPeers] 
      * @returns init 
      */
-    public init(port: string = DEFAULT_PORT, initialPeers?: string[]): Promise<void> {
+    public init(port: string = DEFAULT_PORT, initialPeers = INITIAL_PEERS): Promise<void> {
         return new Promise(async (resolve) => {
             await this.connectionService.init(port);
             
@@ -108,7 +110,7 @@ export class Peer implements IPeer {
      * @param type 
      * @returns peer of type 
      */
-    public getPeerOfType(type: string): string | undefined {
+    public getPeerOfType(type: string): [string, string] | undefined  {
         return this.connectionService.routingTable.getPeerOfType(type);
     }
 

@@ -1,6 +1,5 @@
 import { Message } from "../models/";
 
-
 export type RESPONSE_TYPE = (message: Message) => Promise<void> | void;
 export type RECEIVE_HANDLER_TYPE = (message: Message, senderGuid: string, response: RESPONSE_TYPE) => Promise<void>;
 /**
@@ -55,7 +54,7 @@ export interface IPeer {
      * @param type 
      * @returns peer of type 
      */
-     getPeerOfType(type: string): string | undefined;
+     getPeerOfType(type: string): [string, string] | undefined ;
 
     /**
      * Leave the network.
