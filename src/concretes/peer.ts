@@ -1,5 +1,6 @@
 import { Guid } from "guid-typescript";
 
+import { injectable } from "inversify";
 import { MessageType } from "../enums/messageType.enum";
 import { IPeer, RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/";
@@ -10,6 +11,7 @@ const DEFAULT_PORT: string = "8081";
 /**
  * Handles the peer network.
  */
+@injectable()
 export class Peer implements IPeer {
     private readonly connectionService: ConnectionService;
     private readonly type: string;
