@@ -1,7 +1,6 @@
 import { Guid } from "guid-typescript";
 import { injectable } from "inversify";
-import { MessageType } from "../enums/messageType.enum";
-import { PeerType } from "../enums/peerType.enum";
+import { MessageType, PeerType } from "../enums/";
 import { PeerNotPressentException } from "../exceptions/peerNotPressent.exception";
 import { IPeer, RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/";
