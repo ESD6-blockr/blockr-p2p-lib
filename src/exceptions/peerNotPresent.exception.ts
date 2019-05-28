@@ -1,7 +1,7 @@
 /**
- * Peer not pressent exception
+ * Peer not present exception
  */
-export class PeerNotPressentException extends Error {
+export class PeerNotPresentException extends Error {
     
     /**
      * Creates an instance of unknown destination exception.
@@ -9,6 +9,6 @@ export class PeerNotPressentException extends Error {
      */
     constructor(message: string) {
         super(message);
-        Object.setPrototypeOf(this, PeerNotPressentException.prototype);
+        Object.setPrototypeOf(this, PeerNotPresentException.prototype);
     }
 }

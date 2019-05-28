@@ -1,8 +1,8 @@
-import { PeerType } from "../enums/peerType.enum";
+import { PeerType } from "../enums";
 
 /**
  * Peer node.
- * This model is used to store different type op PeerNodes in the routingtable.
+ * This model is used to store different type op PeerNodes in the routingTable.
  */
 export class PeerNode {
     public readonly ip: string;

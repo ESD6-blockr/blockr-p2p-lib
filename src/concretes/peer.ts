@@ -1,7 +1,7 @@
 import { Guid } from "guid-typescript";
 import { injectable } from "inversify";
 import { MessageType, PeerType } from "../enums/";
-import { PeerNotPressentException } from "../exceptions/peerNotPressent.exception";
+import { PeerNotPresentException } from "../exceptions/peerNotPresent.exception";
 import { IPeer, RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/";
 import { ConnectionService } from "../services/concretes/connection.service";
@@ -89,7 +89,7 @@ export class Peer implements IPeer {
      * Send a message to a random peer.
      *
      * @param message - The message
-     * @param type - The destination peer type
+     * @param peerType - The destination peer type
      * @param [responseImplementation] - The implementation for the response message
      */
     public sendMessageToRandomPeerAsync(message: Message, peerType: PeerType, responseImplementation?: RESPONSE_TYPE): Promise<void> {
@@ -100,7 +100,7 @@ export class Peer implements IPeer {
                 await this.connectionService.sendMessageAsync(message, destinationGuid, responseImplementation);
                 resolve();
             }
-            reject(new PeerNotPressentException("Can't find peer for the given type."));
+            reject(new PeerNotPresentException("Can't find peer for the given type."));
         });
     }
 

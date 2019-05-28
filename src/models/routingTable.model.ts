@@ -1,4 +1,4 @@
-import { PeerType } from "../enums/peerType.enum";
+import { PeerType } from "../enums";
 import { PeerNode } from "./peerNode.model";
 
 /**

@@ -1,4 +1,4 @@
-import { MessageType } from "../../enums/messageType.enum";
+import { MessageType } from "../../enums";
 import { UnknownDestinationException } from "../../exceptions/unknownDestination.exception";
 import { IMessageListener } from "../../interfaces/messageListener";
 import { RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";

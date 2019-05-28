@@ -13,9 +13,3 @@ export enum TestGuids {
     TEST_4 = "test-guid-4",
     TEST_5 = "test-guid-5",
 }
-
-export enum PeerType {
-    VALIDATOR = "validator",
-    IPFS = "ipfs",
-    SC_ENGINE = "sc_engine",
-}

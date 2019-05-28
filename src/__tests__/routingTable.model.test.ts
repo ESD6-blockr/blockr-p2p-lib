@@ -1,6 +1,7 @@
 import { Guid } from "guid-typescript";
+import { PeerType } from "../enums";
 import { PeerNode, RoutingTable } from "../models";
-import { PeerType, TestIps } from "./testAddress";
+import { TestIps } from "./testAddress";
 
 let routingTable: RoutingTable;
 
@@ -93,10 +94,10 @@ describe("Get Peer of Type from routing table", () => {
         const valPeerNode = routingTable.getPeerOfType(PeerType.VALIDATOR);
         expect(valPeerNode).not.toBeUndefined();
         if (valPeerNode) {
-            expect(valPeerNode).toEqual(ip);
+            expect(valPeerNode).toEqual([peerGuid, ip]);
         }
 
-        const scPeerNode = routingTable.getPeerOfType(PeerType.SC_ENGINE);
+        const scPeerNode = routingTable.getPeerOfType(PeerType.SMART_CONTRACT_ENGINE);
         expect(scPeerNode).toBeUndefined();
     });
 });

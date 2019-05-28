@@ -1,3 +1,4 @@
+import {PeerType} from "../enums";
 import {Message} from "../models";
 import {ConnectionService} from "../services/concretes/connection.service";
 
@@ -19,14 +20,14 @@ describe("Connection service", () => {
 
 describe("Send a message", () => {
     it("Should be received", async () => {
-        const type = "test";
+        const type = PeerType.VALIDATOR;
         const originalSenderGuid = "test-guid1";
         const body = "body";
         const correlationId = "test-guid2";
         const testMessage = new Message(type, body, originalSenderGuid, correlationId);
         const destinationGuid = "test-guid3";
 
-        connectionService.routingTable.addPeer(destinationGuid, "localhost", "test");
+        connectionService.routingTable.addPeer(destinationGuid, "localhost", type);
         connectionService.registerReceiveHandlerForMessageType("test", async (message: Message, senderGuid: string) => {
             expect(message).toBeInstanceOf(Message);
             expect(message.type).toEqual(type);
