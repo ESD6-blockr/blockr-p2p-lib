@@ -1,5 +1,5 @@
+import { PeerType } from "../enums";
 import { Message } from "../models/";
-
 
 export type RESPONSE_TYPE = (message: Message) => Promise<void> | void;
 export type RECEIVE_HANDLER_TYPE = (message: Message, senderGuid: string, response: RESPONSE_TYPE) => Promise<void>;
@@ -36,6 +36,15 @@ export interface IPeer {
     sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void>;
 
     /**
+     * Send a message to a random peer.
+     *
+     * @param message - The message
+     * @param type - The destination peer type
+     * @param [responseImplementation] - The implementation for the response message
+     */
+    sendMessageToRandomPeerAsync(message: Message, type: PeerType, responseImplementation?: RESPONSE_TYPE): Promise<void>;
+
+    /**
      * Send a broadcast to the network.
      *
      * @param message - The message
@@ -55,7 +64,7 @@ export interface IPeer {
      * @param type 
      * @returns peer of type 
      */
-     getPeerOfType(type: string): string | undefined;
+     getPeerOfType(type: string): [string, string] | undefined ;
 
     /**
      * Leave the network.
