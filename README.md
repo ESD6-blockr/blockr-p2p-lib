@@ -46,7 +46,7 @@ class MainService {
 ```
 
   ### Usage:
- *See the TSDoc of IPeer for more specific information*
+ *See the TSDoc of IPeer, found at src/interfaces/peer, for more specific information*
 
  ```ts
 // Create the peer
