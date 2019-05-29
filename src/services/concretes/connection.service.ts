@@ -197,6 +197,23 @@ export class ConnectionService implements IConnectionService, IMessageListener {
     }
 
     /**
+     * Create timer that removes peers that did not reply to a sent message.
+     *
+     * Used to remove offline peers
+     */
+    public createRoutingTableCleanupTimer(messageExpirationTimer: number, messageHistoryCleanupTimer: number) {
+        setInterval(() => {
+            if (!this.communicationProtocol) {
+                return;
+            }
+            const minDate = DateManipulator.minusSeconds(new Date(), messageExpirationTimer);
+            for (const value of this.getSentMessagesSendersSince(minDate)) {
+                this.routingTable.removePeer(value);
+            }
+        }, messageHistoryCleanupTimer);
+    }
+
+    /**
      * Get guids from the senders of the sent messages after the given date.
      * Deletes messages that are sent before the given date from the history.
      *
@@ -215,24 +232,6 @@ export class ConnectionService implements IConnectionService, IMessageListener {
             }
         }
         return guids;
-    }
-
-
-    /**
-     * Create timer that removes peers that did not reply to a sent message.
-     *
-     * Used to remove offline peers
-     */
-    private createRoutingTableCleanupTimer(messageExpirationTimer: number, messageHistoryCleanupTimer: number) {
-        setInterval(() => {
-            if (!this.communicationProtocol) {
-                return;
-            }
-            const minDate = DateManipulator.minusSeconds(new Date(), messageExpirationTimer);
-            for (const value of this.getSentMessagesSendersSince(minDate)) {
-                this.routingTable.removePeer(value);
-            }
-        }, messageHistoryCleanupTimer);
     }
 
     /**

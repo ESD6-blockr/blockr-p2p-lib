@@ -13,3 +13,11 @@ export enum TestGuids {
     TEST_4 = "test-guid-4",
     TEST_5 = "test-guid-5",
 }
+
+export enum TestBodies {
+    TEST_1 = "test-body-1",
+    TEST_2 = "test-body-2",
+    TEST_3 = "test-body-3",
+    TEST_4 = "test-body-4",
+    TEST_5 = "test-body-5",
+}
