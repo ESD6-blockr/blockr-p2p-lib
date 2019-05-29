@@ -18,18 +18,14 @@ export interface IConnectionService {
 
     /**
      * Inits connection service
+     *
+     * Mock inits mock connection service for testing purposes only
+     * Can be removed when dependency injection is implemented
+     *
      * @param port
      * @returns init
      */
     init(port: string): Promise<void>;
-
-    /**
-     * Inits mock connection service for testing purposes only
-     * Can be removed when dependency injection is implemented
-     * @param port
-     * @returns init
-     */
-    initMock(port: string): Promise<void>;
 
     /**
      * Remove the given message from the sent messages history.

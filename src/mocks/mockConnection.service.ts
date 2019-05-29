@@ -1,14 +1,15 @@
-import {MessageType, PeerType} from "../../enums";
-import { UnknownDestinationException } from "../../exceptions/unknownDestination.exception";
-import { IMessageListener } from "../../interfaces/messageListener";
-import { RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";
-import { MockCommunicationProtocol } from "../../mocks/mockCommunicationProtocol.service";
-import { Message, RoutingTable } from "../../models";
-import { DateManipulator } from "../../util/dateManipulator";
-import { Deferred } from "../../util/deferred.util";
-import { ICommunicationProtocol } from "../interfaces/communicationProtocol.service";
-import { IConnectionService } from "../interfaces/connection.service";
-import { SocketIOCommunicationProtocol } from "./socketIO/socketIO.service";
+import {IConnectionService} from "../services/interfaces/connection.service";
+import {Message, RoutingTable} from "../models";
+import {IMessageListener} from "../interfaces/messageListener";
+import {ICommunicationProtocol} from "../services/interfaces/communicationProtocol.service";
+import {RECEIVE_HANDLER_TYPE, RESPONSE_TYPE} from "../interfaces/peer";
+import {Deferred} from "../util/deferred.util";
+import {MockCommunicationProtocol} from "./mockCommunicationProtocol.service";
+import {SocketIOCommunicationProtocol} from "../services/concretes/socketIO/socketIO.service";
+import {MessageType} from "../enums";
+import {DateManipulator} from "../util/dateManipulator";
+import {UnknownDestinationException} from "../exceptions/unknownDestination.exception";
+
 
 const MESSAGE_EXPIRATION_TIMER: number = 1;
 const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
@@ -16,7 +17,7 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
 /**
  * Handles the peer network.
  */
-export class ConnectionService implements IConnectionService, IMessageListener {
+export class MockConnectionService implements IConnectionService, IMessageListener {
     public readonly routingTable: RoutingTable;
     public GUID?: string;
     private communicationProtocol?: ICommunicationProtocol;
@@ -49,8 +50,9 @@ export class ConnectionService implements IConnectionService, IMessageListener {
      */
     public init(port: string): Promise<void> {
         if (this.mock) {
-            this.communicationProtocol = new MockCommunicationProtocol(this, port);
             return new Promise(async (resolve) => {
+                this.communicationProtocol = new MockCommunicationProtocol(this, port);
+                this.createRoutingTableCleanupTimer();
                 resolve();
             });
         }
@@ -223,7 +225,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
      *
      * Used to remove offline peers
      */
-    private createRoutingTableCleanupTimer() {
+    private createRoutingTableCleanupTimer(): void {
         setInterval(() => {
             if (!this.communicationProtocol) {
                 return;
