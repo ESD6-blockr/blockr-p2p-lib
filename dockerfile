@@ -1,8 +1,8 @@
 FROM node:alpine as BUILD
 WORKDIR /opt
-COPY ["package.json", "package-lock.json", "tslint.json", "tsconfig.json", "src",  "./" ]
-COPY ["src",  "./src" ]
+COPY ["package.json", "package-lock.json", "tslint.json", "tsconfig.json", "./" ]
 RUN npm i
+COPY ["src",  "./src" ]
 RUN npm run build
 
 FROM node:alpine as FINAL
