@@ -29,7 +29,7 @@ export class SocketIOReceiver {
     private handleMessage(): void {
         // event fired every time a new client connects:
         this.server.on("connection", (socket: Socket) => {
-            console.log(this.server.clients());
+            console.log(socket.rawListeners);
             socket.on("message", (body: string) => {
                 console.log(body)
                 const message: Message = JSON.parse(body);
