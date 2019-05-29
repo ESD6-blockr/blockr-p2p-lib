@@ -7,9 +7,8 @@ import { Message, RoutingTable } from "../../models";
 import { DateManipulator } from "../../util/dateManipulator";
 import { Deferred } from "../../util/deferred.util";
 import { ICommunicationProtocol } from "../interfaces/communicationProtocol.service";
+import { IConnectionService } from "../interfaces/connection.service";
 import { SocketIOCommunicationProtocol } from "./socketIO/socketIO.service";
-import {IConnectionService} from "../interfaces/connection.service";
-
 
 const MESSAGE_EXPIRATION_TIMER: number = 1;
 const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
@@ -26,7 +25,6 @@ export class ConnectionService implements IConnectionService, IMessageListener {
     private readonly requestsMap: Map<string, RESPONSE_TYPE>;
     private readonly sentMessages: Map<string, Message>;
 
-    
     /**
      * Creates an instance of connection service.
      */
@@ -40,8 +38,8 @@ export class ConnectionService implements IConnectionService, IMessageListener {
 
     /**
      * Inits connection service
-     * @param port 
-     * @returns init 
+     * @param port
+     * @returns init
      */
     public init(port: string): Promise<void> {
         return new Promise(async (resolve) => {
@@ -104,7 +102,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
      * Sends broadcast
      * @param message The message
      * @param [responseImplementation] The implementation of the response message
-     * @returns broadcast 
+     * @returns broadcast
      */
     public sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]> {
         const promises = [];
@@ -166,7 +164,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
      * @param message  The message
      * @param destinationIp The ip address of the destination
      * @param [responseImplementation] The implementation of the response message
-     * @returns message by ip 
+     * @returns message by ip
      */
     public sendMessageByIpAsync(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -174,7 +172,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
                 reject();
                 return;
             }
-            
+
             if (responseImplementation) {
                 this.requestsMap.set(message.guid, responseImplementation);
                 this.responseDeferredsMap.set(message.guid, new Deferred());
@@ -187,7 +185,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
     /**
      * Gets promise for response
      * @param message The message
-     * @returns promise for response 
+     * @returns promise for response
      */
     public getPromiseForResponse(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -242,15 +240,15 @@ export class ConnectionService implements IConnectionService, IMessageListener {
     /**
      * Gets ip from routing table
      * @param guid The guid of a peer
-     * @returns ip from routing table 
+     * @returns ip from routing table
      */
     private getIpFromRoutingTable(guid: string): string {
         const destinationIp = this.routingTable.peers.get(guid);
-        
+
         if (!destinationIp) {
             throw new UnknownDestinationException(`Unknown destination. Could not find an IP for: ${guid}`);
         }
-        
+
         return destinationIp.ip;
     }
 }

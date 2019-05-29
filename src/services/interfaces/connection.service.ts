@@ -1,5 +1,5 @@
 import { RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../../interfaces/peer";
-import {Message, RoutingTable} from "../../models";
+import { Message, RoutingTable } from "../../models";
 
 /**
  * Handles the peer network.
@@ -18,8 +18,8 @@ export interface IConnectionService {
 
     /**
      * Inits connection service
-     * @param port 
-     * @returns init 
+     * @param port
+     * @returns init
      */
     init(port: string): Promise<void>;
 
@@ -60,7 +60,7 @@ export interface IConnectionService {
      * Sends broadcast
      * @param message The message
      * @param [responseImplementation] The implementation of the response message
-     * @returns broadcast 
+     * @returns broadcast
      */
     sendBroadcastAsync(message: Message, responseImplementation?: RESPONSE_TYPE): Promise<void[]>;
 
@@ -70,7 +70,6 @@ export interface IConnectionService {
      * @param message - The incoming message
      */
     onMessageAsync(message: Message): Promise<void>;
-
 
     /**
      * Leaves connection service
@@ -83,14 +82,14 @@ export interface IConnectionService {
      * @param message  The message
      * @param destinationIp The ip address of the destination
      * @param [responseImplementation] The implementation of the response message
-     * @returns message by ip 
+     * @returns message by ip
      */
     sendMessageByIpAsync(message: Message, destinationIp: string, responseImplementation?: RESPONSE_TYPE): Promise<void>;
 
     /**
      * Gets promise for response
      * @param message The message
-     * @returns promise for response 
+     * @returns promise for response
      */
     getPromiseForResponse(message: Message): Promise<void>;
 }

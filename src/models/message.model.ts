@@ -15,10 +15,10 @@ export class Message {
 
     /**
      * Creates an instance of message.
-     * @param type 
-     * @param originalSenderGuid 
-     * @param [body] 
-     * @param [correlationId] 
+     * @param type
+     * @param originalSenderGuid
+     * @param [body]
+     * @param [correlationId]
      */
     constructor(type: string, body?: string, originalSenderGuid?: string, correlationId?: string) {
         this.guid = Guid.create().toString();

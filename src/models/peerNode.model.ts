@@ -10,8 +10,8 @@ export class PeerNode {
 
     /**
      * Creates an instance of peer node.
-     * @param ip 
-     * @param type 
+     * @param ip
+     * @param type
      */
     public constructor(ip: string, type: PeerType) {
         this.ip = ip;

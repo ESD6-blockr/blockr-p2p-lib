@@ -1,6 +1,6 @@
-import {PeerType} from "../enums";
-import {Message} from "../models";
-import {ConnectionService} from "../services/concretes/connection.service";
+import { PeerType } from "../enums";
+import { Message } from "../models";
+import { ConnectionService } from "../services/concretes/connection.service";
 
 let connectionService: ConnectionService;
 let testPort: string;
