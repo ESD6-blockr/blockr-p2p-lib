@@ -5,6 +5,7 @@ import { PeerNotPresentException } from "../exceptions/peerNotPresent.exception"
 import { IPeer, RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/";
 import { ConnectionService } from "../services/concretes/connection.service";
+import {IConnectionService} from "../services/interfaces/connection.service";
 
 const DEFAULT_PORT: string = "8081";
 const INITIAL_PEERS: string[] = ["p2p.verux.nl"];
@@ -14,7 +15,7 @@ const INITIAL_PEERS: string[] = ["p2p.verux.nl"];
  */
 @injectable()
 export class Peer implements IPeer {
-    private readonly connectionService: ConnectionService;
+    private readonly connectionService: IConnectionService;
     private readonly type: PeerType;
 
     /**

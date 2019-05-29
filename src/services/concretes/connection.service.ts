@@ -8,6 +8,7 @@ import { DateManipulator } from "../../util/dateManipulator";
 import { Deferred } from "../../util/deferred.util";
 import { ICommunicationProtocol } from "../interfaces/communicationProtocol.service";
 import { SocketIOCommunicationProtocol } from "./socketIO/socketIO.service";
+import {IConnectionService} from "../interfaces/connection.service";
 
 
 const MESSAGE_EXPIRATION_TIMER: number = 1;
@@ -16,7 +17,7 @@ const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
 /**
  * Handles the peer network.
  */
-export class ConnectionService implements IMessageListener {
+export class ConnectionService implements IConnectionService, IMessageListener {
     public readonly routingTable: RoutingTable;
     public GUID?: string;
     private communicationProtocol?: ICommunicationProtocol;
