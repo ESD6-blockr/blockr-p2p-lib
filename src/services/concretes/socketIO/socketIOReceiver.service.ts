@@ -27,6 +27,10 @@ export class SocketIOReceiver {
      * Handles the incoming messages.
      */
     private handleMessage(): void {
+        this.server.on("join", (t: string) => {
+            console.log(t)
+        });
+
         // event fired every time a new client connects:
         this.server.on("connection", (socket: Socket) => {
             socket.on("message", (body: string) => {
