@@ -6,7 +6,6 @@ import { IPeer, RECEIVE_HANDLER_TYPE, RESPONSE_TYPE } from "../interfaces/peer";
 import { Message } from "../models/";
 import { ConnectionService } from "../services/concretes/connection.service";
 import { IConnectionService } from "../services/interfaces/connection.service";
-import {MockConnectionService} from "../mocks/mockConnection.service";
 
 const DEFAULT_PORT: string = "8081";
 const INITIAL_PEERS: string[] = ["p2p.verux.nl"];
@@ -23,13 +22,9 @@ export class Peer implements IPeer {
      * Creates an instance of peer.
      */
     constructor(type: PeerType, mock: boolean = false) {
-        this.type = type;
-        if (mock) {
-            this.connectionService = new MockConnectionService(mock);
-            this.createReceiverHandlers();
-        }
         this.connectionService = new ConnectionService(mock);
         this.createReceiverHandlers();
+        this.type = type;
     }
 
     /**

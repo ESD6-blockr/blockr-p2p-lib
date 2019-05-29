@@ -10,7 +10,7 @@ import { ICommunicationProtocol } from "../interfaces/communicationProtocol.serv
 import { IConnectionService } from "../interfaces/connection.service";
 import { SocketIOCommunicationProtocol } from "./socketIO/socketIO.service";
 
-const MESSAGE_EXPIRATION_TIMER: number = 1;
+const MESSAGE_EXPIRATION_TIMER: number = 60;
 const MESSAGE_HISTORY_CLEANUP_TIMER: number = 60000; // One minute
 
 /**
@@ -228,7 +228,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
             if (!this.communicationProtocol) {
                 return;
             }
-            const minDate = DateManipulator.minusMinutes(new Date(), messageExpirationTimer);
+            const minDate = DateManipulator.minusSeconds(new Date(), messageExpirationTimer);
             for (const value of this.getSentMessagesSendersSince(minDate)) {
                 this.routingTable.removePeer(value);
             }

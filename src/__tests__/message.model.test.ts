@@ -35,7 +35,8 @@ describe("Creating message model", () => {
 describe("Comparing dates with isOlder function", () => {
     it("Should return the right value", () => {
         const newDate = new Date();
-        const dateBefore = DateManipulator.minusMinutes(newDate, 1);
+        const secondsPerMinute: number = 60;
+        const dateBefore = DateManipulator.minusSeconds(newDate, secondsPerMinute);
         newDate.setSeconds(newDate.getSeconds() + 1);
 
         expect(message.isOlderThan(newDate)).toBeTruthy();
