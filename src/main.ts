@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { Peer } from "./concretes/peer";
 import { PeerType } from "./enums/peerType.enum";
 import { IPeer } from "./interfaces/peer";
