@@ -56,7 +56,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
         }
         return new Promise(async (resolve) => {
             this.communicationProtocol = new SocketIOCommunicationProtocol(this, port);
-            this.createRoutingTableCleanupTimer();
+            this.createRoutingTableCleanupTimer(MESSAGE_EXPIRATION_TIMER, MESSAGE_HISTORY_CLEANUP_TIMER);
             resolve();
         });
     }
@@ -223,16 +223,16 @@ export class ConnectionService implements IConnectionService, IMessageListener {
      *
      * Used to remove offline peers
      */
-    private createRoutingTableCleanupTimer() {
+    private createRoutingTableCleanupTimer(messageExpirationTimer: number, messageHistoryCleanupTimer: number) {
         setInterval(() => {
             if (!this.communicationProtocol) {
                 return;
             }
-            const minDate = DateManipulator.minusMinutes(new Date(), MESSAGE_EXPIRATION_TIMER);
+            const minDate = DateManipulator.minusMinutes(new Date(), messageExpirationTimer);
             for (const value of this.getSentMessagesSendersSince(minDate)) {
                 this.routingTable.removePeer(value);
             }
-        }, MESSAGE_HISTORY_CLEANUP_TIMER);
+        }, messageHistoryCleanupTimer);
     }
 
     /**
