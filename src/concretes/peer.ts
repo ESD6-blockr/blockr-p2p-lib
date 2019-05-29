@@ -36,7 +36,7 @@ export class Peer implements IPeer {
         return new Promise(async (resolve) => {
             await this.connectionService.init(port);
             
-            if (initialPeers) {
+            if (this.type === PeerType.INITIAL_PEER) {
                 this.connectionService.GUID = Guid.createEmpty().toString();
                 await this.checkInitialPeers(initialPeers);
                 
