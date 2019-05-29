@@ -3,7 +3,7 @@ WORKDIR /opt
 COPY ["package.json", "package-lock.json", "tslint.json", "tsconfig.json", "src",  "./" ]
 COPY ["src",  "./src" ]
 RUN npm i
-RUN npm run lint && npm run build
+RUN npm run build
 
 FROM node:alpine as FINAL
 WORKDIR /dist

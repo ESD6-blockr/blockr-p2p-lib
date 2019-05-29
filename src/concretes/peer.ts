@@ -7,7 +7,7 @@ import { Message } from "../models/";
 import { ConnectionService } from "../services/concretes/connection.service";
 
 const DEFAULT_PORT: string = "8081";
-const INITIAL_PEERS: string[] = ["p2p.verux.nl"];
+const INITIAL_PEERS: string[] = ["p2p.blockr.verux.nl"];
 
 /**
  * Handles the peer network.

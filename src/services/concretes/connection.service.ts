@@ -105,6 +105,7 @@ export class ConnectionService implements IMessageListener {
      */
     public onMessageAsync(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
+            console.log(message);
             if (!this.communicationProtocol) {
                 reject();
                 return;
