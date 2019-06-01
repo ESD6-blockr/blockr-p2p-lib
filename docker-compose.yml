@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  initial_peer:
+    build: .
+    ports:
+      - "8081:8081"

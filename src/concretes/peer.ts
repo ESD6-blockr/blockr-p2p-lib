@@ -7,7 +7,7 @@ import { Message } from "../models/";
 import { ConnectionService } from "../services/concretes/connection.service";
 
 const DEFAULT_PORT: string = "8081";
-const INITIAL_PEERS: string[] = ["p2p.verux.nl"];
+const INITIAL_PEERS: string[] = ["p2p.blockr.verux.nl"];
 
 /**
  * Handles the peer network.
@@ -36,15 +36,12 @@ export class Peer implements IPeer {
         return new Promise(async (resolve) => {
             await this.connectionService.init(port);
             
-            if (initialPeers) {
-                this.connectionService.GUID = Guid.createEmpty().toString();
+            this.connectionService.GUID = Guid.create().toString();
+            if (this.type !== PeerType.INITIAL_PEER) {
                 await this.checkInitialPeers(initialPeers);
-                
                 resolve();
                 return;
             }
-            this.connectionService.GUID = Guid.create().toString();
-
             resolve();
         });
     }
@@ -199,8 +196,8 @@ export class Peer implements IPeer {
      */
     private async handleJoinAsync(message: Message, senderGuid: string, response: RESPONSE_TYPE) {
         // Check if node already has an id, if so do not proceed with join request
-        if (message && message.originalSenderGuid === Guid.EMPTY && senderGuid && this.connectionService.GUID) {
-            if (!message.body || !message.senderIp) {
+        if (message && senderGuid && this.connectionService.GUID) {
+            if (!message.body || !message.senderIp || !message.recieverIp) {
                 return;
             }
             const newPeerId: string = Guid.create().toString();
@@ -208,9 +205,9 @@ export class Peer implements IPeer {
             const body = JSON.parse(message.body);
 
             const routingTable = this.connectionService.routingTable.clone();
-            routingTable.addPeer(this.connectionService.GUID, message.senderIp, this.type);
+            routingTable.addPeer(this.connectionService.GUID, message.recieverIp, this.type);
 
-            const responseBody = JSON.stringify({guid: newPeerId, ip: message.senderIp,
+            const responseBody = JSON.stringify({guid: newPeerId, ip: message.recieverIp,
                                 routingTable: Array.from(routingTable.peers)});
 
             // Add the new peer to our registry
