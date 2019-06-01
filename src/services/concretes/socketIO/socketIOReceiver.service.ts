@@ -29,14 +29,10 @@ export class SocketIOReceiver {
     private handleMessage(): void {
         // event fired every time a new client connects:
         this.server.on("connection", (socket: Socket) => {
-            console.log(socket.rawListeners);
             socket.on("message", (body: string) => {
-                console.log(body)
                 const message: Message = JSON.parse(body);
-                console.log(message)
                 if (!this.receivedMessages.includes(message.guid)) {
                     message.senderIp = socket.request.connection.remoteAddress.split(":").pop();
-                    socket.broadcast.emit("message", "response");
                     this.receivedMessages.push(message.guid);
                     this.messageListener.onMessageAsync(message);
                 }

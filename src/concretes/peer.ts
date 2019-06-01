@@ -199,7 +199,7 @@ export class Peer implements IPeer {
      */
     private async handleJoinAsync(message: Message, senderGuid: string, response: RESPONSE_TYPE) {
         // Check if node already has an id, if so do not proceed with join request
-        if (message && message.originalSenderGuid === Guid.EMPTY && senderGuid && this.connectionService.GUID) {
+        if (message && senderGuid && this.connectionService.GUID) {
             if (!message.body || !message.senderIp) {
                 return;
             }
