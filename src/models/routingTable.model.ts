@@ -33,6 +33,7 @@ export class RoutingTable {
      * @returns peer of type 
      */
     public getPeerOfType(type: string): [string, string] | undefined {
+        console.log(this.peers)
         for (const peer of this.peers.entries()) {
             if (peer[1].type === type) {
                 return [peer[0], peer[1].ip];

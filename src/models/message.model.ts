@@ -11,6 +11,7 @@ export class Message {
     public body?: string;
     public correlationId: string;
     public senderIp?: string;
+    public recieverIp?: string;
 
 
     /**
