@@ -5,10 +5,9 @@ import {ConnectionService} from "../services/concretes/connection.service";
 import {TestBodies, TestGuids, TestIps} from "./testAddress";
 
 let connectionService: ConnectionService;
-let testPort: string;
+const testPort = "65535";
 
 beforeEach(async () => {
-    testPort = "65535";
     connectionService = new ConnectionService(true);
     await connectionService.init(testPort);
 });

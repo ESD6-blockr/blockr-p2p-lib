@@ -2,17 +2,15 @@ import { Guid } from "guid-typescript";
 import { Message } from "../models";
 import { DateManipulator } from "../util/dateManipulator";
 
-let type: string;
 let originalSenderGuid: string;
-let body: string;
 let correlationId: string;
 let message: Message;
 let message2: Message;
+const type = "ping";
+const body = "body";
 
 beforeAll(() => {
-    type = "ping";
     originalSenderGuid = Guid.create().toString();
-    body = "body";
     correlationId = Guid.create().toString();
     message = new Message(type, body, originalSenderGuid, correlationId);
     message2 = new Message(type, body, originalSenderGuid);
