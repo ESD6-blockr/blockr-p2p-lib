@@ -128,6 +128,8 @@ export class ConnectionService implements IConnectionService, IMessageListener {
                 if (responseDeferred && responseDeferred.resolve) {
                     responseDeferred.resolve(true);
                 }
+                resolve();
+                return;
             }
 
             const implementation = this.receiveHandlers.get(message.type);

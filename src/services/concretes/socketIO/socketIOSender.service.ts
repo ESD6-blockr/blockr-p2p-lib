@@ -26,6 +26,7 @@ export class SocketIOSender {
     public sendMessageAsync(message: Message, destinationIp: string): Promise<void> {
         return new Promise((resolve) => {
             const socket = connect(`${this.protocol}://${destinationIp}:${this.port}`);
+            message.recieverIp = destinationIp;
             socket.emit("message", JSON.stringify(message));
             resolve();
         });
