@@ -1,4 +1,4 @@
-import { PeerType } from "../enums/peerType.enum";
+import { PeerType } from "../enums";
 import { PeerNode } from "./peerNode.model";
 
 /**
@@ -6,7 +6,6 @@ import { PeerNode } from "./peerNode.model";
  */
 export class RoutingTable {
     public peers: Map<string, PeerNode>;
-
 
     /**
      * Creates an instance of routing table.
@@ -30,7 +29,7 @@ export class RoutingTable {
     /**
      * Gets peer of type
      * @param type The type of the peer
-     * @returns peer of type 
+     * @returns peer of type
      */
     public getPeerOfType(type: string): [string, string] | undefined {
         for (const peer of this.peers.entries()) {
@@ -61,7 +60,7 @@ export class RoutingTable {
 
     /**
      * Clones routing table
-     * @returns clone 
+     * @returns clone
      */
     public clone(): RoutingTable {
         const routingTable = new RoutingTable();

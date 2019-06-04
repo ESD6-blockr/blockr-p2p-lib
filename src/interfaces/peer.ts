@@ -3,15 +3,16 @@ import { Message } from "../models/";
 
 export type RESPONSE_TYPE = (message: Message) => Promise<void> | void;
 export type RECEIVE_HANDLER_TYPE = (message: Message, senderGuid: string, response: RESPONSE_TYPE) => Promise<void>;
+
 /**
  * Peer interface.
  */
 export interface IPeer {
     /**
      * Inits peer
-     * @param [port] 
-     * @param [initialPeers] 
-     * @returns init 
+     * @param [port]
+     * @param [initialPeers]
+     * @returns init
      */
     init(port?: string, initialPeers?: string[]): Promise<void>;
 
@@ -54,17 +55,17 @@ export interface IPeer {
 
     /**
      * Gets promise for response
-     * @param message 
-     * @returns promise for response 
+     * @param message
+     * @returns promise for response
      */
     getPromiseForResponse(message: Message): Promise<void>;
 
     /**
      * Gets peer of type
-     * @param type 
-     * @returns peer of type 
+     * @param type
+     * @returns peer of type
      */
-     getPeerOfType(type: string): [string, string] | undefined ;
+    getPeerOfType(type: string): [string, string] | undefined;
 
     /**
      * Leave the network.

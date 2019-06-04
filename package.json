@@ -7,9 +7,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "build-watch": "tsc -w -p tsconfig.json",
-    "test": "exit 0;",
     "lint": "tslint --project tsconfig.json",
-    "dev": "npm run build && npm run lint"
+    "dev": "npm run build && npm run lint",
+    "test": "jest --collectCoverage || exit 0"
   },
   "repository": {
     "type": "git",
@@ -26,9 +26,13 @@
     "socket.io-client": "^2.2.0"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.12",
     "@types/node": "^11.13.7",
     "@types/socket.io": "^2.1.2",
     "@types/socket.io-client": "^1.4.32",
+    "jest": "^24.8.0",
+    "jest-junit": "^6.4.0",
+    "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
     "tsutils": "^3.10.0",
     "typescript": "^3.4.3"

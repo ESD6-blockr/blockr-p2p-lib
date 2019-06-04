@@ -1,20 +1,25 @@
-import { connect } from "socket.io-client";
-import { MessageType } from "../../../enums";
-import { Message } from "../../../models/";
+import {MessageType} from "../enums/messageType.enum";
+import {IMessageListener} from "../interfaces/messageListener";
+import {Message} from "../models";
+import {ICommunicationProtocol} from "../services/interfaces/communicationProtocol.service";
 
 /**
- * Handles the sending of messages.
+ * Handles the sending of messages during tests.
  */
-export class SocketIOSender {
-    private readonly protocol = "http";
+export class MockCommunicationProtocol implements ICommunicationProtocol {
+    private readonly messageListener: IMessageListener;
+    private readonly receivedMessages: string[];
     private readonly port: string;
 
     /**
-     * Creates an instance of sender.
+     * Creates an instance of socket io.
+     * @param messageListener The listener for new messages
      * @param port The communication port
      */
-    constructor(port: string) {
+    constructor(messageListener: IMessageListener, port: string) {
+        this.messageListener = messageListener;
         this.port = port;
+        this.receivedMessages = [];
     }
 
     /**
@@ -25,9 +30,11 @@ export class SocketIOSender {
      */
     public sendMessageAsync(message: Message, destinationIp: string): Promise<void> {
         return new Promise((resolve) => {
-            const socket = connect(`${this.protocol}://${destinationIp}:${this.port}`);
-            message.recieverIp = destinationIp;
-            socket.emit("message", JSON.stringify(message));
+            if (!this.receivedMessages.includes(message.guid)) {
+                message.senderIp = destinationIp;
+                this.receivedMessages.push(message.guid);
+                this.messageListener.onMessageAsync(message);
+            }
             resolve();
         });
     }
@@ -41,11 +48,11 @@ export class SocketIOSender {
     public sendAcknowledgementAsync(originalMessage: Message, destinationIp: string): Promise<void> {
         const message = new Message(
             MessageType.ACKNOWLEDGE,
-            undefined,
             originalMessage.originalSenderGuid,
             originalMessage.guid,
         );
 
         return this.sendMessageAsync(message, destinationIp);
     }
+
 }
