@@ -94,7 +94,7 @@ export class Peer implements IPeer {
         return new Promise(async (resolve, reject) => {
             const peer = this.getPeerOfType(peerType);
             if (peer) {
-                const destinationGuid = peer[1];
+                const destinationGuid = peer[0];
                 await this.connectionService.sendMessageAsync(message, destinationGuid, responseImplementation);
                 resolve();
             }
@@ -210,7 +210,8 @@ export class Peer implements IPeer {
 
             const routingTable = this.connectionService.routingTable.clone();
             routingTable.addPeer(this.connectionService.GUID, message.recieverIp, this.type);
-
+            routingTable.removePeerByIp(message.recieverIp);
+            
             const responseBody = JSON.stringify({guid: newPeerId, ip: message.recieverIp,
                                 routingTable: Array.from(routingTable.peers)});
 
