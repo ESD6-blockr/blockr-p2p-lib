@@ -28,11 +28,12 @@ describe("Send an async message by GUID", () => {
         const correlationId = TestGuids.TEST_2;
         const destinationGuid = originalSenderGuid;
         const testIp = TestIps.TEST_LOCALHOST;
+        const port = ":8081";
         const testMessage = new Message(type, body, originalSenderGuid, correlationId);
         const expectedMessageCount = 1;
         let receivedMessageCount = 0;
 
-        connectionService.routingTable.addPeer(destinationGuid, testIp, type);
+        connectionService.routingTable.addPeer(destinationGuid, testIp, type, port);
         connectionService.registerReceiveHandlerForMessageType(type, async (message: Message, senderGuid: string) => {
             expect(message).toBeInstanceOf(Message);
             expect(message.type).toEqual(type);
@@ -160,8 +161,9 @@ describe("Creating routing table cleanup timer", () => {
         const type = PeerType.VALIDATOR;
         const destinationGuid = TestGuids.TEST_3;
         const testIp = TestIps.TEST_1;
+        const port = ":8081";
 
-        connectionService.routingTable.addPeer(destinationGuid, testIp, type);
+        connectionService.routingTable.addPeer(destinationGuid, testIp, type, port);
         expect(connectionService.routingTable.peers.size).toEqual(1);
         connectionService.createRoutingTableCleanupTimer(messageExpirationTimer, messageHistoryCleanupTimer);
         setTimeout(() => {
