@@ -62,7 +62,7 @@ describe("Merging routing tables", () => {
             expect(peerNode.ip).toEqual(ip);
         }
         if (peerNode2) {
-            expect(peerNode2.ip).toEqual(ip2)
+            expect(peerNode2.ip).toEqual(ip2);
         }
     });
 });
