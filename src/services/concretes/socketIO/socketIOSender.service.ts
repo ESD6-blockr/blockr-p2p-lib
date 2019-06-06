@@ -7,15 +7,6 @@ import { Message } from "../../../models/";
  */
 export class SocketIOSender {
     private readonly protocol = "http";
-    private readonly port: string;
-
-    /**
-     * Creates an instance of sender.
-     * @param port The communication port
-     */
-    constructor(port: string) {
-        this.port = port;
-    }
 
     /**
      * Emits the given message to the given destinationIp and adds the message to the history.
@@ -25,7 +16,7 @@ export class SocketIOSender {
      */
     public sendMessageAsync(message: Message, destinationIp: string): Promise<void> {
         return new Promise((resolve) => {
-            const socket = connect(`${this.protocol}://${destinationIp}:${this.port}`);
+            const socket = connect(`${this.protocol}://${destinationIp}`);
             message.recieverIp = destinationIp;
             socket.emit("message", JSON.stringify(message));
             resolve();

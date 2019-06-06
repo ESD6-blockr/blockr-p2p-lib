@@ -29,7 +29,7 @@ describe("Send an async message by GUID", () => {
         const testIp = TestIps.TEST_1;
         const testMessage = new Message(type, body, originalSenderGuid, correlationId);
 
-        connectionService.routingTable.addPeer(destinationGuid, testIp, type);
+        connectionService.routingTable.addPeer(destinationGuid, testIp, type, testPort);
         connectionService.registerReceiveHandlerForMessageType("test", async (message: Message, senderGuid: string) => {
             expect(message).toBeInstanceOf(Message);
             expect(message.type).toEqual(type);
@@ -107,7 +107,7 @@ describe("Creating routing table cleanup timer", () => {
         const destinationGuid = TestGuids.TEST_3;
         const testIp = TestIps.TEST_1;
 
-        connectionService.routingTable.addPeer(destinationGuid, testIp, type);
+        connectionService.routingTable.addPeer(destinationGuid, testIp, type, testPort);
         expect(connectionService.routingTable.peers.size).toEqual(1);
         connectionService.createRoutingTableCleanupTimer(messageExpirationTimer, messageHistoryCleanupTimer);
         setTimeout(() => {

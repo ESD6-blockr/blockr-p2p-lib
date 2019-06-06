@@ -17,6 +17,7 @@ const INITIAL_PEERS: string[] = ["p2p.blockr.verux.nl"];
 export class Peer implements IPeer {
     private readonly connectionService: IConnectionService;
     private readonly type: PeerType;
+    private port?: string;
 
     /**
      * Creates an instance of peer.
@@ -36,7 +37,7 @@ export class Peer implements IPeer {
     public init(port: string = DEFAULT_PORT, initialPeers = INITIAL_PEERS): Promise<void> {
         return new Promise(async (resolve) => {
             await this.connectionService.init(port);
-            
+            this.port = port;
             this.connectionService.GUID = Guid.create().toString();
             if (this.type !== PeerType.INITIAL_PEER) {
                 await this.checkInitialPeers(initialPeers);
@@ -94,7 +95,7 @@ export class Peer implements IPeer {
         return new Promise(async (resolve, reject) => {
             const peer = this.getPeerOfType(peerType);
             if (peer) {
-                const destinationGuid = peer[1];
+                const destinationGuid = peer[0];
                 await this.connectionService.sendMessageAsync(message, destinationGuid, responseImplementation);
                 resolve();
             }
@@ -153,7 +154,7 @@ export class Peer implements IPeer {
                 // Add the new peer to our registry
                 const body = JSON.parse(message.body);
                 if (this.connectionService.GUID !== body.guid) {
-                    this.connectionService.routingTable.addPeer(body.guid, body.ip, body.peerType);
+                    this.connectionService.routingTable.addPeer(body.guid, body.ip, body.peerType, body.port);
                 }
             }
         });
@@ -180,8 +181,8 @@ export class Peer implements IPeer {
             }
             for (const peer of peers) {
                 // Check if peer is online and try to join
-                const message = new Message(MessageType.JOIN, JSON.stringify({peerType: this.type}), this.connectionService.GUID);
-                await this.connectionService.sendMessageByIpAsync(message, peer,
+                const message = new Message(MessageType.JOIN, JSON.stringify({peerType: this.type, port: this.port}), this.connectionService.GUID);
+                await this.connectionService.sendMessageByIpAsync(message, `${peer}:${this.port}`,
                     async (responseMessage: Message) => {
                         await this.joinResponseAsync(responseMessage);
                     });
@@ -201,7 +202,7 @@ export class Peer implements IPeer {
     private async handleJoinAsync(message: Message, senderGuid: string, response: RESPONSE_TYPE) {
         // Check if node already has an id, if so do not proceed with join request
         if (message && senderGuid && this.connectionService.GUID) {
-            if (!message.body || !message.senderIp || !message.recieverIp) {
+            if (!message.body || !message.senderIp || !message.recieverIp || !this.port) {
                 return;
             }
             const newPeerId: string = Guid.create().toString();
@@ -209,13 +210,14 @@ export class Peer implements IPeer {
             const body = JSON.parse(message.body);
 
             const routingTable = this.connectionService.routingTable.clone();
-            routingTable.addPeer(this.connectionService.GUID, message.recieverIp, this.type);
-
+            routingTable.addPeer(this.connectionService.GUID, message.recieverIp, this.type, this.port);
+            routingTable.removePeerByIp(message.recieverIp);
+            
             const responseBody = JSON.stringify({guid: newPeerId, ip: message.recieverIp,
                                 routingTable: Array.from(routingTable.peers)});
 
             // Add the new peer to our registry
-            this.connectionService.routingTable.addPeer(newPeerId, message.senderIp, body.peerType);
+            this.connectionService.routingTable.addPeer(newPeerId, message.senderIp, body.peerType, body.port);
 
             await response(new Message(MessageType.JOIN_RESPONSE, responseBody, newPeerId));
 
@@ -225,6 +227,7 @@ export class Peer implements IPeer {
                     guid: this.connectionService.GUID,
                     ip: message.senderIp,
                     peerType: this.type,
+                    port: body.port,
                 }), this.connectionService.GUID));
         }
     }

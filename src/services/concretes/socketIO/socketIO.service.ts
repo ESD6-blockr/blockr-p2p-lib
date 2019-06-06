@@ -18,7 +18,7 @@ export class SocketIOCommunicationProtocol implements ICommunicationProtocol {
      */
     constructor(messageListener: IMessageListener, port: string) {
         this.receiver = new SocketIOReceiver(messageListener, port);
-        this.sender = new SocketIOSender(port);
+        this.sender = new SocketIOSender();
     }
 
     /**
