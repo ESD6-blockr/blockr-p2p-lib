@@ -21,13 +21,4 @@ export class PeerNode {
         this.port = port;
         this.type = type;
     }
-
-    /**
-     * Get the address (ip and port) of this peer node.
-     * 
-     * @returns the address
-     */
-    public getAddress(): string {
-        return `${this.ip}:${this.port}`;
-    }
 }

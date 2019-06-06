@@ -252,7 +252,6 @@ export class ConnectionService implements IConnectionService, IMessageListener {
         if (!peerNode) {
             throw new UnknownDestinationException(`Unknown destination. Could not find an IP for: ${guid}`);
         }
-
-        return peerNode.getAddress();
+        return `${peerNode.ip}:${peerNode.port}`;
     }
 }
