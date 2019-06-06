@@ -10,6 +10,7 @@ export type RECEIVE_HANDLER_TYPE = (message: Message, senderGuid: string, respon
 export interface IPeer {
     /**
      * Inits peer
+     * 
      * @param [port]
      * @param [initialPeers]
      * @returns init
@@ -55,6 +56,7 @@ export interface IPeer {
 
     /**
      * Gets promise for response
+     * 
      * @param message
      * @returns promise for response
      */
@@ -62,6 +64,7 @@ export interface IPeer {
 
     /**
      * Gets peer of type
+     * 
      * @param type
      * @returns peer of type
      */

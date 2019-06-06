@@ -5,7 +5,6 @@ import { Message, RoutingTable } from "../../models";
  * Handles the peer network.
  */
 export interface IConnectionService {
-
     /**
      * Routing table containing all known p2p ip-guid combinations.
      */
@@ -54,6 +53,7 @@ export interface IConnectionService {
 
     /**
      * Sends broadcast
+     * 
      * @param message The message
      * @param [responseImplementation] The implementation of the response message
      * @returns broadcast
@@ -69,12 +69,14 @@ export interface IConnectionService {
 
     /**
      * Leaves connection service
+     * 
      * @param guid  The guid of a peer
      */
     leave(guid: string): void;
 
     /**
      * Sends message by ip
+     * 
      * @param message  The message
      * @param destinationIp The ip address of the destination
      * @param [responseImplementation] The implementation of the response message
@@ -84,6 +86,7 @@ export interface IConnectionService {
 
     /**
      * Gets promise for response
+     * 
      * @param message The message
      * @returns promise for response
      */

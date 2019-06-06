@@ -16,6 +16,7 @@ export class Message {
 
     /**
      * Creates an instance of message.
+     * 
      * @param type
      * @param originalSenderGuid
      * @param [body]
