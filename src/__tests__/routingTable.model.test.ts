@@ -3,6 +3,7 @@ import { PeerType } from "../enums";
 import { PeerNode, RoutingTable } from "../models";
 import { TestIps } from "./testAddress";
 
+const TEST_PORT  = "8081";
 let routingTable: RoutingTable;
 
 beforeEach(() => {
@@ -22,7 +23,7 @@ describe("Adding/removing a peer", () => {
         const peerGuid = Guid.create().toString();
         const ip = TestIps.TEST_1;
 
-        routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR);
+        routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR, TEST_PORT);
         const peerNode = routingTable.peers.get(peerGuid);
 
         expect(peerNode).toBeDefined();
@@ -46,8 +47,8 @@ describe("Merging routing tables", () => {
         const peersMap = new Map<string, PeerNode>();
         const expectedRoutingTableSize = 2;
 
-        peersMap.set(peerGuid, new PeerNode(ip, PeerType.VALIDATOR));
-        routingTable.addPeer(peerGuid2, ip2, PeerType.VALIDATOR);
+        peersMap.set(peerGuid, new PeerNode(ip, PeerType.VALIDATOR, TEST_PORT));
+        routingTable.addPeer(peerGuid2, ip2, PeerType.VALIDATOR, TEST_PORT);
 
         routingTable.mergeRoutingTables(peersMap);
 
@@ -71,7 +72,7 @@ describe("Cloning the routing table", () => {
         const peerGuid = Guid.create().toString();
         const ip = TestIps.TEST_1;
 
-        routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR);
+        routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR, TEST_PORT);
         const clonedRoutingTable = routingTable.clone();
 
         expect(clonedRoutingTable).toBeDefined();
@@ -90,7 +91,7 @@ describe("Get Peer of Type from routing table", () => {
     it("Should return a peer from the given type", () => {
         const peerGuid = Guid.create().toString();
         const ip = TestIps.TEST_1;
-        routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR);
+        routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR, TEST_PORT);
 
         const valPeerNode = routingTable.getPeerOfType(PeerType.VALIDATOR);
         expect(valPeerNode).toBeDefined();
