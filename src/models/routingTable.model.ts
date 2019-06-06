@@ -25,7 +25,6 @@ export class RoutingTable {
         this.peers.set(guid, new PeerNode(ip, type, port));
     }
 
-
     /**
      * Gets peer of type
      * @param type The type of the peer

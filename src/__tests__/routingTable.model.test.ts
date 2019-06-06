@@ -22,6 +22,7 @@ describe("Adding/removing a peer", () => {
     it("Should add/remove the peer to/from the peers map", () => {
         const peerGuid = Guid.create().toString();
         const ip = TestIps.TEST_1;
+        const port = ":8081";
 
         routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR, TEST_PORT);
         const peerNode = routingTable.peers.get(peerGuid);
@@ -29,7 +30,7 @@ describe("Adding/removing a peer", () => {
         expect(peerNode).toBeDefined();
         expect(routingTable.peers.size).toEqual(1);
         if (peerNode) {
-            expect(peerNode.ip).toEqual(ip);
+            expect(peerNode.ip).toEqual(ip + port);
         }
 
         routingTable.removePeer(peerGuid);
@@ -44,6 +45,7 @@ describe("Merging routing tables", () => {
         const peerGuid2 = Guid.create().toString();
         const ip = TestIps.TEST_1;
         const ip2 = TestIps.TEST_2;
+        const port = ":8081";
         const peersMap = new Map<string, PeerNode>();
         const expectedRoutingTableSize = 2;
 
@@ -59,10 +61,10 @@ describe("Merging routing tables", () => {
         expect(peerNode2).toBeDefined();
         expect(routingTable.peers.size).toEqual(expectedRoutingTableSize);
         if (peerNode) {
-            expect(peerNode.ip).toEqual(ip);
+            expect(peerNode.ip).toEqual(ip + port);
         }
         if (peerNode2) {
-            expect(peerNode2.ip).toEqual(ip2);
+            expect(peerNode2.ip).toEqual(ip2 + port);
         }
     });
 });
@@ -71,6 +73,7 @@ describe("Cloning the routing table", () => {
     it("Should clone the routing table object", () => {
         const peerGuid = Guid.create().toString();
         const ip = TestIps.TEST_1;
+        const port = ":8081";
 
         routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR, TEST_PORT);
         const clonedRoutingTable = routingTable.clone();
@@ -82,7 +85,7 @@ describe("Cloning the routing table", () => {
 
         const peerNode = clonedRoutingTable.peers.get(peerGuid);
         if (peerNode) {
-            expect(peerNode.ip).toEqual(ip);
+            expect(peerNode.ip).toEqual(ip + port);
         }
     });
 });
@@ -91,12 +94,13 @@ describe("Get Peer of Type from routing table", () => {
     it("Should return a peer from the given type", () => {
         const peerGuid = Guid.create().toString();
         const ip = TestIps.TEST_1;
+        const port = ":8081";
         routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR, TEST_PORT);
 
         const valPeerNode = routingTable.getPeerOfType(PeerType.VALIDATOR);
         expect(valPeerNode).toBeDefined();
         if (valPeerNode) {
-            expect(valPeerNode).toEqual([peerGuid, ip]);
+            expect(valPeerNode).toEqual([peerGuid, ip + port]);
         }
 
         const scPeerNode = routingTable.getPeerOfType(PeerType.SMART_CONTRACT_ENGINE);
