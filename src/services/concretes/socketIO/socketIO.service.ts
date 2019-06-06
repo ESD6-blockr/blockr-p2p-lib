@@ -13,6 +13,7 @@ export class SocketIOCommunicationProtocol implements ICommunicationProtocol {
 
     /**
      * Creates an instance of socket io.
+     * 
      * @param messageListener The listener for new messages
      * @param port The communication port
      */

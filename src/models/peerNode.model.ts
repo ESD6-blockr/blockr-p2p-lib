@@ -6,14 +6,19 @@ import { PeerType } from "../enums";
  */
 export class PeerNode {
     public readonly ip: string;
+    public readonly port: string;
     public readonly type: PeerType;
+
     /**
      * Creates an instance of peer node.
+     * 
      * @param ip
      * @param type
+     * @param port
      */
     public constructor(ip: string, type: PeerType, port: string) {
-        this.ip = `${ip}:${port}`;
+        this.ip = ip;
+        this.port = port;
         this.type = type;
     }
 }

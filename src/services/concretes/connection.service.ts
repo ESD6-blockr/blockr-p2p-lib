@@ -98,6 +98,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
 
     /**
      * Sends broadcast
+     * 
      * @param message The message
      * @param [responseImplementation] The implementation of the response message
      * @returns broadcast
@@ -151,6 +152,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
 
     /**
      * Leaves connection service
+     * 
      * @param guid  The guid of a peer
      */
     public leave(guid: string): void {
@@ -161,6 +163,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
 
     /**
      * Sends message by ip
+     * 
      * @param message  The message
      * @param destinationIp The ip address of the destination
      * @param [responseImplementation] The implementation of the response message
@@ -184,6 +187,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
 
     /**
      * Gets promise for response
+     * 
      * @param message The message
      * @returns promise for response
      */
@@ -238,16 +242,16 @@ export class ConnectionService implements IConnectionService, IMessageListener {
 
     /**
      * Gets ip from routing table
+     * 
      * @param guid The guid of a peer
      * @returns ip from routing table
      */
     private getIpFromRoutingTable(guid: string): string {
-        const destinationIp = this.routingTable.peers.get(guid);
+        const peerNode = this.routingTable.peers.get(guid);
 
-        if (!destinationIp) {
+        if (!peerNode) {
             throw new UnknownDestinationException(`Unknown destination. Could not find an IP for: ${guid}`);
         }
-
-        return destinationIp.ip;
+        return `${peerNode.ip}:${peerNode.port}`;
     }
 }
