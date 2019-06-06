@@ -182,7 +182,7 @@ export class Peer implements IPeer {
             for (const peer of peers) {
                 // Check if peer is online and try to join
                 const message = new Message(MessageType.JOIN, JSON.stringify({peerType: this.type, port: this.port}), this.connectionService.GUID);
-                await this.connectionService.sendMessageByIpAsync(message, peer,
+                await this.connectionService.sendMessageByIpAsync(message, `${peer}:${this.port}`,
                     async (responseMessage: Message) => {
                         await this.joinResponseAsync(responseMessage);
                     });
