@@ -8,5 +8,5 @@ const peer: IPeer = new Peer(PeerType.INITIAL_PEER);
 async function start() {
     await peer.init();
 }
-
 start();
+

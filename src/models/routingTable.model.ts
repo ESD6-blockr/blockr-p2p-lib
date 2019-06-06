@@ -21,10 +21,9 @@ export class RoutingTable {
      * @param ip - The IP
      * @param type - The Type
      */
-    public addPeer(guid: string, ip: string, type: PeerType): void {
-        this.peers.set(guid, new PeerNode(ip, type));
+    public addPeer(guid: string, ip: string, type: PeerType, port: string): void {
+        this.peers.set(guid, new PeerNode(ip, type, port));
     }
-
 
     /**
      * Gets peer of type
@@ -47,6 +46,19 @@ export class RoutingTable {
      */
     public removePeer(guid: string): void {
         this.peers.delete(guid);
+    }
+
+    /**
+     * Remove peer by its ip.
+     *
+     * @param ip - The ip
+     */
+    public removePeerByIp(ip: string): void {
+        for (const peer of this.peers.entries()) {
+            if (peer[1].ip === ip) {
+                this.peers.delete(peer[0]);
+            }
+        }
     }
 
     /**
