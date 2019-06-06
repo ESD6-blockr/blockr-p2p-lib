@@ -27,6 +27,7 @@ export class RoutingTable {
 
     /**
      * Gets peer of type
+     * 
      * @param type The type of the peer
      * @returns peer of type
      */
@@ -72,6 +73,7 @@ export class RoutingTable {
 
     /**
      * Clones routing table
+     * 
      * @returns clone
      */
     public clone(): RoutingTable {
