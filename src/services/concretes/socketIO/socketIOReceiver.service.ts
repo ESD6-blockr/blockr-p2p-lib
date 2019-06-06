@@ -35,7 +35,6 @@ export class SocketIOReceiver {
                     message.senderIp = socket.request.connection.remoteAddress.split(":").pop();
                     this.receivedMessages.push(message.guid);
                     this.messageListener.onMessageAsync(message);
-                    console.log(message)
                 }
             });
         });
