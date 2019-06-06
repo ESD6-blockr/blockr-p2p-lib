@@ -30,6 +30,7 @@ export class Peer implements IPeer {
 
     /**
      * Inits peer
+     * 
      * @param [port]
      * @param [initialPeers]
      * @returns init
@@ -50,6 +51,7 @@ export class Peer implements IPeer {
 
     /**
      * Registers receive handler for message type
+     * 
      * @param messageType
      * @param implementation
      */
@@ -59,6 +61,7 @@ export class Peer implements IPeer {
 
     /**
      * Sends broadcast
+     * 
      * @param message
      * @param [responseImplementation]
      * @returns broadcast
@@ -72,6 +75,7 @@ export class Peer implements IPeer {
 
     /**
      * Sends message
+     * 
      * @param message
      * @param destinationGuid
      * @param [responseImplementation]
@@ -114,6 +118,7 @@ export class Peer implements IPeer {
 
     /**
      * Gets promise for response
+     * 
      * @param message
      * @returns promise for response
      */
@@ -124,6 +129,7 @@ export class Peer implements IPeer {
 
     /**
      * Gets peer of type
+     * 
      * @param type
      * @returns peer of type
      */
@@ -170,6 +176,7 @@ export class Peer implements IPeer {
 
     /**
      * Try to join the network. Send a join request to every given peer.
+     * 
      * @param peers
      * @returns initial peers
      */
@@ -193,7 +200,8 @@ export class Peer implements IPeer {
     }
 
     /**
-     * Handels join
+     * Handles join
+     * 
      * @param message
      * @param senderGuid
      * @param response
@@ -234,6 +242,7 @@ export class Peer implements IPeer {
 
     /**
      * Joins response
+     * 
      * @param message
      * @returns response
      */
