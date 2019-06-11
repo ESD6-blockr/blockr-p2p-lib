@@ -100,6 +100,7 @@ export class Peer implements IPeer {
             const peer = this.getPeerOfType(peerType);
             if (peer) {
                 const destinationGuid = peer[0];
+                message.originalSenderGuid = this.connectionService.GUID;
                 await this.connectionService.sendMessageAsync(message, destinationGuid, responseImplementation);
                 resolve();
             }
@@ -134,9 +135,6 @@ export class Peer implements IPeer {
      * @returns peer of type
      */
     public getPeerOfType(type: string): [string, string] | undefined {
-        console.log(type)
-        console.log(this.connectionService.routingTable)
-        console.log(this.connectionService.routingTable.getPeerOfType(type))
         return this.connectionService.routingTable.getPeerOfType(type);
     }
 
@@ -229,7 +227,6 @@ export class Peer implements IPeer {
 
             // Add the new peer to our registry
             this.connectionService.routingTable.addPeer(newPeerId, message.senderIp, body.peerType, body.port);
-            console.log(responseBody);
             await response(new Message(MessageType.JOIN_RESPONSE, responseBody, newPeerId));
 
             // Let other peers know about the newly joined peer
