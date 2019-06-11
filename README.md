@@ -7,6 +7,14 @@
 
 The utilities exposed by this library can be consumed by normal construction.
 
+## Dependencies
+All components implementing the P2P-library require the reflect-metadata dependency.
+```ts
+"dependencies": {
+    "reflect-metadata": "^0.1.13"
+}
+```
+
 ## Importing
 **ES6**
 ```ts
