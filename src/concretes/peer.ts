@@ -100,6 +100,7 @@ export class Peer implements IPeer {
             const peer = this.getPeerOfType(peerType);
             if (peer) {
                 const destinationGuid = peer[0];
+                message.originalSenderGuid = this.connectionService.GUID;
                 await this.connectionService.sendMessageAsync(message, destinationGuid, responseImplementation);
                 resolve();
             }
@@ -189,7 +190,7 @@ export class Peer implements IPeer {
             for (const peer of peers) {
                 // Check if peer is online and try to join
                 const message = new Message(MessageType.JOIN, JSON.stringify({peerType: this.type, port: this.port}), this.connectionService.GUID);
-                await this.connectionService.sendMessageByIpAsync(message, `${peer}:${this.port}`,
+                await this.connectionService.sendMessageByIpAsync(message, `${peer}:8081`,
                     async (responseMessage: Message) => {
                         await this.joinResponseAsync(responseMessage);
                     });
@@ -219,20 +220,19 @@ export class Peer implements IPeer {
 
             const routingTable = this.connectionService.routingTable.clone();
             routingTable.addPeer(this.connectionService.GUID, message.recieverIp, this.type, this.port);
-            routingTable.removePeerByIp(message.recieverIp);
+            routingTable.removePeerByIp(message.senderIp);
             
             const responseBody = JSON.stringify({guid: newPeerId, ip: message.recieverIp,
                                 routingTable: Array.from(routingTable.peers)});
 
             // Add the new peer to our registry
             this.connectionService.routingTable.addPeer(newPeerId, message.senderIp, body.peerType, body.port);
-
             await response(new Message(MessageType.JOIN_RESPONSE, responseBody, newPeerId));
 
             // Let other peers know about the newly joined peer
             await this.connectionService.sendBroadcastAsync(new Message(MessageType.NEW_PEER,
                 JSON.stringify({
-                    guid: this.connectionService.GUID,
+                    guid: newPeerId,
                     ip: message.senderIp,
                     peerType: this.type,
                     port: body.port,
