@@ -29,12 +29,12 @@ export class Peer implements IPeer {
 
     /**
      * Inits peer
-     * 
-     * @param [port]
-     * @param [initialPeers]
+     *
+     * @param [initialPeers] - An array of initial peer ips (with ports)
+     * @param [port] - The port on which this node will listen
      * @returns init
      */
-    public init(port: string = DEFAULT_PORT, initialPeers?: []): Promise<void> {
+    public init(initialPeers?: [], port: string = DEFAULT_PORT): Promise<void> {
         return new Promise(async (resolve) => {
             await this.connectionService.init(port);
             this.port = port;

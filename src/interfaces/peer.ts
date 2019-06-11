@@ -10,12 +10,12 @@ export type RECEIVE_HANDLER_TYPE = (message: Message, senderGuid: string, respon
 export interface IPeer {
     /**
      * Inits peer
-     * 
-     * @param [port]
-     * @param [initialPeers]
+     *
+     * @param [initialPeers] - An array of initial peer ips (with ports)
+     * @param [port] - The port on which this node will listen
      * @returns init
      */
-    init(port?: string, initialPeers?: string[]): Promise<void>;
+    init(initialPeers?: string[], port?: string): Promise<void>;
 
     /**
      * Register custom receiver handlers.
