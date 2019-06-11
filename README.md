@@ -78,8 +78,11 @@ peer.registerReceiveHandlerForMessageType("testMessageTypeWithResponse", async (
 });
 
 // Get a validator peer
-const validatorGuid: string | undefined = peer.getPeerOfType(PeerType.VALIDATOR);
-if (!validatorGuid) {
+const validatorPeer: [string,string] = peer.getPeerOfType(PeerType.VALIDATOR); 
+if (!validatorPeer) {
+    // Get the guid of the validator. [0] = Guid, [1] = Ip 
+    const validatorGuid: string = validatorPeer[0];
+    
     // Basic message without responses
     const message: Message = new Message("testMessageType", "testMessageType");
 
