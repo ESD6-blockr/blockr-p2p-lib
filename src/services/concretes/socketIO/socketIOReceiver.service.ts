@@ -31,6 +31,7 @@ export class SocketIOReceiver {
         this.server.on("connection", (socket: Socket) => {
             socket.on("message", (body: string) => {
                 const message: Message = JSON.parse(body);
+                console.log(message);
                 if (!this.receivedMessages.includes(message.guid)) {
                     message.senderIp = socket.request.connection.remoteAddress.split(":").pop();
                     this.receivedMessages.push(message.guid);

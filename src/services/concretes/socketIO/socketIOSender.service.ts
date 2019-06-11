@@ -18,6 +18,10 @@ export class SocketIOSender {
         return new Promise((resolve) => {
             const socket = connect(`${this.protocol}://${destinationIp}`);
             message.recieverIp = destinationIp;
+            console.log("=============================================================================================================================")
+            console.log(message)
+            console.log(`${this.protocol}://${destinationIp}`)
+            console.log("=============================================================================================================================")
             socket.emit("message", JSON.stringify(message));
             resolve();
         });
