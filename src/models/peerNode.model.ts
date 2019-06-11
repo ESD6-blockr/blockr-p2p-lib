@@ -1,4 +1,4 @@
-import { PeerType } from "../enums";
+import {PeerType} from "../enums";
 
 /**
  * Peer node.
@@ -11,14 +11,23 @@ export class PeerNode {
 
     /**
      * Creates an instance of peer node.
-     * 
+     *
+     * If no port is given, the ip param will be split into the ip and the port.
+     *
      * @param ip
      * @param type
      * @param port
      */
-    public constructor(ip: string, type: PeerType, port: string) {
+    public constructor(ip: string, type: PeerType, port?: string) {
+        this.type = type;
+
+        if (!port) {
+            this.ip = ip.split(":")[0];
+            this.port = ip.split(":")[1];
+            return;
+        }
+
         this.ip = ip;
         this.port = port;
-        this.type = type;
     }
 }

@@ -20,8 +20,9 @@ export class RoutingTable {
      * @param guid - The GUID
      * @param ip - The IP
      * @param type - The Type
+     * @param [port] - The Port
      */
-    public addPeer(guid: string, ip: string, type: PeerType, port: string): void {
+    public addPeer(guid: string, ip: string, type: PeerType, port?: string): void {
         this.peers.set(guid, new PeerNode(ip, type, port));
     }
 
