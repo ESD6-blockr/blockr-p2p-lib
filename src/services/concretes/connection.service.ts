@@ -123,7 +123,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
                 return;
             }
             const responseImplementation = this.requestsMap.get(message.correlationId);
-            if (responseImplementation) {
+            if (responseImplementation && message.type !== MessageType.ACKNOWLEDGE) {
                 await responseImplementation(message);
                 const responseDeferred = this.responseDeferredsMap.get(message.correlationId);
                 if (responseDeferred && responseDeferred.resolve) {
