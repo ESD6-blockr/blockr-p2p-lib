@@ -1,9 +1,8 @@
-import { Guid } from "guid-typescript";
 import { PeerType } from "../enums";
 import { PeerNode, RoutingTable } from "../models";
-import { TestIps } from "./testAddress";
+import { TestGuids, TestIps } from "./testAddress";
 
-const TEST_PORT  = "8081";
+const TEST_PORT = "8081";
 let routingTable: RoutingTable;
 
 beforeEach(() => {
@@ -20,7 +19,7 @@ describe("Creating routingTable model", () => {
 
 describe("Adding/removing a peer", () => {
     it("Should add/remove the peer to/from the peers map", () => {
-        const peerGuid = Guid.create().toString();
+        const peerGuid = TestGuids.TEST_1;
         const ip = TestIps.TEST_1;
 
         routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR, TEST_PORT);
@@ -40,8 +39,8 @@ describe("Adding/removing a peer", () => {
 
 describe("Merging routing tables", () => {
     it("Should merge routing tables", () => {
-        const peerGuid = Guid.create().toString();
-        const peerGuid2 = Guid.create().toString();
+        const peerGuid = TestGuids.TEST_1;
+        const peerGuid2 = TestGuids.TEST_2;
         const ip = TestIps.TEST_1;
         const ip2 = TestIps.TEST_2;
         const peersMap = new Map<string, PeerNode>();
@@ -69,7 +68,7 @@ describe("Merging routing tables", () => {
 
 describe("Cloning the routing table", () => {
     it("Should clone the routing table object", () => {
-        const peerGuid = Guid.create().toString();
+        const peerGuid = TestGuids.TEST_1;
         const ip = TestIps.TEST_1;
 
         routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR, TEST_PORT);
@@ -89,7 +88,7 @@ describe("Cloning the routing table", () => {
 
 describe("Get Peer of Type from routing table", () => {
     it("Should return a peer from the given type", () => {
-        const peerGuid = Guid.create().toString();
+        const peerGuid = TestGuids.TEST_1;
         const ip = TestIps.TEST_1;
         routingTable.addPeer(peerGuid, ip, PeerType.VALIDATOR, TEST_PORT);
 

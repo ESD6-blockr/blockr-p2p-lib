@@ -25,20 +25,26 @@ describe("Send an async message by GUID", () => {
         const originalSenderGuid = TestGuids.TEST_1;
         const body = TestBodies.TEST_1;
         const correlationId = TestGuids.TEST_2;
-        const destinationGuid = TestGuids.TEST_3;
-        const testIp = TestIps.TEST_1;
+        const destinationGuid = originalSenderGuid;
+        const testIp = TestIps.TEST_LOCALHOST;
+        const port = ":8081";
         const testMessage = new Message(type, body, originalSenderGuid, correlationId);
+        const expectedMessageCount = 1;
+        let receivedMessageCount = 0;
 
-        connectionService.routingTable.addPeer(destinationGuid, testIp, type, testPort);
-        connectionService.registerReceiveHandlerForMessageType("test", async (message: Message, senderGuid: string) => {
+        connectionService.routingTable.addPeer(destinationGuid, testIp, type, port);
+        connectionService.registerReceiveHandlerForMessageType(type, async (message: Message, senderGuid: string) => {
             expect(message).toBeInstanceOf(Message);
             expect(message.type).toEqual(type);
             expect(message.body).toEqual(body);
             expect(message.originalSenderGuid).toEqual(originalSenderGuid);
             expect(message.correlationId).toEqual(correlationId);
             expect(message.originalSenderGuid).toEqual(senderGuid);
+            receivedMessageCount++;
+
         });
         await connectionService.sendMessageAsync(testMessage, destinationGuid);
+        expect(receivedMessageCount).toEqual(expectedMessageCount);
     });
 
     it("Should fail because no ip is attached to destinationGuid", async () => {
@@ -46,7 +52,7 @@ describe("Send an async message by GUID", () => {
         const originalSenderGuid = TestGuids.TEST_1;
         const body = TestBodies.TEST_1;
         const correlationId = TestGuids.TEST_2;
-        const destinationGuid = TestGuids.TEST_3;
+        const destinationGuid = originalSenderGuid;
         const testMessage = new Message(type, body, originalSenderGuid, correlationId);
 
         try {
@@ -65,37 +71,22 @@ describe("Send a async message by IP", () => {
         const originalSenderGuid = TestGuids.TEST_1;
         const body = TestBodies.TEST_1;
         const correlationId = TestGuids.TEST_2;
-        const testIp = TestIps.TEST_1;
+        const testIp = TestIps.TEST_LOCALHOST;
         const testMessage = new Message(type, body, originalSenderGuid, correlationId);
+        const expectedMessageCount = 1;
+        let receivedMessageCount = 0;
 
-        connectionService.registerReceiveHandlerForMessageType("test", async (message: Message, senderGuid: string) => {
+        connectionService.registerReceiveHandlerForMessageType(type, async (message: Message, senderGuid: string) => {
             expect(message).toBeInstanceOf(Message);
             expect(message.type).toEqual(type);
             expect(message.body).toEqual(body);
             expect(message.originalSenderGuid).toEqual(originalSenderGuid);
             expect(message.correlationId).toEqual(correlationId);
             expect(message.originalSenderGuid).toEqual(senderGuid);
+            receivedMessageCount++;
         });
         await connectionService.sendMessageByIpAsync(testMessage, testIp);
-    });
-});
-
-describe("Send a async message by IP with response implementation", () => {
-    it("Should be received with correct information", async () => {
-        const type = PeerType.VALIDATOR;
-        const originalSenderGuid = TestGuids.TEST_1;
-        const body = TestBodies.TEST_1;
-        const correlationId = TestGuids.TEST_2;
-        const testIp = TestIps.TEST_1;
-        const testMessage = new Message(type, body, originalSenderGuid, correlationId);
-
-        await connectionService.sendMessageByIpAsync(testMessage, testIp, (message: Message) => {
-            expect(message).toBeInstanceOf(Message);
-            expect(message.type).toEqual(type);
-            expect(message.body).toEqual(body);
-            expect(message.originalSenderGuid).toEqual(originalSenderGuid);
-            expect(message.correlationId).toEqual(correlationId);
-        });
+        expect(receivedMessageCount).toEqual(expectedMessageCount);
     });
 });
 
@@ -106,8 +97,9 @@ describe("Creating routing table cleanup timer", () => {
         const type = PeerType.VALIDATOR;
         const destinationGuid = TestGuids.TEST_3;
         const testIp = TestIps.TEST_1;
+        const port = ":8081";
 
-        connectionService.routingTable.addPeer(destinationGuid, testIp, type, testPort);
+        connectionService.routingTable.addPeer(destinationGuid, testIp, type, port);
         expect(connectionService.routingTable.peers.size).toEqual(1);
         connectionService.createRoutingTableCleanupTimer(messageExpirationTimer, messageHistoryCleanupTimer);
         setTimeout(() => {

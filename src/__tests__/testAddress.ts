@@ -4,6 +4,7 @@ export enum TestIps {
     TEST_3 = "0.0.0.3",
     TEST_4 = "0.0.0.4",
     TEST_5 = "0.0.0.5",
+    TEST_LOCALHOST = "localhost",
 }
 
 export enum TestGuids {
