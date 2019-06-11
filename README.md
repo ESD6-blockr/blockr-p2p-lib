@@ -18,9 +18,10 @@ All components implementing the P2P-library require the reflect-metadata depende
 ## Importing
 **ES6**
 ```ts
-import { Peer } from "../concretes/peer";
-import { IPeer, RESPONSE_TYPE } from "../interfaces/peer";
-import { Message } from "../models";
+import "reflect-metadata";
+import { Peer } from "./concretes/peer";
+import { PeerType } from "./enums/peerType.enum";
+import { IPeer } from "./interfaces/peer";
 ```
 
 ## Construction and initialisation
@@ -35,7 +36,7 @@ class MainService {
 	private peer: IPeer;
 	
 	constructor() {
-		this.peer = new Peer("typeOfPeer");
+		this.peer = new Peer(PeerType.INITIAL_PEER);
 		this.peer.init();
 	}
 }
@@ -47,8 +48,8 @@ class MainService {
 	private peer: IPeer;
 
 	constructor() {
-		this.peer = new Peer("typeOfPeer");
-		await this.peer.init(["0.0.0.0"]);
+		this.peer = new Peer(PeerType.VALIDATOR);
+		await this.peer.init(["0.0.0.0:8081"]);
 	}
 }
 ```
@@ -58,9 +59,9 @@ class MainService {
 
  ```ts
 // Create the peer
-const peer: IPeer = new Peer("examplePeer");
+const peer: IPeer = new Peer(PeerType.IPFS);
 // Connect to the p2p network and await the connection
-await peer.init("8081", ["0.0.0.0"]);
+await peer.init(["0.0.0.0:8081"], "8082");
 
 // Add custom receive handler without a response
 peer.registerReceiveHandlerForMessageType("testMessageType", async (message: Message, senderGuid: string) => {
@@ -77,7 +78,7 @@ peer.registerReceiveHandlerForMessageType("testMessageTypeWithResponse", async (
 });
 
 // Get a validator peer
-const validatorGuid: string | undefined = peer.getPeerOfType("Validator");
+const validatorGuid: string | undefined = peer.getPeerOfType(PeerType.VALIDATOR);
 if (!validatorGuid) {
     // Basic message without responses
     const message: Message = new Message("testMessageType", "testMessageType");
