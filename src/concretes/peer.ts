@@ -8,7 +8,6 @@ import { ConnectionService } from "../services/concretes/connection.service";
 import { IConnectionService } from "../services/interfaces/connection.service";
 
 const DEFAULT_PORT: string = "8081";
-const INITIAL_PEERS: string[] = ["p2p.blockr.verux.nl"];
 
 /**
  * Handles the peer network.
@@ -30,17 +29,17 @@ export class Peer implements IPeer {
 
     /**
      * Inits peer
-     * 
-     * @param [port]
-     * @param [initialPeers]
+     *
+     * @param [initialPeers] - An array of initial peer ips (with ports)
+     * @param [port] - The port on which this node will listen
      * @returns init
      */
-    public init(port: string = DEFAULT_PORT, initialPeers = INITIAL_PEERS): Promise<void> {
+    public init(initialPeers?: [], port: string = DEFAULT_PORT): Promise<void> {
         return new Promise(async (resolve) => {
             await this.connectionService.init(port);
             this.port = port;
             this.connectionService.GUID = Guid.create().toString();
-            if (this.type !== PeerType.INITIAL_PEER) {
+            if (initialPeers) {
                 await this.checkInitialPeers(initialPeers);
                 resolve();
                 return;
@@ -51,7 +50,7 @@ export class Peer implements IPeer {
 
     /**
      * Registers receive handler for message type
-     * 
+     *
      * @param messageType
      * @param implementation
      */
@@ -190,7 +189,7 @@ export class Peer implements IPeer {
             for (const peer of peers) {
                 // Check if peer is online and try to join
                 const message = new Message(MessageType.JOIN, JSON.stringify({peerType: this.type, port: this.port}), this.connectionService.GUID);
-                await this.connectionService.sendMessageByIpAsync(message, `${peer}:${DEFAULT_PORT}`,
+                await this.connectionService.sendMessageByIpAsync(message, peer,
                     async (responseMessage: Message) => {
                         await this.joinResponseAsync(responseMessage);
                     });
