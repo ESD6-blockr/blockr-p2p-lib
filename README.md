@@ -60,6 +60,7 @@ class MainService {
  ```ts
 // Create the peer
 const peer: IPeer = new Peer(PeerType.IPFS);
+
 // Connect to the p2p network and await the connection
 await peer.init(["0.0.0.0:8081"], "8082");
 
@@ -72,37 +73,37 @@ peer.registerReceiveHandlerForMessageType("testMessageType", async (message: Mes
 // Add custom receive handler with a response type
 peer.registerReceiveHandlerForMessageType("testMessageTypeWithResponse", async (message: Message, senderGuid: string, response: RESPONSE_TYPE) => {
     if (message && senderGuid) {
-        // Rspond to the message
+        // Respond to the message
         response(message);
     }
 });
 
 // Get a validator peer
-const validatorPeer: [string,string] = peer.getPeerOfType(PeerType.VALIDATOR); 
-if (!validatorPeer) {
+const validatorPeer: [string, string] = peer.getPeerOfType(PeerType.VALIDATOR); 
+if (validatorPeer) {
     // Get the guid of the validator. [0] = Guid, [1] = Ip 
     const validatorGuid: string = validatorPeer[0];
     
     // Basic message without responses
-    const message: Message = new Message("testMessageType", "testMessageType");
+    const messageBasic: Message = new Message("testMessageType", "testMessageType");
 
     // Send the message to the validator
     // Optional to await the sending of the message
-    await peer.sendMessageAsync(message, validatorGuid);
+    await peer.sendMessageAsync(messageBasic, validatorGuid);
     // Send the message to all peers in the network
     // Optional to await the sending of the message
-    await peer.sendBroadcastAsync(message);
+    await peer.sendBroadcastAsync(messageBasic);
 
     // Message with a response
-    const message: Message = new Message("testMessageTypeWithResponse", "testMessageType");
+    const messageWithResponse: Message = new Message("testMessageTypeWithResponse", "testMessageType");
 
     // Send the message to the validator, with a response implementation
     // Optional to await the sending of the message
-    await peer.sendMessageAsync(message, validatorGuid, (responseMessage: Message) => {
+    await peer.sendMessageAsync(messageWithResponse, validatorGuid, (responseMessage: Message) => {
         Logger.info(responseMessage.correlationId);
     });
     // With a response implementation it is possible to wait till the other peer has responded to the message.
-    await peer.getPromiseForResponse(message);
+    await peer.getPromiseForResponse(messageWithResponse);
 }
 
 // Leave the network
