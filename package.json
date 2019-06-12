@@ -1,6 +1,6 @@
 {
   "name": "@blockr/blockr-p2p-lib",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Blockr P2P node library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,7 +23,8 @@
     "inversify": "^5.0.1",
     "reflect-metadata": "^0.1.13",
     "socket.io": "^2.2.0",
-    "socket.io-client": "^2.2.0"
+    "socket.io-client": "^2.2.0",
+    "uws": "^10.148.1"
   },
   "devDependencies": {
     "@types/jest": "^24.0.12",
