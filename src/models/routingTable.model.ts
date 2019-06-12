@@ -64,6 +64,20 @@ export class RoutingTable {
     }
 
     /**
+     * Remove peer by its ip and port.
+     *
+     * @param ip - The ip
+     * @param port - The port
+     */
+    public removePeerByIpAndPort(ip: string, port: string): void {
+        for (const peer of this.peers.entries()) {
+            if (peer[1].ip === ip && peer[1].port === port) {
+                this.peers.delete(peer[0]);
+            }
+        }
+    }
+
+    /**
      * Merge two existing peer registries.
      *
      * @param routingTable - The RoutingTable

@@ -219,7 +219,7 @@ export class Peer implements IPeer {
 
             const routingTable = this.connectionService.routingTable.clone();
             routingTable.addPeer(this.connectionService.GUID, message.recieverIp, this.type);
-            routingTable.removePeerByIp(message.senderIp);
+            routingTable.removePeerByIpAndPort(message.senderIp, body.port);
             
             const responseBody = JSON.stringify({guid: newPeerId, ip: message.recieverIp,
                                 routingTable: Array.from(routingTable.peers)});
