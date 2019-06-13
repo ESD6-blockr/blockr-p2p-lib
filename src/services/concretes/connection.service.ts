@@ -232,8 +232,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
 
         for (const guid of this.sentMessages.keys()) {
             const message = this.sentMessages.get(guid);
-
-            if (message && message.isOlderThan(date) && guid) {
+            if (message && guid && DateManipulator.isDateOlderThan(message.date, date)) {
                 guids.push(guid);
             }
         }
