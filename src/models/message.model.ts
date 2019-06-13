@@ -30,15 +30,4 @@ export class Message {
         this.body = body;
         this.correlationId = (correlationId) ? correlationId : this.guid;
     }
-
-    /**
-     * Check if this message is older than the given date.
-     *
-     * @param date - The date
-     *
-     * @returns True if this message is older than the given date, false if otherwise
-     */
-    public isOlderThan(date: Date): boolean {
-        return this.date < date;
-    }
 }

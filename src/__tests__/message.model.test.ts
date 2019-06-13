@@ -37,7 +37,7 @@ describe("Comparing dates with isOlder function", () => {
         const dateBefore = DateManipulator.minusSeconds(newDate, secondsPerMinute);
         newDate.setSeconds(newDate.getSeconds() + 1);
 
-        expect(message.isOlderThan(newDate)).toBeTruthy();
-        expect(message.isOlderThan(dateBefore)).toBeFalsy();
+        expect(DateManipulator.isDateOlderThan(message.date, newDate)).toBeTruthy();
+        expect(DateManipulator.isDateOlderThan(message.date, dateBefore)).toBeFalsy();
     });
 });
