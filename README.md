@@ -84,15 +84,15 @@ if (validatorPeer) {
     // Get the guid of the validator. [0] = Guid, [1] = Ip 
     const validatorGuid: string = validatorPeer[0];
     
-    // Basic message without responses
-    const messageBasic: Message = new Message("testMessageType", "testMessageType");
+    // Message without responses
+    const messageWithoutReponse: Message = new Message("testMessageType", "testMessageType");
 
     // Send the message to the validator
     // Optional to await the sending of the message
-    await peer.sendMessageAsync(messageBasic, validatorGuid);
+    await peer.sendMessageAsync(messageWithoutReponse, validatorGuid);
     // Send the message to all peers in the network
     // Optional to await the sending of the message
-    await peer.sendBroadcastAsync(messageBasic);
+    await peer.sendBroadcastAsync(messageWithoutReponse);
 
     // Message with a response
     const messageWithResponse: Message = new Message("testMessageTypeWithResponse", "testMessageType");
