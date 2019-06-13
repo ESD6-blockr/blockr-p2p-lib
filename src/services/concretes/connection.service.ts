@@ -140,10 +140,10 @@ export class ConnectionService implements IConnectionService, IMessageListener {
                     responseMessage.originalSenderGuid = message.originalSenderGuid;
                     this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid as string);
                 });
-                if (message.type !== MessageType.ACKNOWLEDGE) {
-                    const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
-                    this.communicationProtocol.sendAcknowledgementAsync(message, destination);
-                }
+            }
+            if (message.type !== MessageType.ACKNOWLEDGE && message.originalSenderGuid) {
+                const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
+                this.communicationProtocol.sendAcknowledgementAsync(message, destination);
             }
             resolve();
         });
