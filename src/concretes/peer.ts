@@ -34,7 +34,7 @@ export class Peer implements IPeer {
      * @param [port] - The port on which this node will listen
      * @returns init
      */
-    public init(initialPeers?: [], port: string = DEFAULT_PORT): Promise<void> {
+    public init(initialPeers?: string[], port: string = DEFAULT_PORT): Promise<void> {
         return new Promise(async (resolve) => {
             await this.connectionService.init(port);
             this.port = port;
@@ -186,7 +186,12 @@ export class Peer implements IPeer {
                 reject();
                 return;
             }
-            for (const peer of peers) {
+            for (let peer of peers) {
+                // Add default port to ip if no port is present
+                if (peer.split(":").length < 2) {
+                    peer += `:${DEFAULT_PORT}`;
+                }
+
                 // Check if peer is online and try to join
                 const message = new Message(MessageType.JOIN, JSON.stringify({peerType: this.type, port: this.port}), this.connectionService.GUID);
                 await this.connectionService.sendMessageByIpAsync(message, peer,
