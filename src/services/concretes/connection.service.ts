@@ -221,6 +221,11 @@ export class ConnectionService implements IConnectionService, IMessageListener {
     }
 
 
+    /**
+     * Sends acknowledgement
+     * @param message 
+     * @param guid 
+     */
     private sendAcknowledgement(message: Message, guid: string): void {
         if (message.type !== MessageType.ACKNOWLEDGE && this.communicationProtocol) {
             const destination = this.getIpFromRoutingTable(guid);
