@@ -88,9 +88,14 @@ export class ConnectionService implements IConnectionService, IMessageListener {
      * @param [responseImplementation] - The implementation for the response message
      */
     public sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
+        if (this.GUID && this.getIpFromRoutingTable(this.GUID) === message.senderIp) {
+            return Promise.resolve();
+        }
+
         if (destinationGuid && message.originalSenderGuid) {
             this.sentMessages.set(message.originalSenderGuid, message);
         }
+
         const destinationIp = this.getIpFromRoutingTable(destinationGuid);
         return this.sendMessageByIpAsync(message, destinationIp, responseImplementation);
     }
