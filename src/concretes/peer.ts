@@ -144,7 +144,6 @@ export class Peer implements IPeer {
         // Handle acknowledge messages
         this.connectionService.registerReceiveHandlerForMessageType(MessageType.ACKNOWLEDGE, async (message: Message, senderGuid: string) => {
             if (senderGuid && message) {
-                console.log("handeld")
                 this.connectionService.removeSentMessage(senderGuid);
             }
         });

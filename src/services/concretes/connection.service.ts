@@ -67,10 +67,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
      * @param senderGuid - The guid of the sender
      */
     public removeSentMessage(senderGuid: string): void {
-        console.log("removesentmessage", senderGuid)
-        console.log("removesentmessage", this.sentMessages)
         this.sentMessages.delete(senderGuid);
-        console.log("removesentmessage", this.sentMessages)
     }
 
     /**
@@ -126,13 +123,17 @@ export class ConnectionService implements IConnectionService, IMessageListener {
                 return;
             }
             const responseImplementation = this.requestsMap.get(message.correlationId);
-            if (responseImplementation && message.type !== MessageType.ACKNOWLEDGE) {
+            if (responseImplementation && message.type !== MessageType.ACKNOWLEDGE && message.senderIp) {
                 await responseImplementation(message);
                 const responseDeferred = this.responseDeferredsMap.get(message.correlationId);
                 if (responseDeferred && responseDeferred.resolve) {
                     responseDeferred.resolve(true);
                 }
-                this.sendAcknowledgement(message);
+
+                const senderGuid = this.routingTable.getPeerByIp(message.senderIp);
+                if (senderGuid) {
+                    this.sendAcknowledgement(message, senderGuid);
+                }
                 resolve();
                 return;
             }
@@ -144,9 +145,8 @@ export class ConnectionService implements IConnectionService, IMessageListener {
                     responseMessage.originalSenderGuid = message.originalSenderGuid;
                     this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid as string);
                 });
-                this.sendAcknowledgement(message);
+                this.sendAcknowledgement(message, message.originalSenderGuid);
             }
-
             resolve();
         });
     }
@@ -220,10 +220,10 @@ export class ConnectionService implements IConnectionService, IMessageListener {
         }, messageHistoryCleanupTimer);
     }
 
-    
-    private sendAcknowledgement(message: Message): void {
-        if (message.type !== MessageType.ACKNOWLEDGE && message.originalSenderGuid && this.communicationProtocol) {
-            const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
+
+    private sendAcknowledgement(message: Message, guid: string): void {
+        if (message.type !== MessageType.ACKNOWLEDGE && this.communicationProtocol) {
+            const destination = this.getIpFromRoutingTable(guid);
             this.communicationProtocol.sendAcknowledgementAsync(message, destination);
         }
     }
@@ -242,7 +242,6 @@ export class ConnectionService implements IConnectionService, IMessageListener {
         for (const guid of this.sentMessages.keys()) {
             const message = this.sentMessages.get(guid);
             if (message && guid && DateManipulator.isDateOlderThan(message.date, date)) {
-                console.log(message)
                 guids.push(guid);
             }
         }

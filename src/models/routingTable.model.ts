@@ -41,6 +41,16 @@ export class RoutingTable {
         return undefined;
     }
 
+
+    public getPeerByIp(ip: string): string | undefined {
+        for (const peer of this.peers.entries()) {
+            if (peer[1].ip === ip) {
+                return peer[0];
+            }
+        }
+        return undefined;
+    }
+
     /**
      * Remove peer by its guid.
      *
