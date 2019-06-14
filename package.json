@@ -1,6 +1,6 @@
 {
   "name": "@blockr/blockr-p2p-lib",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "Blockr P2P node library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
