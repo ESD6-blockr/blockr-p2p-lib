@@ -88,8 +88,8 @@ export class ConnectionService implements IConnectionService, IMessageListener {
      * @param [responseImplementation] - The implementation for the response message
      */
     public sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
-        if (destinationGuid) {
-            this.sentMessages.set(destinationGuid, message);
+        if (destinationGuid && message.originalSenderGuid) {
+            this.sentMessages.set(message.originalSenderGuid, message);
         }
         const destinationIp = this.getIpFromRoutingTable(destinationGuid);
         return this.sendMessageByIpAsync(message, destinationIp, responseImplementation);
@@ -123,11 +123,16 @@ export class ConnectionService implements IConnectionService, IMessageListener {
                 return;
             }
             const responseImplementation = this.requestsMap.get(message.correlationId);
-            if (responseImplementation && message.type !== MessageType.ACKNOWLEDGE) {
+            if (responseImplementation && message.type !== MessageType.ACKNOWLEDGE && message.senderIp) {
                 await responseImplementation(message);
                 const responseDeferred = this.responseDeferredsMap.get(message.correlationId);
                 if (responseDeferred && responseDeferred.resolve) {
                     responseDeferred.resolve(true);
+                }
+
+                const senderGuid = this.routingTable.getPeerByIp(message.senderIp);
+                if (senderGuid) {
+                    this.sendAcknowledgement(message, senderGuid);
                 }
                 resolve();
                 return;
@@ -140,15 +145,11 @@ export class ConnectionService implements IConnectionService, IMessageListener {
                     responseMessage.originalSenderGuid = message.originalSenderGuid;
                     this.sendMessageAsync(responseMessage, responseMessage.originalSenderGuid as string);
                 });
-            }
-            if (message.type !== MessageType.ACKNOWLEDGE && message.originalSenderGuid) {
-                const destination = this.getIpFromRoutingTable(message.originalSenderGuid);
-                this.communicationProtocol.sendAcknowledgementAsync(message, destination);
+                this.sendAcknowledgement(message, message.originalSenderGuid);
             }
             resolve();
         });
     }
-
 
     /**
      * Leaves connection service
@@ -217,6 +218,19 @@ export class ConnectionService implements IConnectionService, IMessageListener {
                 this.routingTable.removePeer(value);
             }
         }, messageHistoryCleanupTimer);
+    }
+
+
+    /**
+     * Sends acknowledgement
+     * @param message 
+     * @param guid 
+     */
+    private sendAcknowledgement(message: Message, guid: string): void {
+        if (message.type !== MessageType.ACKNOWLEDGE && this.communicationProtocol) {
+            const destination = this.getIpFromRoutingTable(guid);
+            this.communicationProtocol.sendAcknowledgementAsync(message, destination);
+        }
     }
 
     /**
