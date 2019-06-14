@@ -88,7 +88,7 @@ export class ConnectionService implements IConnectionService, IMessageListener {
      * @param [responseImplementation] - The implementation for the response message
      */
     public sendMessageAsync(message: Message, destinationGuid: string, responseImplementation?: RESPONSE_TYPE): Promise<void> {
-        if (this.GUID && this.getIpFromRoutingTable(this.GUID) === message.senderIp) {
+        if (this.GUID && this.routingTable.peers.get(this.GUID) && this.getIpFromRoutingTable(this.GUID) === message.senderIp) {
             return Promise.resolve();
         }
 
